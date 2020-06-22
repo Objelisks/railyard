@@ -20,3 +20,10 @@ simple input
 simple ui
 move a train from x to y
 sync movement
+
+
+
+
+
+todo:
+set up a build system to add import delcarations to libraries
