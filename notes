@@ -1,0 +1,22 @@
+regl for three d rendering
+choo because trains and also for ui
+peerjs for networking
+
+something for tiles
+something for animation??
+something for game state?
+
+milestones
+
+index.html
+script.js
+serve libraries
+render a train
+render a track
+set up camera params
+initial network connections
+sync positions
+simple input
+simple ui
+move a train from x to y
+sync movement
