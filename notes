@@ -11,19 +11,23 @@ milestones
 index.html
 script.js
 serve libraries
-render a train
-render a track
 set up camera params
+render a box
+render a train
 initial network connections
 sync positions
 simple input
 simple ui
 move a train from x to y
 sync movement
+render a track
+pull request esm modules for peerjs and choo https://github.com/rollup/rollup/wiki/pkg.module
 
 
+models:
+single color via vertex colors
+uvs on palette texture
+engine, several cars, tracks, trees, rocks, water, station, station equipment, signals, terrain
+animation? probably not
 
-
-
-todo:
-set up a build system to add import delcarations to libraries
+ambient occlusion and hella tilt shift
