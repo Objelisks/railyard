@@ -9,7 +9,7 @@ module.exports = {
         'regl': 'regl'
     },
     output: {
-        path: path.resolve(__dirname, "public/src/libs"),
+        path: path.resolve(__dirname, "public/libs"),
         filename: "[name].mjs",
         library: "LIB",
         libraryTarget: "var"
