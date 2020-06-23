@@ -1,7 +1,7 @@
 import { model } from '../model.js'
 import { drawCube } from './cube.js'
 import regl from '../regl.js'
-import { vec3 } from '../libs/gl-matrix.js'
+import { vec3 } from '../libs/gl-matrix.mjs'
 
 export const train = (props) => model({
         ...props,

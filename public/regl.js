@@ -1,4 +1,4 @@
-import createREGL from './libs/regl.js'
+import createREGL from './libs/regl.mjs'
 
 const regl = createREGL(document.body.querySelector('#canvas'))
 

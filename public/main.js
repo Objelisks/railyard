@@ -3,9 +3,9 @@
 import regl from './regl.js'
 import { train } from './primitives/train.js'
 import { camera } from './camera.js'
+import { quat, vec3 } from './libs/gl-matrix.mjs'
+import { v4 as uuid } from './libs/uuid.mjs'
 
-import { quat, vec3 } from '../libs/gl-matrix.js'
-import { v4 as uuid } from '../libs/uuid.js'
 
 const allTrains = [
     {
@@ -33,3 +33,5 @@ const render = () => {
     requestAnimationFrame(render)
 }
 render()
+
+console.log('hello world');

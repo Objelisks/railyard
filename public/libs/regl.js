@@ -1,1 +1,0 @@
-export { default } from 'https://cdn.pika.dev/regl'

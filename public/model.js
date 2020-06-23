@@ -1,5 +1,5 @@
 import regl from "./regl.js"
-import { mat4, quat, vec3 } from '../libs/gl-matrix.js'
+import { mat4, quat, vec3 } from './libs/gl-matrix.mjs'
 
 export const model =  regl({
     uniforms: {

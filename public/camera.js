@@ -1,5 +1,5 @@
 import regl from './regl.js'
-import { mat4 } from '../libs/gl-matrix.js'
+import { mat4 } from './libs/gl-matrix.mjs'
 
 // This scoped command sets up the camera parameters
 export const camera = regl({

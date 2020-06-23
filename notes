@@ -14,6 +14,7 @@ serve libraries
 set up camera params
 render a box
 render a train
+i think i need browserify, BUT just for libraries
 initial network connections
 sync positions
 simple input
@@ -24,6 +25,15 @@ render a track
 pull request esm modules for peerjs and choo https://github.com/rollup/rollup/wiki/pkg.module
 
 
+libraries:
+babel with browserify (babelify)
+polyfill node deps and remove require
+export as es6 module
+browserify -r signalhub -o signalhub.js -t [ babelify --presets [ ] ]
+
+webpack --experiments.outputModule
+
+
 models:
 single color via vertex colors
 uvs on palette texture
@@ -31,3 +41,21 @@ engine, several cars, tracks, trees, rocks, water, station, station equipment, s
 animation? probably not
 
 ambient occlusion and hella tilt shift
+
+
+
+networking:
+webrtc-swarm, signalhub, simple-peer
+
+client
+first player starts a room by putting in a name
+everyone else connects to that name
+
+
+
+gameplay:
+
+start off with a loop, each player can connect their railyard to the loop
+stations that will load cars with resource
+stations that will unload cars of resource
+train whistle
