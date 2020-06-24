@@ -1,8 +1,8 @@
 // to host files and facilitate discovery
 
 const ports = {
-    express: 8080,
-    signalhub: 8081
+    express: 8081,
+    signalhub: 8080
 }
 
 const { spawn } = require('child_process')
@@ -16,7 +16,6 @@ signalChild.stdout.on('data', (data) => {
 const express = require('express')
 const app = express()
 
-app.use('/choo', express.static('node_modules/choo/dist/'))
 app.use(express.static('public'))
 
 app.listen(ports.express, () => console.log(`serving files on ${ports.express}`))

@@ -6,12 +6,13 @@
   "scripts": {
     "start": "node server.js",
     "build-libs": "webpack",
-    "signalhub": "signalhub listen -p 8081",
+    "signalhub": "signalhub listen -p 8080",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bezier-js": "^2.6.1",
     "choo": "^7.1.0",
     "express": "^4.17.1",
     "gl-matrix": "^3.3.0",

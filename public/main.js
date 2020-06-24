@@ -5,26 +5,12 @@ import { train } from './primitives/train.js'
 import { camera } from './camera.js'
 import { quat, vec3 } from './libs/gl-matrix.mjs'
 import { v4 as uuid } from './libs/uuid.mjs'
-import swarm from './libs/webrtc-swarm.mjs'
-import signalhub from './libs/signalhub.mjs'
+import { connect } from './network.js'
+import Bezier from './libs/bezier-js.mjs'
+import { makeRenderTrack } from './primitives/track.js'
 
 
-const hub = signalhub('railyard-objelisks', ['127.0.0.1:8081'])
-const sw = swarm(hub)
-window.addEventListener('beforeunload', () => {
-    sw.close()
-    hub.close()
-})
-sw.on('peer', (peer, id) => {
-    console.log('connected to peer', id, 'total', sw.peers.length)
-    console.log(peer)
-})
-
-setInterval(() => {
-    console.log(sw.peers)
-    sw.peers.forEach((peer) => peer.send({hello: `peer ${peer.id}`}))
-}, 1000)
-
+const curve = new Bezier({x: 0, y: 0}, {x: 0, y: 5}, {x: 5, y: 5})
 
 const allTrains = [
     {
@@ -34,8 +20,22 @@ const allTrains = [
     }
 ]
 
+const renderTrack = makeRenderTrack({
+    position: [0, 0, 0],
+    rotation: [0, 0, 0, 1],
+    curve,
+    color: [.55, .55, .55]
+})
+
 const render = () => {
     regl.poll()
+
+    const delta = (regl.now()/2 % 1.0) / 1.0
+    const point = curve.get(delta)
+    const tangent = curve.derivative(delta)
+
+    vec3.set(allTrains[0].position, point.x, 0, point.y)
+    quat.rotationTo(allTrains[0].rotation, [1, 0, 0], vec3.normalize([], [tangent.x, 0, tangent.y]))
 
     // set up camera
     camera({
@@ -47,10 +47,13 @@ const render = () => {
             position: trainData.position,
             rotation: trainData.rotation
         }))
+
+        renderTrack()
     })
 
     requestAnimationFrame(render)
 }
 render()
+connect('objelisks')
 
 console.log('hello world');

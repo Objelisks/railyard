@@ -25,17 +25,26 @@ render a track
 pull request esm modules for peerjs and choo https://github.com/rollup/rollup/wiki/pkg.module
 
 
-libraries:
-babel with browserify (babelify)
-polyfill node deps and remove require
-export as es6 module
-browserify -r signalhub -o signalhub.js -t [ babelify --presets [ ] ]
+today:
+train movement: bezier curves
 
-webpack --experiments.outputModule
+
+
+architecture:
+canvas which draws the trains
+overlay using choo, which:
+    names the room for people to join (use signalhub app name)
+    create new train?
+    create new track module
+
+dialog box, dropshadow
+    text box for room name -> validate text
+    ok button -> toggle based on text
 
 
 models:
 single color via vertex colors
+start off with everything being a colored box
 uvs on palette texture
 engine, several cars, tracks, trees, rocks, water, station, station equipment, signals, terrain
 animation? probably not
@@ -45,9 +54,6 @@ ambient occlusion and hella tilt shift
 
 
 networking:
-webrtc-swarm, signalhub, simple-peer
-
-client
 first player starts a room by putting in a name
 everyone else connects to that name
 

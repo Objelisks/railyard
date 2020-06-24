@@ -8,7 +8,9 @@ module.exports = {
         'gl-matrix': 'gl-matrix',
         'regl': 'regl',
         'webrtc-swarm': 'webrtc-swarm',
-        'signalhub': 'signalhub'
+        'signalhub': 'signalhub',
+        'choo': 'choo',
+        'bezier-js': 'bezier-js'
     },
     output: {
         path: path.resolve(__dirname, "public/libs"),
