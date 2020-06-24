@@ -9,14 +9,8 @@ import swarm from './libs/webrtc-swarm.mjs'
 import signalhub from './libs/signalhub.mjs'
 
 
-const hub = signalhub('railyard-objelisks', ['objelisks.garden:6001'])
-const sw = swarm(hub, {
-    config: {
-        iceServers: [
-            { urls: [ 'stun:stun.l.google.com:19302' ] },
-        ]
-    }
-})
+const hub = signalhub('railyard-objelisks', ['127.0.0.1:8081'])
+const sw = swarm(hub)
 window.addEventListener('beforeunload', () => {
     sw.close()
     hub.close()

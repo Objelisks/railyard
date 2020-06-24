@@ -2,13 +2,16 @@
 
 const ports = {
     express: 8080,
-    signalhub: 3000
+    signalhub: 8081
 }
 
 const { spawn } = require('child_process')
 
-spawn(`npm.cmd`, ['run', 'signalhub', 'listen', '-p', `${ports.signalhub}`])
-console.log(`signalling on ${ports.signalhub}`)
+const signalChild = spawn(`npm.cmd`, ['run', 'signalhub'])
+signalChild.stdout.on('data', (data) => {
+    console.log(`SIGNAL ${data}`)
+})
+
 
 const express = require('express')
 const app = express()
