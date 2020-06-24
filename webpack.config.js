@@ -6,7 +6,9 @@ module.exports = {
     entry: {
         'uuid': 'uuid',
         'gl-matrix': 'gl-matrix',
-        'regl': 'regl'
+        'regl': 'regl',
+        'webrtc-swarm': 'webrtc-swarm',
+        'signalhub': 'signalhub'
     },
     output: {
         path: path.resolve(__dirname, "public/libs"),
