@@ -1,15 +1,15 @@
 /* globals Choo, Peer */
 
 import regl from './regl.js'
-import { quat, vec3 } from './libs/gl-matrix.mjs'
-import { v4 as uuid } from './libs/uuid.mjs'
-import { drawCube } from './primitives/cube.js'
 import { train } from './primitives/train.js'
-import { track, makeTrack } from './primitives/track.js'
+import { drawCube } from './primitives/cube.js'
 import { camera } from './camera.js'
+import { quat, vec3, vec2 } from './libs/gl-matrix.mjs'
+import { v4 as uuid } from './libs/uuid.mjs'
 import { connect } from './network.js'
+import Bezier from './libs/bezier-js.mjs'
+import { makeRenderTrack } from './primitives/track.js'
 import { model } from './model.js'
-import { rand } from './utils.js'
 
 let reset = 5
 const debugPoints = [[0, 0, 0]]
@@ -17,14 +17,7 @@ const debugPoint = (i, pt, col) => {
     debugPoints[i] = {pos: pt, col}
 }
 
-const allTracks = [
-    makeTrack([-10, 0, 0], [0, 0, 10], 10),
-    // makeTrack([0, 0, 10], [10, 0, 0], 10),
-    // makeTrack([10, 0, 0], [0, 0, -10], 10),
-    // makeTrack([0, 0, -10], [-10, 0, 0], 10)
-]
-
-let curve = allTracks[0].curve
+let curve = new Bezier({x: -5, y: -5}, {x: 15, y: -10}, {x: 5, y: 5})
 
 let point = curve.get(0.1)
 let tangent = curve.derivative(0.1)
@@ -38,19 +31,37 @@ const allTrains = [
     }
 ]
 
+let renderTrack = makeRenderTrack({
+    position: [0, 0, 0],
+    rotation: [0, 0, 0, 1],
+    curve,
+    color: [.55, .55, .55]
+})
+
+const rand = (max) => Math.random() * max*2 - max
 
 const resetTrack = () => {
     const ptA = [rand(20), rand(20)]
     const ptB = [rand(20), rand(20)]
-    const newTrack = makeTrack([ptA[0], 0, ptA[1]], [ptB[0], 0, ptB[1]], rand(20))
-    curve = newTrack.curve
+    const perp = vec2.normalize([], vec2.rotate([], vec2.sub([], ptA, ptB), [0, 0], Math.PI/2))
+    const mid = vec2.add([], vec2.scale([], vec2.add([], ptA, ptB), 0.5), vec2.scale([], perp, rand(20)))
+    debugPoint(7, [ptA[0], 0, ptA[1]])
+    debugPoint(8, [ptB[0], 0, ptB[1]])
+    debugPoint(9, [mid[0], 0, mid[1]])
+    curve = new Bezier({x: ptA[0], y: ptA[1]}, {x: mid[0], y: mid[1]}, {x: ptB[0], y: ptB[1]})
     point = curve.get(0.1)
     tangent = curve.derivative(0.1)
-    allTracks[0] = newTrack
+    renderTrack = makeRenderTrack({
+        position: [0, 0, 0],
+        rotation: [0, 0, 0, 1],
+        curve,
+        color: [.55, .55, .55]
+    })
     allTrains[0].position = [point.x, 0, point.y]
     allTrains[0].rotation = quat.rotationTo([], [1, 0, 0], vec3.normalize([], [tangent.x, 0, tangent.y]))
     allTrains[0].speed = 0
 }
+
 
 const moveTruck = (truck, direction, speed, curve, i) => {
     const newTruck = vec3.add([], truck, vec3.scale([], direction, speed))
@@ -63,7 +74,6 @@ const moveTruck = (truck, direction, speed, curve, i) => {
     }
     return actualTruck
 }
-
 
 const render = () => {
     regl.poll()
@@ -81,9 +91,6 @@ const render = () => {
     // set position based on midpoint between trucks
     // set rotation based on angle between trucks
 
-
-    // TODO: make this respond to multiple tracks
-    // TODO: move this somewhere else
     allTrains.forEach(trainData => {
         const direction = vec3.transformQuat([], [1, 0, 0], trainData.rotation)
         const front = vec3.add([], trainData.position, vec3.scale([], direction, 0.5))
@@ -93,6 +100,8 @@ const render = () => {
         
         const newFront = moveTruck(front, direction, trainData.speed, curve, 0)
         const newBack = moveTruck(back, direction, trainData.speed, curve, 1)
+        //debugPoint(2, newFront, [0.7, 0.6, 0.2])
+        //debugPoint(3, newBack, [0.7, 0.6, 0.2])
 
         const midpoint = vec3.scale([], vec3.add([], newFront, newBack), 0.5)
         const newDirection = quat.rotationTo([], [1, 0, 0], vec3.normalize([], vec3.sub([], newFront, newBack)))
@@ -112,12 +121,13 @@ const render = () => {
     camera({
         eye: [10, 10, 10],
         target: allTrains[0].position
-    }, () => {
-        // render trains
-        train(allTrains)
+    }, (context) => {
+        // render scene
 
-        // render tracks
-        track(allTracks)
+        allTrains.forEach((trainData) => train({
+            position: trainData.position,
+            rotation: trainData.rotation
+        }))
 
         debugPoints.forEach((point) => {
             model({
@@ -127,11 +137,14 @@ const render = () => {
                 color: point.col || [0.5, 0.5, 0.5]
             }))
         })
+
+        renderTrack()
     })
 
     requestAnimationFrame(render)
 }
 
+resetTrack()
 render()
 connect('objelisks')
 

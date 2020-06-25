@@ -1,4 +1,5 @@
 import regl from '../regl.js'
+import { reglArg } from '../utils.js'
 
 export const cubePosition = [
   [-0.5, +0.5, +0.5], [+0.5, +0.5, +0.5], [+0.5, -0.5, +0.5], [-0.5, -0.5, +0.5], // positive z face.
@@ -10,7 +11,7 @@ export const cubePosition = [
 ]
 
 // props: { points, color }
-export const drawLines = regl({
+export const drawLines = (points) => regl({
   frag: `
   precision mediump float;
   uniform vec3 color;
@@ -25,11 +26,11 @@ export const drawLines = regl({
     gl_Position = projection * view * model * vec4(position, 1.0);
   }`,
   attributes: {
-    position: (context, props) => props.points,
+    position: points
   },
   uniforms: {
-    color: (context, props) => props.color
+    color: reglArg('color', [0, 0, 0])
   },
   primitive: 'line strip',
-  count: (context, props) => props.points.length
+  count: points.length
 })

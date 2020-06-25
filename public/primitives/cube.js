@@ -1,4 +1,5 @@
 import regl from '../regl.js'
+import { reglArg } from '../utils.js'
 
 export const cubePosition = [
   [-0.5, +0.5, +0.5], [+0.5, +0.5, +0.5], [+0.5, -0.5, +0.5], [-0.5, -0.5, +0.5], // positive z face.
@@ -51,6 +52,6 @@ export const drawCube = regl({
   },
   elements: cubeElements,
   uniforms: {
-    color: regl.prop('color')
+    color: reglArg('color', [1.0, .412, .38])
   }
 })

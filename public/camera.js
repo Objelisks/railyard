@@ -27,5 +27,7 @@ export const camera = regl({
         model:  () => mat4.create(),
         invView: (context) => mat4.invert([], context.view),
         projection: regl.context('projection')
-    }
+    },
+
+    //profile: true
 })
