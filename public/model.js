@@ -2,7 +2,7 @@ import regl from "./regl.js"
 import { mat4 } from './libs/gl-matrix.mjs'
 import { reglArg } from '../utils.js'
 
-export const model = regl({
+const setUniforms = regl({
     uniforms: {
         view: (context) => context.view,
         model:  (context, props) => mat4.fromRotationTranslationScale([],
@@ -13,3 +13,5 @@ export const model = regl({
         projection: (context) => context.projection
     }
 })
+
+export const model = (draw) => (props) => setUniforms(props, draw)

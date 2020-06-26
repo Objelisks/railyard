@@ -10,9 +10,7 @@ const drawTrain = regl({
     }
 })
 
-export const train = (arg) => 
-    drawTrain(arg, () =>
-        model(() =>
-            drawCube()
-        )
-    )
+export const train = () => {
+    const draw = model(() => drawCube())
+    return (props) => drawTrain(props, draw)
+}

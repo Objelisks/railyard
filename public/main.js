@@ -11,17 +11,17 @@ import { connect } from './network.js'
 import { model } from './model.js'
 import { rand } from './utils.js'
 
-let reset = 5
-const debugPoints = [[0, 0, 0]]
-const debugPoint = (i, pt, col) => {
-    debugPoints[i] = {pos: pt, col}
+let reset = 25
+const debugPoints = {}
+const debugPoint = (key, pt, col) => {
+    debugPoints[key] = {pos: pt, col}
 }
 
 const allTracks = [
-    makeTrack([-10, 0, 0], [0, 0, 10], 10),
-    // makeTrack([0, 0, 10], [10, 0, 0], 10),
-    // makeTrack([10, 0, 0], [0, 0, -10], 10),
-    // makeTrack([0, 0, -10], [-10, 0, 0], 10)
+    makeTrack([-10, 0, 0], [0, 0, 10], -7.5),
+    makeTrack([0, 0, 10], [10, 0, 0], -7.5),
+    makeTrack([10, 0, 0], [0, 0, -10], -7.5),
+    makeTrack([0, 0, -10], [-10, 0, 0], -7.5)
 ]
 
 let curve = allTracks[0].curve
@@ -34,9 +34,19 @@ const allTrains = [
         id: uuid(),
         position: [point.x, 0, point.y],
         rotation: quat.rotationTo([], [1, 0, 0], vec3.normalize([], [tangent.x, 0, tangent.y])),
-        speed: 0
+        speed: 0,
     }
 ]
+const drawTrains = train()
+const drawPoint = model(() => drawCube())
+const setupPoint = regl({
+    context: {
+        position: (context, props) => props.pos,
+        scale: [0.2, 0.2, 0.2],
+        color: (context, props) => props.col || [0.5, 0.5, 0.5]
+    }
+})
+const drawDebugPoints = (props) => setupPoint(props, drawPoint)
 
 
 const resetTrack = () => {
@@ -114,19 +124,13 @@ const render = () => {
         target: allTrains[0].position
     }, () => {
         // render trains
-        train(allTrains)
+        drawTrains(allTrains)
 
         // render tracks
-        track(allTracks)
+        allTracks.forEach(track => track.draw(track))
 
-        debugPoints.forEach((point) => {
-            model({
-                position: point.pos,
-                scale: [0.2, 0.2, 0.2]
-            }, () => drawCube({
-                color: point.col || [0.5, 0.5, 0.5]
-            }))
-        })
+        // render debug points
+        drawDebugPoints(Object.values(debugPoints))
     })
 
     requestAnimationFrame(render)
