@@ -25,10 +25,12 @@ render a track
 pull request esm modules for peerjs and choo https://github.com/rollup/rollup/wiki/pkg.module
 
 
-today:
-train movement: bezier curves
-multi track drifting!!
-link up bezier curvers
+sqrt(2)*side/4 for 90 degree curve?
+snap endpoints based on closest other endpoints
+track options: straight, 45, 90, S, switch, quad bezier
+drag a line and bend it
+revisit whether i wanna keep doing quadratic or use cubic to make it easier to match angles
+
 
 
 architecture:
@@ -66,3 +68,11 @@ start off with a loop, each player can connect their railyard to the loop
 stations that will load cars with resource
 stations that will unload cars of resource
 train whistle
+
+
+documentation:
+https://github.com/choojs/choo#api
+https://github.com/regl-project/regl/blob/gh-pages/API.md
+http://glmatrix.net/docs/
+http://pomax.github.io/bezierjs/
+https://github.com/mourner/rbush

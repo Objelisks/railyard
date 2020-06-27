@@ -5,23 +5,11 @@ import { vec2 } from '../libs/gl-matrix.mjs'
 import { model } from '../model.js'
 import { drawLines } from './lines.js'
 
-// maybe ?
-const memo = (func) => {
-    let prevArgs = null
-    let store = null
-    return (...args) => {
-        if(args !== prevArgs) {
-            store = func(args)
-        }
-        return store
-    }
-}
-
 const trackRail = (curve, offset) => {
     return curve.offset(offset).flatMap(curve => curve.getLUT(10).map(p => [p.x, -0.5, p.y]))
 }
 
-export const track = (curve) => {
+const track = (curve) => {
     const trackL = drawLines(trackRail(curve, -0.2))
     const trackR = drawLines(trackRail(curve, +0.2))
     return model(() => {

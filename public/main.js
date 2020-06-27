@@ -18,11 +18,13 @@ const debugPoint = (key, pt, col) => {
 }
 
 const allTracks = [
-    makeTrack([-10, 0, 0], [0, 0, 10], -7.5),
-    makeTrack([0, 0, 10], [10, 0, 0], -7.5),
-    makeTrack([10, 0, 0], [0, 0, -10], -7.5),
-    makeTrack([0, 0, -10], [-10, 0, 0], -7.5)
+    makeTrack([-10, 0, 0], [0, 0, 10], -7.1),
+    makeTrack([0, 0, 10], [10, 0, 0], -7.1),
+    makeTrack([10, 0, 0], [0, 0, -10], -7.1),
+    makeTrack([0, 0, -10], [-10, 0, 0], -7.1)
 ]
+
+// build rtree
 
 let curve = allTracks[0].curve
 
@@ -62,11 +64,11 @@ const resetTrack = () => {
     allTrains[0].speed = 0
 }
 
-const moveTruck = (truck, direction, speed, curve, i) => {
+const moveTruck = (truck, direction, speed) => {
+    const curve = null
     const newTruck = vec3.add([], truck, vec3.scale([], direction, speed))
     const projected = curve.project({x: newTruck[0], y: newTruck[2]})
     let actualTruck = [projected.x, 0, projected.y]
-    debugPoint(5+i, actualTruck, [0, 0.8, 0])
     const error = vec3.dist(newTruck, actualTruck)
     if(error > 0.1) {
         actualTruck = newTruck
@@ -101,8 +103,8 @@ const render = () => {
         debugPoint(0, front, [0, 0.6, 0.4])
         debugPoint(1, back, [0, 0.6, 0.4])
         
-        const newFront = moveTruck(front, direction, trainData.speed, curve, 0)
-        const newBack = moveTruck(back, direction, trainData.speed, curve, 1)
+        const newFront = moveTruck(front, direction, trainData.speed)
+        const newBack = moveTruck(back, direction, trainData.speed)
 
         const midpoint = vec3.scale([], vec3.add([], newFront, newBack), 0.5)
         const newDirection = quat.rotationTo([], [1, 0, 0], vec3.normalize([], vec3.sub([], newFront, newBack)))

@@ -10,7 +10,8 @@ module.exports = {
         'webrtc-swarm': 'webrtc-swarm',
         'signalhub': 'signalhub',
         'choo': 'choo',
-        'bezier-js': 'bezier-js'
+        'bezier-js': 'bezier-js',
+        'rbush': 'rbush',
     },
     output: {
         path: path.resolve(__dirname, "public/libs"),
