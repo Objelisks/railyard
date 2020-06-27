@@ -40,10 +40,16 @@ overlay using choo, which:
     create new train?
     create new track module
 
+progressive state thing
 dialog box, dropshadow
     text box for room name -> validate text
     ok button -> toggle based on text
 
+in game
+    train speed knob
+        project mouse pos along tangent of first click to spin knob
+    leave room button
+    reset train button
 
 models:
 single color via vertex colors
@@ -68,6 +74,8 @@ start off with a loop, each player can connect their railyard to the loop
 stations that will load cars with resource
 stations that will unload cars of resource
 train whistle
+
+hook it up to midi input so we can use knobs!!!
 
 
 documentation:

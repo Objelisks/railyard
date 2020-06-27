@@ -1,20 +1,41 @@
-/* globals Choo, Peer */
-
 import regl from './regl.js'
 import { quat, vec3 } from './libs/gl-matrix.mjs'
 import { v4 as uuid } from './libs/uuid.mjs'
 import { drawCube } from './primitives/cube.js'
-import { train } from './primitives/train.js'
-import { track, makeTrack } from './primitives/track.js'
+import { train, moveBogie } from './primitives/train.js'
+import { makeTrack, addToBush, resetBush } from './primitives/track.js'
 import { camera } from './camera.js'
-import { connect } from './network.js'
 import { model } from './model.js'
 import { rand } from './utils.js'
+import intro from './components/intro.js'
+import trains from './components/trains.js'
+import choo from './libs/choo.mjs'
 
-let reset = 25
+let app = null
+
+const setupChoo = () => {
+    app = choo({ hash: true})
+    app.route('*', (state, emit) => {
+        emit('pushState', '#intro')
+    })
+    app.route('#intro', intro)
+    app.route('#trains/:room', trains)
+    app.mount('#choo')
+}
+
+let reset = 10
 const debugPoints = {}
 const debugPoint = (key, pt, col) => {
     debugPoints[key] = {pos: pt, col}
+}
+
+const placeTrainOnTrack = (train, track) => {
+    const curve = track.curve
+    const point = curve.get(0.1)
+    const tangent = curve.derivative(0.1)
+    train.position = [point.x, 0, point.y]
+    train.rotation = quat.rotationTo([], [1, 0, 0], vec3.normalize([], [tangent.x, 0, tangent.y]))
+    train.speed = 0
 }
 
 const allTracks = [
@@ -23,22 +44,19 @@ const allTracks = [
     makeTrack([10, 0, 0], [0, 0, -10], -7.1),
     makeTrack([0, 0, -10], [-10, 0, 0], -7.1)
 ]
-
-// build rtree
-
-let curve = allTracks[0].curve
-
-let point = curve.get(0.1)
-let tangent = curve.derivative(0.1)
+addToBush(allTracks)
 
 const allTrains = [
     {
         id: uuid(),
-        position: [point.x, 0, point.y],
-        rotation: quat.rotationTo([], [1, 0, 0], vec3.normalize([], [tangent.x, 0, tangent.y])),
+        position: [0, 0, 0],
+        rotation: [0, 0, 0, 1],
         speed: 0,
     }
 ]
+placeTrainOnTrack(allTrains[0], allTracks[0])
+
+
 const drawTrains = train()
 const drawPoint = model(() => drawCube())
 const setupPoint = regl({
@@ -55,25 +73,10 @@ const resetTrack = () => {
     const ptA = [rand(20), rand(20)]
     const ptB = [rand(20), rand(20)]
     const newTrack = makeTrack([ptA[0], 0, ptA[1]], [ptB[0], 0, ptB[1]], rand(20))
-    curve = newTrack.curve
-    point = curve.get(0.1)
-    tangent = curve.derivative(0.1)
+    placeTrainOnTrack(allTrains[0], newTrack)
     allTracks[0] = newTrack
-    allTrains[0].position = [point.x, 0, point.y]
-    allTrains[0].rotation = quat.rotationTo([], [1, 0, 0], vec3.normalize([], [tangent.x, 0, tangent.y]))
-    allTrains[0].speed = 0
-}
-
-const moveTruck = (truck, direction, speed) => {
-    const curve = null
-    const newTruck = vec3.add([], truck, vec3.scale([], direction, speed))
-    const projected = curve.project({x: newTruck[0], y: newTruck[2]})
-    let actualTruck = [projected.x, 0, projected.y]
-    const error = vec3.dist(newTruck, actualTruck)
-    if(error > 0.1) {
-        actualTruck = newTruck
-    }
-    return actualTruck
+    resetBush()
+    addToBush(allTracks)
 }
 
 
@@ -88,10 +91,10 @@ const render = () => {
     // quat.rotationTo(allTrains[0].rotation, [1, 0, 0], vec3.normalize([], [tangent.x, 0, tangent.y]))
 
 
-    // add velocity * speed to front and back truck
+    // add velocity * speed to front and back bogie
     // project each point onto curve
-    // set position based on midpoint between trucks
-    // set rotation based on angle between trucks
+    // set position based on midpoint between bogies
+    // set rotation based on angle between bogies
 
 
     // TODO: make this respond to multiple tracks
@@ -103,8 +106,8 @@ const render = () => {
         debugPoint(0, front, [0, 0.6, 0.4])
         debugPoint(1, back, [0, 0.6, 0.4])
         
-        const newFront = moveTruck(front, direction, trainData.speed)
-        const newBack = moveTruck(back, direction, trainData.speed)
+        const newFront = moveBogie(front, direction, trainData.speed)
+        const newBack = moveBogie(back, direction, trainData.speed)
 
         const midpoint = vec3.scale([], vec3.add([], newFront, newBack), 0.5)
         const newDirection = quat.rotationTo([], [1, 0, 0], vec3.normalize([], vec3.sub([], newFront, newBack)))
@@ -138,7 +141,7 @@ const render = () => {
     requestAnimationFrame(render)
 }
 
+setupChoo()
 render()
-connect('objelisks')
 
-console.log('hello world');
+console.log('hello world')

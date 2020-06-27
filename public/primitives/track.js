@@ -1,17 +1,44 @@
-import regl from "../regl.js"
 import Bezier from '../libs/bezier-js.mjs'
 import { v4 as uuid } from '../libs/uuid.mjs'
 import { vec2 } from '../libs/gl-matrix.mjs'
 import { model } from '../model.js'
 import { drawLines } from './lines.js'
+import RBush from '../libs/rbush.mjs'
+
+const SMOOTHNESS = 20
+const TRACK_GAUGE = 0.2
+let bush = new RBush()
+
+export const addToBush = (tracks) => {
+    const regions = tracks
+        .map(track => {
+            const box = track.curve.bbox()
+            return {
+                minX: box.x.min + track.position[0],
+                minY: box.y.min + track.position[2],
+                maxX: box.x.max + track.position[0],
+                maxY: box.y.max + track.position[2],
+                track: track
+            }
+        })
+    bush.load(regions)
+}
+
+export const resetBush = () => {
+    bush = new RBush()
+}
+
+export const intersectTracks = (region) => {
+    return bush.search(region)
+}
 
 const trackRail = (curve, offset) => {
-    return curve.offset(offset).flatMap(curve => curve.getLUT(10).map(p => [p.x, -0.5, p.y]))
+    return curve.offset(offset).flatMap(curve => curve.getLUT(SMOOTHNESS).map(p => [p.x, -0.5, p.y]))
 }
 
 const track = (curve) => {
-    const trackL = drawLines(trackRail(curve, -0.2))
-    const trackR = drawLines(trackRail(curve, +0.2))
+    const trackL = drawLines(trackRail(curve, -TRACK_GAUGE))
+    const trackR = drawLines(trackRail(curve, +TRACK_GAUGE))
     return model(() => {
         trackL()
         trackR()

@@ -12,6 +12,7 @@ module.exports = {
         'choo': 'choo',
         'bezier-js': 'bezier-js',
         'rbush': 'rbush',
+        'nanohtml': 'nanohtml',
     },
     output: {
         path: path.resolve(__dirname, "public/libs"),
