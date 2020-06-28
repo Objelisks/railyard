@@ -14,12 +14,12 @@ import choo from './libs/choo.mjs'
 let app = null
 
 const setupChoo = () => {
-    app = choo({ hash: true})
+    app = choo()
+    app.route('/intro', intro)
+    app.route('/trains', trains)
     app.route('*', (state, emit) => {
-        emit('pushState', '#intro')
+        emit('pushState', '/intro')
     })
-    app.route('#intro', intro)
-    app.route('#trains/:room', trains)
     app.mount('#choo')
 }
 

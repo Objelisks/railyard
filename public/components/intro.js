@@ -3,7 +3,7 @@ import html from '../libs/nanohtml.mjs'
 const intro = (state, emit) => {
     const click = () => {
         const roomName = document.body.querySelector('#input').value
-        emit('pushState', `#trains/${roomName}`)
+        emit('pushState', `/trains?room=${roomName}`)
     }
 
     return html`<div class="dialog">

@@ -3,6 +3,10 @@ body {
     justify-content: center;
 }
 
+.grabbing {
+    cursor: grabbing;
+}
+
 .dialog {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -40,4 +44,31 @@ body {
 
 #canvas {
     border: 1px solid black;
+}
+
+.knob {
+    width: 50px;
+    height: 50px;
+}
+
+body:not(.grabbing) .knob {
+    cursor: grab;
+}
+
+.knob .ticks {
+    fill: none;
+    stroke: url(#tick-vis);
+    stroke-width: 10;
+    stroke-dasharray: 1 9;
+}
+
+.knob .handle {
+    fill: white;
+    stroke: black;
+    stroke-width: 2;
+}
+
+.knob .handle-mark {
+    stroke: black;
+    stroke-width: 4;
 }

@@ -1,5 +1,7 @@
 // to host files and facilitate discovery
 
+const path = require('path')
+
 const ports = {
     express: 8081,
     signalhub: 8080
@@ -17,5 +19,6 @@ const express = require('express')
 const app = express()
 
 app.use(express.static('public'))
+app.use('*', (req, res) => res.sendFile(path.join(__dirname, '/public/index.html')))
 
 app.listen(ports.express, () => console.log(`serving files on ${ports.express}`))
