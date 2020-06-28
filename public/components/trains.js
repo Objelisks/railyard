@@ -4,14 +4,24 @@ import { connect } from '../network.js'
 
 // TODO: what if nanohooks
 
-const trains = (state, emit) => {
-    const roomName = state.query.room
-    connect(roomName)
 
-    return html`<div class="dialog">
-        room: ${roomName}
-        ${knob(state, emit)}
-    </div>`
+const trains = (app) => {
+    const knob1 = knob(app, 'knob1')
+    
+    app.use((state, emitter) => {
+        emitter.once('connect', (roomName) => {
+            connect(roomName)
+            emitter.emit('render')
+        })
+    })
+
+    return (state, emit) => {
+        emit('connect', state.query.room)
+        return html`<div class="dialog">
+            room: ${state.query.room}
+            ${knob1(state, emit)}
+        </div>`
+    }
 }
 
 export default trains

@@ -68,6 +68,10 @@ body:not(.grabbing) .knob {
     stroke-width: 2;
 }
 
+.knob .handle-group {
+    transform-origin: 50px 50px;
+}
+
 .knob .handle-mark {
     stroke: black;
     stroke-width: 4;

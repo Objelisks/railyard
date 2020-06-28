@@ -13,17 +13,7 @@ import choo from './libs/choo.mjs'
 
 let app = null
 
-const setupChoo = () => {
-    app = choo()
-    app.route('/intro', intro)
-    app.route('/trains', trains)
-    app.route('*', (state, emit) => {
-        emit('pushState', '/intro')
-    })
-    app.mount('#choo')
-}
-
-let reset = 10
+let reset = 100
 const debugPoints = {}
 const debugPoint = (key, pt, col) => {
     debugPoints[key] = {pos: pt, col}
@@ -139,6 +129,26 @@ const render = () => {
     })
 
     requestAnimationFrame(render)
+}
+
+// knob to value
+const ktov = (x) => x
+
+const setupChoo = () => {
+    app = choo()
+    app.route('/intro', intro(app))
+    app.route('/trains', trains(app))
+    app.route('*', (state, emit) => {
+        emit('pushState', '/intro')
+    })
+    app.mount('#choo')
+
+    app.use((state, emitter) => {
+        emitter.on(state.events.KNOB, (data) => {
+            const newSpeed = ktov(data.data)
+            allTrains[0].speed = newSpeed
+        })
+    })
 }
 
 setupChoo()
