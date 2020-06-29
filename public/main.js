@@ -2,7 +2,7 @@ import regl from './regl.js'
 import { quat, vec3 } from './libs/gl-matrix.mjs'
 import { v4 as uuid } from './libs/uuid.mjs'
 import { drawCube } from './primitives/cube.js'
-import { train, moveBogie } from './primitives/train.js'
+import { train, moveTrain, makeTrain } from './primitives/train.js'
 import { makeTrack, addToBush, resetBush } from './primitives/track.js'
 import { arrow } from './primitives/arrow.js'
 import { camera } from './camera.js'
@@ -31,7 +31,7 @@ const placeTrainOnTrack = (train, track) => {
 }
 
 const allTracks = [
-    makeTrack([-10, 0, 0], [0, 0, 10], -7.1),
+    makeTrack([0, 0, 10], [-10, 0, 0], 7.1),
     makeTrack([0, 0, 10], [10, 0, 0], -7.1),
     makeTrack([10, 0, 0], [0, 0, -10], -7.1),
     makeTrack([0, 0, -10], [-10, 0, 0], -7.1),
@@ -44,12 +44,25 @@ addToBush(allTracks)
 allTracks[4].open = false
 allTracks.forEach((track, i) => debugArrow(i, track.curve, () => ({color: track.open ? [0,255,0] : [255,0,0]})))
 
+const close = turnout => {
+    turnout.open = false
+    return turnout
+}
+
 const allTurnouts = [
     {
         id: uuid(),
         tracks: [
             allTracks[3],
-            allTracks[4]
+            close(allTracks[4])
+        ],
+        open: 0
+    },
+    {
+        id: uuid(),
+        tracks: [
+            allTracks[0],
+            close(allTracks[7])
         ],
         open: 0
     }
@@ -62,18 +75,14 @@ const toggleTurnout = (turnout) => {
 }
 window.addEventListener('keypress', (e) => {
     if(e.key === 's') {
-        toggleTurnout(allTurnouts[0])
+        allTurnouts.forEach(turnout => toggleTurnout(turnout))
     }
 })
 
 const allTrains = [
-    {
-        id: uuid(),
-        position: [0, 0, 0],
-        rotation: [0, 0, 0, 1],
-        speed: 0.2,
-    }
+    makeTrain()
 ]
+allTrains[0].powered = true
 placeTrainOnTrack(allTrains[0], allTracks[0])
 
 
@@ -124,20 +133,7 @@ const render = () => {
 
     // TODO: make this respond to multiple tracks
     // TODO: move this somewhere else
-    allTrains.forEach(trainData => {
-        const direction = vec3.transformQuat([], [1, 0, 0], trainData.rotation)
-        const front = vec3.add([], trainData.position, vec3.scale([], direction, 0.5))
-        const back = vec3.add([], trainData.position, vec3.scale([], direction, -0.5))
-
-        const newFront = moveBogie(front, direction, trainData.speed)
-        const newBack = moveBogie(back, direction, trainData.speed)
-
-        const midpoint = vec3.scale([], vec3.add([], newFront, newBack), 0.5)
-        const newDirection = quat.rotationTo([], [1, 0, 0], vec3.normalize([], vec3.sub([], newFront, newBack)))
-
-        trainData.position = midpoint
-        trainData.rotation = newDirection
-    })
+    allTrains.forEach(train => moveTrain(train))
 
     // set up camera
     camera({

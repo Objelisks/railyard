@@ -2,8 +2,9 @@ import regl from "../regl.js"
 import { model } from '../model.js'
 import { drawCube } from './cube.js'
 import { intersectTracks } from './track.js'
-import { vec2, vec3 } from '../libs/gl-matrix.mjs'
+import { vec2, vec3, quat } from '../libs/gl-matrix.mjs'
 import { to_vec2 } from '../utils.js'
+import { v4 as uuid } from '../libs/uuid.mjs'
 
 const DERAILMENT_FACTOR = 0.1
 const BOGIE_SIZE = 1
@@ -22,8 +23,16 @@ export const train = () => {
     return (props) => drawTrain(props, draw)
 }
 
+export const makeTrain = () => ({
+    id: uuid(),
+    position: [0, 0, 0],
+    rotation: [0, 0, 0, 1],
+    speed: 0.2,
+    powered: false
+})
+
 // TODO: weird stuff at very slow speeds
-export const moveBogie = (bogie, direction, speed) => {
+const moveBogie = (bogie, direction, speed) => {
     const newBogie = vec3.add([], bogie, vec3.scale([], direction, speed))
 
     const tracks = intersectTracks({
@@ -62,4 +71,21 @@ export const moveBogie = (bogie, direction, speed) => {
         return actualBogie
     }
     return newBogie
+}
+
+export const moveTrain = (train) => {
+    // use momentum (last movement) instead of facing direction
+    const velocity = vec3.transformQuat([], [1, 0, 0], train.rotation)
+    const front = vec3.add([], train.position, vec3.scale([], velocity, 0.5))
+    const back = vec3.add([], train.position, vec3.scale([], velocity, -0.5))
+
+    const newFront = moveBogie(front, velocity, train.speed)
+    const newBack = moveBogie(back, velocity, train.speed)
+
+    const midpoint = vec3.scale([], vec3.add([], newFront, newBack), 0.5)
+    const newDirection = quat.rotationTo([], [1, 0, 0], vec3.normalize([], vec3.sub([], newFront, newBack)))
+
+    train.position = midpoint
+    train.rotation = newDirection
+    return train
 }
