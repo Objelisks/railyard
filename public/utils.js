@@ -17,3 +17,6 @@ export const reglArg = (name, base, context, props) => {
 
 
 export const rand = (max) => Math.random() * max*2 - max
+
+export const to_vec2 = (pt) => [pt.x, pt.y]
+export const to_vec3 = (pt) => [pt.x, pt.y, pt.z]

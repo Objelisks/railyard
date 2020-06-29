@@ -58,6 +58,7 @@ export const makeTrack = (start, end, bend = 0) => {
         position: [0, 0, 0],
         rotation: [0, 0, 0, 1],
         curve: curve,
-        draw: track(curve)
+        draw: track(curve),
+        open: true
     }
 }

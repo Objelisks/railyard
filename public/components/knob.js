@@ -1,15 +1,22 @@
 import html from '../libs/nanohtml.mjs'
 import { vec2 } from '../libs/gl-matrix.mjs'
 
-const moveListener = (id, state, emit) => (e) => {
+const getCenter = (id) => {
     const knob = document.querySelector(`#${id}`)
     const rect = knob.getBoundingClientRect()
     const centerX = rect.x + rect.width / 2
     const centerY = rect.y + rect.height / 2
+    return [centerX, centerY]
+}
 
-    const newAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) + Math.PI/2
+const moveListener = (id, state, emit) => (e) => {
+    // TODO: tune this up
+    const center = getCenter(id)
+    const oldAngle = state.components[id].oldAngle
+    const initialAngle = state.components[id].initialAngle
+    const newAngle = Math.atan2(e.clientY - center[1], e.clientX - center[0]) + Math.PI/2
 
-    emit(state.events.KNOB, { id: id, data: newAngle })
+    emit(state.events.KNOB, { id: id, data: oldAngle + newAngle - initialAngle })
 }
 
 const releaseHandle = (id, state, emit) => (e) => {
@@ -23,7 +30,10 @@ const grabHandle = (state, emit) => (e) => {
     const onmove = moveListener(id, state, emit)
     const onrelease = releaseHandle(id, state, emit)
 
-    state.components[id].center = [e.clientX, e.clientY]
+    state.components[id].oldAngle = state.components[id].data
+    const center = getCenter(id)
+    const initialAngle = Math.atan2(e.clientY - center[1], e.clientX - center[0]) + Math.PI/2
+    state.components[id].initialAngle = initialAngle
 
     state.components[id].release = () => {
         window.removeEventListener('mousemove', onmove)
@@ -39,7 +49,6 @@ const knob = (app, id) => {
     // setup listener for knob adjustments
     app.use((state, emitter) => {
         state.events.KNOB = 'knob'
-        console.log('init', id)
         state.components[id] = { data: 0 }
         emitter.on(state.events.KNOB, ({ id, data }) => {
             state.components[id].data = data

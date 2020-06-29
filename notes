@@ -16,11 +16,15 @@ render a box
 render a train
 i think i need browserify, BUT just for libraries
 initial network connections
-sync positions
 simple input
 simple ui
-move a train from x to y
+connect tracks
+figure out switches (disable a segment in a direction?) 
+sync tracks
+sync positions
 sync movement
+selecting trains
+move a train from x to yz
 render a track
 pull request esm modules for peerjs and choo https://github.com/rollup/rollup/wiki/pkg.module
 
