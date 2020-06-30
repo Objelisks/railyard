@@ -19,6 +19,7 @@
     "nanohtml": "^1.9.1",
     "rbush": "^3.0.1",
     "regl": "^1.6.1",
+    "resl": "^1.0.3",
     "signalhub": "^4.9.0",
     "uuid": "^8.1.0",
     "webrtc-swarm": "^2.9.0"

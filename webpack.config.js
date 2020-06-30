@@ -7,6 +7,7 @@ module.exports = {
         'uuid': 'uuid',
         'gl-matrix': 'gl-matrix',
         'regl': 'regl',
+        'resl': 'resl',
         'webrtc-swarm': 'webrtc-swarm',
         'signalhub': 'signalhub',
         'choo': 'choo',

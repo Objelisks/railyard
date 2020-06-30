@@ -3,11 +3,11 @@ import { quat, vec3 } from './libs/gl-matrix.mjs'
 import { v4 as uuid } from './libs/uuid.mjs'
 import { drawCube } from './primitives/cube.js'
 import { train, moveTrain, makeTrain } from './primitives/train.js'
-import { makeTrack, addToBush, resetBush } from './primitives/track.js'
+import { makeTrack, addToBush } from './primitives/track.js'
+import { floor } from './primitives/floor.js'
 import { arrow } from './primitives/arrow.js'
 import { camera } from './camera.js'
 import { model } from './model.js'
-import { rand } from './utils.js'
 import intro from './components/intro.js'
 import trains from './components/trains.js'
 import choo from './libs/choo.mjs'
@@ -80,12 +80,15 @@ window.addEventListener('keypress', (e) => {
 })
 
 const allTrains = [
+    makeTrain(),
     makeTrain()
 ]
 allTrains[0].powered = true
 placeTrainOnTrack(allTrains[0], allTracks[0])
+placeTrainOnTrack(allTrains[1], allTracks[2])
 
 
+const drawFloor = floor()
 const drawTrains = train()
 const drawPoint = model(() => drawCube())
 const setupPoint = regl({
@@ -103,36 +106,10 @@ const setupArrow = regl({
 })
 const drawDebugArrows = (props) => setupArrow(props, (context, props) => props.draw())
 
-const resetTrack = () => {
-    const ptA = [rand(20), rand(20)]
-    const ptB = [rand(20), rand(20)]
-    const newTrack = makeTrack([ptA[0], 0, ptA[1]], [ptB[0], 0, ptB[1]], rand(20))
-    placeTrainOnTrack(allTrains[0], newTrack)
-    allTracks[0] = newTrack
-    resetBush()
-    addToBush(allTracks)
-}
-
 
 const render = () => {
     regl.poll()
 
-    // safemode
-    // const delta = (regl.now()/2 % 1.0) / 1.0
-    // const point = curve.get(delta)
-    // const tangent = curve.derivative(delta)
-    // vec3.set(allTrains[0].position, point.x, 0, point.y)
-    // quat.rotationTo(allTrains[0].rotation, [1, 0, 0], vec3.normalize([], [tangent.x, 0, tangent.y]))
-
-
-    // add velocity * speed to front and back bogie
-    // project each point onto curve
-    // set position based on midpoint between bogies
-    // set rotation based on angle between bogies
-
-
-    // TODO: make this respond to multiple tracks
-    // TODO: move this somewhere else
     allTrains.forEach(train => moveTrain(train))
 
     // set up camera
@@ -140,6 +117,8 @@ const render = () => {
         eye: [10, 10, 10],
         target: allTrains[0].position
     }, () => {
+        drawFloor()
+
         // render trains
         drawTrains(allTrains)
 

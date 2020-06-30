@@ -27,7 +27,7 @@ selecting trains
 move a train from x to yz
 render a track
 pull request esm modules for peerjs and choo https://github.com/rollup/rollup/wiki/pkg.module
-
+pbr shader
 
 sqrt(2)*side/4 for 90 degree curve?
 snap endpoints based on closest other endpoints
