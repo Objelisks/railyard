@@ -33,7 +33,8 @@ export const makeTrain = () => ({
 
 // TODO: weird stuff at very slow speeds
 const moveBogie = (bogie, direction, speed) => {
-    const newBogie = vec3.add([], bogie, vec3.scale([], direction, speed))
+    const velocity = vec3.scale([], direction, speed)
+    const newBogie = vec3.add([], bogie, velocity)
 
     const tracks = intersectTracks({
         minX: newBogie[0] - BOGIE_SIZE,
@@ -51,7 +52,7 @@ const moveBogie = (bogie, direction, speed) => {
         const normalizedDirection = vec2.normalize([], entranceDirection)
         const entrance = to_vec2(track.curve.get(0))
         const nearEntrance = vec2.distance([newBogie[0], newBogie[2]], entrance) < FROG_SIZE
-        const isMovementDirection = vec2.dot(normalizedDirection, [direction[0], direction[2]]) > 0
+        const isMovementDirection = vec2.dot(normalizedDirection, [velocity[0], velocity[2]]) > 0
         const shouldFilterOutClosedPath = nearEntrance && isMovementDirection
         return !shouldFilterOutClosedPath
     }).map(track => track.curve)

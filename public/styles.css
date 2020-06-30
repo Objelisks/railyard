@@ -1,5 +1,4 @@
 body {
-    display: flex;
     justify-content: center;
 }
 
@@ -12,10 +11,6 @@ body {
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(3, 1fr);
     grid-gap: 8px;
-    position: absolute;
-    top: 0;
-    left: 0;
-    transform: translate(50px, 50px);
 
     min-width: 300px;
     min-height: 100px;

@@ -117,7 +117,7 @@ const render = () => {
         eye: [10, 10, 10],
         target: allTrains[0].position
     }, () => {
-        drawFloor()
+        //drawFloor()
 
         // render trains
         drawTrains(allTrains)
@@ -136,7 +136,7 @@ const render = () => {
 }
 
 // TODO: knob to value
-const ktov = (x) => x
+const ktov = (x) => x * 0.25
 
 const setupChoo = () => {
     const app = choo()

@@ -74,8 +74,8 @@ const drawPlane = regl({
   uniform sampler2D aoMap;
   
   // lights
-  uniform vec3 lightPositions[1];
-  uniform vec3 lightColors[1];
+  uniform vec3 lightPositions[4];
+  uniform vec3 lightColors[4];
 
   uniform vec3 camPos;
   
@@ -159,7 +159,7 @@ const drawPlane = regl({
   
       // reflectance equation
       vec3 Lo = vec3(0.0);
-      for(int i = 0; i < 1; ++i)
+      for(int i = 0; i < 4; ++i)
       {
           // calculate per-light radiance
           vec3 L = normalize(lightPositions[i] - WorldPos);
@@ -244,8 +244,14 @@ const drawPlane = regl({
     roughnessMap: () => roughnessMap,
     aoMap: () => aoMap,
     camPos: (context) => context.eye,
-    'lightPositions[0]': [0, 10, 0],
-    'lightColors[0]': [255, 255, 255]
+    'lightPositions[0]': (context) => [Math.sin(context.time)*10, 3, Math.cos(context.time)*10],
+    'lightColors[0]': [255, 255, 255],
+    'lightPositions[1]': [-10, 10, 10],
+    'lightColors[1]': [255, 255, 255],
+    'lightPositions[2]': [-10, 10, -0],
+    'lightColors[2]': [100, 100, 255],
+    'lightPositions[3]': [-10, 10, -10],
+    'lightColors[3]': [255, 255, 255],
   }
 })
 
@@ -253,7 +259,7 @@ const drawFloor = regl({
     context: {
         position: [0, -0.51, 0],
         rotation: [0, 0, 0, 1],
-        scale: [100, 100, 100]
+        scale: [50, 50, 50]
     }
 })
 
