@@ -3,9 +3,6 @@ import createREGL from './libs/regl.mjs'
 const regl = createREGL({
     canvas: document.body.querySelector('#canvas'),
     extensions: ['OES_standard_derivatives'],
-    onDone: (err, regl) => {
-        console.log(regl.hasExtension('OES_standard_derivatives'))
-    }
 })
 
 export default regl

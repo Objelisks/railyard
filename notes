@@ -29,12 +29,41 @@ render a track
 pull request esm modules for peerjs and choo https://github.com/rollup/rollup/wiki/pkg.module
 pbr shader
 
+
+drawing tracks:
 sqrt(2)*side/4 for 90 degree curve?
 snap endpoints based on closest other endpoints
 track options: straight, 45, 90, S, switch, quad bezier
 drag a line and bend it
 revisit whether i wanna keep doing quadratic or use cubic to make it easier to match angles
 
+clicking ground
+snap to track endpoints
+camera controls
+saving / exporting
+loading
+creating switches
+
+
+gameplay:
+    choose a room name
+    you're given a bunch of random track module tiles
+    place the tiles to create a layout
+    random exits from your layout are joined to the common layout (random roundabout)
+    speed control
+        speed when not actively controlled?
+        interaction with collision
+    switch control
+        just a direction indicator that automatically flips switches in front of your train
+        click on switches to toggle them
+    train control
+        multiple trains?
+        control transfer btwn players?
+    camera control
+        kite
+        conductor
+        bird
+        tower
 
 
 architecture:
@@ -54,6 +83,11 @@ in game
         project mouse pos along tangent of first click to spin knob
     leave room button
     reset train button
+what if the first part of joining a room is playing carcassone
+shader noise fade in
+dynamic lines using preallocated buffer
+make trains tilt when they turn
+
 
 models:
 single color via vertex colors
