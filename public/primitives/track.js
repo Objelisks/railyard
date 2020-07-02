@@ -8,9 +8,21 @@ import RBush from '../libs/rbush.mjs'
 
 const LINE_POINTS = 32
 const TRACK_GAUGE = 0.2
-let bush = new RBush()
+const bush = new RBush()
 
-export const addToBush = (tracks) => {
+export const addToBush = (track) => {
+    const box = track.curve.bbox()
+    const region = {
+        minX: box.x.min + track.position[0],
+        minY: box.y.min + track.position[2],
+        maxX: box.x.max + track.position[0],
+        maxY: box.y.max + track.position[2],
+        track: track
+    }
+    bush.insert(region)
+}
+
+export const loadToBush = (tracks) => {
     const regions = tracks
         .map(track => {
             const box = track.curve.bbox()
@@ -26,14 +38,14 @@ export const addToBush = (tracks) => {
 }
 
 export const resetBush = () => {
-    bush = new RBush()
+    bush.clear()
 }
 
 export const intersectTracks = (region) => {
     return bush.search(region)
 }
 
-const trackRail = (curve, offset) => {
+export const trackRail = (curve, offset, height=-0.5) => {
     // guarantee we always generate the same number of points, no matter how many 'simple' segments are created from offset
     let pointsUsed = 0
     const offsets = curve.offset(offset)
@@ -43,7 +55,7 @@ const trackRail = (curve, offset) => {
             pointsUsed += pointsUsedThisSegment
             return curve.getLUT(pointsUsedThisSegment)
         })
-        .map(p => [p.x, -0.5, p.y])
+        .map(p => [p.x, height, p.y])
     return rail
 }
 
@@ -83,7 +95,6 @@ export const makeTrack = (start, end, bend = 0) => {
         rotation: [0, 0, 0, 1],
         curve: curve,
         draw: track(trackL, trackR, length),
-        open: true,
         trackL,
         trackR
     }

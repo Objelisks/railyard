@@ -43,10 +43,22 @@ X fix choo routing issue
 X clicking ground
 X drawing tracks dynamically
 X camera controls
-snap to track endpoints
+X snap to track endpoints
+X use endpoint tangents
+creating switches
+move debug stuff to separate file
+refactoring pass
+switch to cubic bezier
 saving / exporting
 loading
-creating switches
+
+
+throttled log
+sync networking on regl tick
+render canvas from choo to use state
+blend avg of player updates but rewind and extrapolate, window of 10 updates (60 frames)
+static modules??
+
 
 
 gameplay:

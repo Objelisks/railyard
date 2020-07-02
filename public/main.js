@@ -1,28 +1,19 @@
 import regl from './regl.js'
-import { quat, vec3 } from './libs/gl-matrix.mjs'
-import { v4 as uuid } from './libs/uuid.mjs'
-import { drawCube } from './primitives/cube.js'
+import { quat, vec3, vec2 } from './libs/gl-matrix.mjs'
 import { train, moveTrain, makeTrain } from './primitives/train.js'
-import { makeTrack, addToBush, updateTrack } from './primitives/track.js'
-import { floor } from './primitives/floor.js'
-import { arrow } from './primitives/arrow.js'
-import { camera } from './camera.js'
+import { makeTrack, loadToBush, addToBush, updateTrack, intersectTracks } from './primitives/track.js'
 import { model } from './model.js'
+import { drawCube } from './primitives/cube.js'
+import { floor } from './primitives/floor.js'
+import { camera } from './camera.js'
 import intro from './components/intro.js'
 import trains from './components/trains.js'
 import choo from './libs/choo.mjs'
-import { intersectGround, getMouseRay } from './utils.js'
+import { intersectGround, getMouseRay, to_vec2, inBox2, projectOnAxes, box2Around } from './utils.js'
+import { makeTurnout, toggleTurnout, intersectTurnouts } from './primitives/turnout.js'
+import { debugPoint, drawDebugPoints, debugArrow, drawDebugArrows } from './primitives/debug.js'
 
 let editMode = false
-
-const debugPoints = {}
-const debugPoint = (key, position, color) => {
-    debugPoints[key] = {position, color}
-}
-const debugArrows = {}
-const debugArrow = (key, curve, propsFunc) => {
-    debugArrows[key] = {curve, propsFunc, draw: arrow(curve, 1.0)}
-}
 
 const placeTrainOnTrack = (train, track) => {
     const curve = track.curve
@@ -43,75 +34,47 @@ const allTracks = [
     makeTrack([-30, 0], [-20, 10], -7.1),
     makeTrack([0, 10], [-20, 10], 0),
 ]
-addToBush(allTracks)
-allTracks[4].open = false
-allTracks.forEach((track, i) => debugArrow(i, track.curve, () => ({color: track.open ? [0,255,0] : [255,0,0]})))
-
-const close = turnout => {
-    turnout.open = false
-    return turnout
-}
+loadToBush(allTracks)
 
 const allTurnouts = [
-    {
-        id: uuid(),
-        tracks: [
-            allTracks[3],
-            close(allTracks[4])
-        ],
-        open: 0
-    },
-    {
-        id: uuid(),
-        tracks: [
-            allTracks[0],
-            close(allTracks[7])
-        ],
-        open: 0
-    }
+    makeTurnout([allTracks[3], allTracks[4]], to_vec2(allTracks[3].curve.get(0))),
+    makeTurnout([allTracks[0],  allTracks[7]], to_vec2(allTracks[0].curve.get(0)))
 ]
-const toggleTurnout = (turnout) => {
-    turnout.tracks[turnout.open].open = false
-    turnout.open = (turnout.open + 1) % turnout.tracks.length
-    turnout.tracks[turnout.open].open = true
-    return turnout.open
+const generateDebugArrowsForTurnout = (turnout) => {
+    const track = turnout.tracks[turnout.open]
+    const t1 = turnout.endpoints[turnout.open] === 0 ? 0 : 0.5
+    const t2 = turnout.endpoints[turnout.open] === 0 ? 0.5 : 1
+    debugArrow(`turnout-${turnout.id}`, track.curve.split(t1, t2), [255,0,0])
 }
+allTurnouts.forEach(turnout => generateDebugArrowsForTurnout(turnout))
+
 window.addEventListener('keypress', (e) => {
     if(e.key === '1') {
-        allTurnouts.forEach(turnout => toggleTurnout(turnout))
+        allTurnouts.forEach(turnout => {
+            toggleTurnout(turnout)
+            generateDebugArrowsForTurnout(turnout)
+        })
     }
 })
 
 const allTrains = [
     makeTrain(),
-    makeTrain()
+    //makeTrain()
 ]
 allTrains[0].powered = true
 placeTrainOnTrack(allTrains[0], allTracks[0])
-placeTrainOnTrack(allTrains[1], allTracks[2])
+//placeTrainOnTrack(allTrains[1], allTracks[2])
 
 
-// TODO: move all debug primitives into own file
 const drawFloor = floor()
 const drawTrains = train()
-
-const drawPoint = model(() => drawCube())
-const setupPoint = regl({
+const setColor = regl({
     context: {
-        position: (context, props) => props.position,
-        scale: [0.2, 0.2, 0.2],
-        color: (context, props) => props.color || [0.5, 0.5, 0.5]
+        color: (context, props) => props.color
     }
 })
-const drawDebugPoints = (props) => setupPoint(props, drawPoint)
-const setupArrow = regl({
-    context: {
-        color: (context, props) => props.color || [0.5, 0.5, 0.5]
-    }
-})
-const drawDebugArrows = (props) => setupArrow(props, (context, props) => props.draw())
-
-
+const box = model(() => drawCube())
+const drawBox = (props) => setColor(props, () => box(props))
 
 const trackCreateSteps = {
     FIRST_PLACED: 'first',
@@ -119,7 +82,8 @@ const trackCreateSteps = {
 }
 let trackCreateState = null
 let trackCreateTrack = null
-
+let trackCreateAxes = null
+const SNAP_THRESHOLD = 1
 
 const editCameraPos = [10, 10, 10]
 const cameraLookDir = [-10, -10, -10]
@@ -131,7 +95,7 @@ const keysPressed = {}
 const mousePosition = [0, 0]
 let justClicked = false
 let justMoved = false
-const gameWindow = document.querySelector('#choo')
+
 window.addEventListener('keydown', (e) => keysPressed[e.key] = regl.now())
 window.addEventListener('keyup', (e) => delete keysPressed[e.key])
 window.addEventListener('mousemove', (e) => {
@@ -145,7 +109,6 @@ window.addEventListener('mousedown', (e) => {
     }
 })
 
-let firstPoint = null
 const render = () => {
     regl.poll()
 
@@ -183,40 +146,108 @@ const render = () => {
         const rayDirection = getMouseRay(mousePosition, context)
         const hit = intersectGround(editCameraPos, rayDirection)
         if(hit.collision) {
-            debugPoint('ray', hit.point, [255, 0, 0])
             const point2d = [hit.point[0], hit.point[2]]
+            const box = [
+                point2d[0] - SNAP_THRESHOLD, point2d[0] + SNAP_THRESHOLD,
+                point2d[1] - SNAP_THRESHOLD, point2d[1] + SNAP_THRESHOLD
+            ]
+            const intersectedTurnouts = intersectTurnouts({
+                minX: box[0], maxX: box[1],
+                minY: box[2], maxY: box[3]
+            })
+            intersectedTurnouts.forEach(entry => entry.turnout.visible = true)
+            const intersectedTracks = intersectTracks({
+                minX: box[0], maxX: box[1],
+                minY: box[2], maxY: box[3]
+            })
+            const trackEndpoints = intersectedTracks.map(entry => entry.track)
+                .flatMap(track => [
+                    {point: to_vec2(track.curve.get(0)), tangent: vec2.normalize([], to_vec2(track.curve.derivative(0))), track},
+                    {point: to_vec2(track.curve.get(1)), tangent: vec2.normalize([], to_vec2(track.curve.derivative(1))), track}
+                ])
+                .filter(snapPoint => inBox2(snapPoint.point, box))
+            const snappedPoint = trackEndpoints.length > 0 ? trackEndpoints.reduce((nearest, current) =>
+                vec2.distance(current.point, point2d) < vec2.distance(nearest.point, point2d) ?
+                    current : nearest) : null
+            debugPoint('ray', snappedPoint ? [snappedPoint.point[0], 0, snappedPoint.point[1]] : hit.point, [255, 0, 0])
             
+            if(!editMode && justClicked) {
+                intersectedTurnouts.forEach(entry => {
+                    toggleTurnout(entry.turnout)
+                    generateDebugArrowsForTurnout(entry.turnout)
+                })
+            }
+
             if(editMode && justClicked) {
                 switch(trackCreateState) {
-                    case trackCreateSteps.FIRST_PLACED: { // second point clicked, set the end
-                        updateTrack(allTracks[trackCreateTrack], {end: point2d})
-                        trackCreateState = trackCreateSteps.SECOND_PLACED
-                        break;
-                    }
-                    case trackCreateSteps.SECOND_PLACED: { // third point clicked, finish the curve
-                        updateTrack(allTracks[trackCreateTrack], {control: point2d})
-                        trackCreateState = null
-                        trackCreateTrack = null
-                        break;
-                    }
                     default: { // first click: create track and make it tiny
-                        const newTrack = makeTrack(point2d, point2d)
+                        const usePoint = snappedPoint ? snappedPoint.point : point2d
+                        const newTrack = makeTrack(usePoint, usePoint)
                         trackCreateTrack = allTracks.push(newTrack) - 1
                         trackCreateState = trackCreateSteps.FIRST_PLACED
-                        break;
+                        trackCreateAxes = []
+                        if(snappedPoint) {
+                            // create switch if already linked
+                            const newTrackDirection = to_vec2(newTrack.curve.derivative(0))
+                            const turnouts = intersectTurnouts(box2Around(snappedPoint, 0.1)).filter(turnout => {
+                                const aTrack = turnout.tracks[0]
+                                const directionOfATrack = to_vec2(aTrack.derivative(turnout.endpoints[0]))
+                                return vec2.dot(newTrackDirection, directionOfATrack) > 0
+                            })
+                            if(turnouts.length === 0) {
+                                const newTurnout = makeTurnout([
+                                    snappedPoint.track,
+                                    newTrack
+                                ], usePoint)
+                                allTurnouts.push(newTurnout)
+                                generateDebugArrowsForTurnout(newTurnout)
+                            }
+                            trackCreateAxes.push(snappedPoint)
+                        }
+                        break
+                    }
+                    case trackCreateSteps.FIRST_PLACED: { // second point clicked, set the end
+                        const usePoint = snappedPoint ? snappedPoint.point : point2d
+                        updateTrack(allTracks[trackCreateTrack], {end: usePoint})
+                        trackCreateState = trackCreateSteps.SECOND_PLACED
+                        if(snappedPoint) {
+                            // reverse track and create switch
+                            trackCreateAxes.push(snappedPoint)
+                        }
+                        break
+                    }
+                    case trackCreateSteps.SECOND_PLACED: { // third point clicked, finish the curve
+                        const axisProjected = projectOnAxes(point2d, trackCreateAxes)
+                        updateTrack(allTracks[trackCreateTrack], {control: axisProjected})
+                        addToBush(allTracks[trackCreateTrack]) // finalized, so it shouldn't change anymore
+
+                        // to create a switch
+                        // for each endpoint
+                        // find all tracks that share the endpoint with the new track
+                        //     (any number of tracks, all of these tracks should overlap our current track)
+                        // find any switches that contain all but our new track
+                        // add to the found switch or create a new switch
+
+                        trackCreateState = null
+                        trackCreateTrack = null
+                        trackCreateAxes = null
+                        break
                     }
                 }
             } else if(editMode && trackCreateTrack !== null && justMoved) {
                 switch(trackCreateState) {
                     case trackCreateSteps.FIRST_PLACED: {
+                        const usePoint = snappedPoint ? snappedPoint.point : point2d
                         const startPoint = allTracks[trackCreateTrack].curve.points[0]
-                        const newControl = [(startPoint.x + point2d[0]) / 2, (startPoint.y + point2d[1]) / 2]
-                        updateTrack(allTracks[trackCreateTrack], {control: newControl, end: point2d})
-                        break;
+                        const newControl = [(startPoint.x + usePoint[0]) / 2, (startPoint.y + usePoint[1]) / 2]
+                        const axisProjected = projectOnAxes(newControl, trackCreateAxes)
+                        updateTrack(allTracks[trackCreateTrack], {control: axisProjected, end: usePoint})
+                        break
                     }
                     case trackCreateSteps.SECOND_PLACED: {
-                        updateTrack(allTracks[trackCreateTrack], {control: point2d})
-                        break;
+                        const axisProjected = projectOnAxes(point2d, trackCreateAxes)
+                        updateTrack(allTracks[trackCreateTrack], {control: axisProjected})
+                        break
                     }
                 }
             }
@@ -231,13 +262,18 @@ const render = () => {
 
         // render tracks
         allTracks.forEach(track => track.draw(track))
+        
+        allTurnouts.forEach(turnout => drawBox({
+            position: [turnout.point[0], -1, turnout.point[1]],
+            scale: [2, 1, 2],
+            color: turnout.visible ? [0.99, 0.99, 0.58] : [0.58, 0.58, 0.58]
+        }))
 
-        // render debug points
-        drawDebugPoints(Object.values(debugPoints))
-        drawDebugArrows(Object.values(debugArrows).map((arrow) => ({
-            ...arrow, ...arrow.propsFunc()
-        })))
+        // render debug
+        drawDebugPoints()
+        drawDebugArrows()
     })
+    allTurnouts.forEach(turnout => turnout.visible = false)
 
     requestAnimationFrame(render)
 }

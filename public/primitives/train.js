@@ -2,13 +2,13 @@ import regl from "../regl.js"
 import { model } from '../model.js'
 import { drawCube } from './cube.js'
 import { intersectTracks } from './track.js'
+import { intersectTurnouts } from './turnout.js'
 import { vec2, vec3, quat } from '../libs/gl-matrix.mjs'
-import { to_vec2 } from '../utils.js'
+import { to_vec2, box2Around } from '../utils.js'
 import { v4 as uuid } from '../libs/uuid.mjs'
 
 const DERAILMENT_FACTOR = 0.1
 const BOGIE_SIZE = 1
-const FROG_SIZE = 1
 
 const drawTrain = regl({
     context: {
@@ -35,25 +35,24 @@ export const makeTrain = () => ({
 const moveBogie = (bogie, direction, speed) => {
     const velocity = vec3.scale([], direction, speed)
     const newBogie = vec3.add([], bogie, velocity)
+    const bogie2d = [newBogie[0], newBogie[2]]
 
-    const tracks = intersectTracks({
-        minX: newBogie[0] - BOGIE_SIZE,
-        minY: newBogie[2] - BOGIE_SIZE,
-        maxX: newBogie[0] + BOGIE_SIZE,
-        maxY: newBogie[2] + BOGIE_SIZE
-    }).map(entry => entry.track)
+    const collider = box2Around(bogie2d, BOGIE_SIZE)
+    const tracks = intersectTracks(collider).map(entry => entry.track)
+    const turnouts = intersectTurnouts(collider).map(entry => entry.turnout)
+    const nearbyClosedEndpoints = turnouts.flatMap(turnout => turnout.tracks
+        .filter((_, i) => i !== turnout.open))
 
     const curves = tracks.filter(track => {
-        if(track.open) return true
+        // find all intersecting turnouts?
+        // filter out tracks in the turnout that aren't opened
+        const closerEndpoint = vec2.distance(bogie2d, to_vec2(track.curve.get(0))) < vec2.distance(bogie2d, to_vec2(track.curve.get(1))) ? 0 : 1
+        const closerEndpointClosed = nearbyClosedEndpoints
+            .find(({track: turnoutTrack, end}) => turnoutTrack === track && end === closerEndpoint) !== undefined
+        const entranceDirection = to_vec2(track.curve.derivative(closerEndpoint))
+        const isMovementDirection = vec2.dot(entranceDirection, [velocity[0], velocity[2]]) > 0
 
-        // it is closed, check to see if we're moving in the closed direction
-        // assume tracks always face out in the relevant open direction
-        const entranceDirection = to_vec2(track.curve.derivative(0))
-        const normalizedDirection = vec2.normalize([], entranceDirection)
-        const entrance = to_vec2(track.curve.get(0))
-        const nearEntrance = vec2.distance([newBogie[0], newBogie[2]], entrance) < FROG_SIZE
-        const isMovementDirection = vec2.dot(normalizedDirection, [velocity[0], velocity[2]]) > 0
-        const shouldFilterOutClosedPath = nearEntrance && isMovementDirection
+        const shouldFilterOutClosedPath = closerEndpointClosed && isMovementDirection
         return !shouldFilterOutClosedPath
     }).map(track => track.curve)
 
