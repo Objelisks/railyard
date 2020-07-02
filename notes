@@ -37,9 +37,13 @@ track options: straight, 45, 90, S, switch, quad bezier
 drag a line and bend it
 revisit whether i wanna keep doing quadratic or use cubic to make it easier to match angles
 
-clicking ground
+
+today:
+X fix choo routing issue
+X clicking ground
+X drawing tracks dynamically
+X camera controls
 snap to track endpoints
-camera controls
 saving / exporting
 loading
 creating switches

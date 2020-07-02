@@ -1,7 +1,7 @@
 import regl from '../regl.js'
 import { reglArg } from '../utils.js'
 
-export const drawLines = (points) => regl({
+export const drawLines = (points, length) => regl({
   frag: `
   precision mediump float;
   uniform vec3 color;
@@ -22,5 +22,5 @@ export const drawLines = (points) => regl({
     color: reglArg('color', [0, 0, 0])
   },
   primitive: 'line strip',
-  count: points.length
+  count: length
 })

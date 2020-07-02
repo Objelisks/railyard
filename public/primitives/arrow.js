@@ -11,7 +11,7 @@ const trackRail = (curve, offset=0, height=1.0) => {
 export const arrow = (curve, height, color) => {
     const points = trackRail(curve, 0, height)
     points.push(curve.offset(0.9, 0.3), curve.offset(0.9, -0.3), curve.get(1.0))
-    const drawArrow = drawLines(points.map(p => [p.x, height, p.y]))
+    const drawArrow = drawLines(points.map(p => [p.x, height, p.y]), points.length)
     return model(() => {
         drawArrow()
     })

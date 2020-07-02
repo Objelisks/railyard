@@ -1,9 +1,9 @@
 import regl from './regl.js'
-import { quat, vec3, mat4, vec4 } from './libs/gl-matrix.mjs'
+import { quat, vec3 } from './libs/gl-matrix.mjs'
 import { v4 as uuid } from './libs/uuid.mjs'
 import { drawCube } from './primitives/cube.js'
 import { train, moveTrain, makeTrain } from './primitives/train.js'
-import { makeTrack, addToBush } from './primitives/track.js'
+import { makeTrack, addToBush, updateTrack } from './primitives/track.js'
 import { floor } from './primitives/floor.js'
 import { arrow } from './primitives/arrow.js'
 import { camera } from './camera.js'
@@ -34,14 +34,14 @@ const placeTrainOnTrack = (train, track) => {
 }
 
 const allTracks = [
-    makeTrack([0, 0, 10], [-10, 0, 0], 7.1),
-    makeTrack([0, 0, 10], [10, 0, 0], -7.1),
-    makeTrack([10, 0, 0], [0, 0, -10], -7.1),
-    makeTrack([0, 0, -10], [-10, 0, 0], -7.1),
-    makeTrack([0, 0, -10], [-20, 0, -10], 0),
-    makeTrack([-20, 0, -10], [-30, 0, 0], -7.1),
-    makeTrack([-30, 0, 0], [-20, 0, 10], -7.1),
-    makeTrack([0, 0, 10], [-20, 0, 10], 0),
+    makeTrack([0, 10], [-10, 0], 7.1),
+    makeTrack([0, 10], [10, 0], -7.1),
+    makeTrack([10, 0], [0, -10], -7.1),
+    makeTrack([0, -10], [-10, 0], -7.1),
+    makeTrack([0, -10], [-20, -10], 0),
+    makeTrack([-20, -10], [-30, 0], -7.1),
+    makeTrack([-30, 0], [-20, 10], -7.1),
+    makeTrack([0, 10], [-20, 10], 0),
 ]
 addToBush(allTracks)
 allTracks[4].open = false
@@ -94,6 +94,7 @@ placeTrainOnTrack(allTrains[1], allTracks[2])
 // TODO: move all debug primitives into own file
 const drawFloor = floor()
 const drawTrains = train()
+
 const drawPoint = model(() => drawCube())
 const setupPoint = regl({
     context: {
@@ -110,21 +111,41 @@ const setupArrow = regl({
 })
 const drawDebugArrows = (props) => setupArrow(props, (context, props) => props.draw())
 
+
+
+const trackCreateSteps = {
+    FIRST_PLACED: 'first',
+    SECOND_PLACED: 'second',
+}
+let trackCreateState = null
+let trackCreateTrack = null
+
+
 const editCameraPos = [10, 10, 10]
 const cameraLookDir = [-10, -10, -10]
 const cameraMoveSpeed = 1
+let lastFrameTime = regl.now()
+
 // setup camera controls
 const keysPressed = {}
 const mousePosition = [0, 0]
+let justClicked = false
+let justMoved = false
+const gameWindow = document.querySelector('#choo')
 window.addEventListener('keydown', (e) => keysPressed[e.key] = regl.now())
 window.addEventListener('keyup', (e) => delete keysPressed[e.key])
 window.addEventListener('mousemove', (e) => {
     mousePosition[0] = e.clientX
     mousePosition[1] = e.clientY
+    justMoved = true
+})
+window.addEventListener('mousedown', (e) => {
+    if(e.target.closest('#canvas')) {
+        justClicked = true
+    }
 })
 
-let lastFrameTime = regl.now()
-
+let firstPoint = null
 const render = () => {
     regl.poll()
 
@@ -163,7 +184,45 @@ const render = () => {
         const hit = intersectGround(editCameraPos, rayDirection)
         if(hit.collision) {
             debugPoint('ray', hit.point, [255, 0, 0])
+            const point2d = [hit.point[0], hit.point[2]]
+            
+            if(editMode && justClicked) {
+                switch(trackCreateState) {
+                    case trackCreateSteps.FIRST_PLACED: { // second point clicked, set the end
+                        updateTrack(allTracks[trackCreateTrack], {end: point2d})
+                        trackCreateState = trackCreateSteps.SECOND_PLACED
+                        break;
+                    }
+                    case trackCreateSteps.SECOND_PLACED: { // third point clicked, finish the curve
+                        updateTrack(allTracks[trackCreateTrack], {control: point2d})
+                        trackCreateState = null
+                        trackCreateTrack = null
+                        break;
+                    }
+                    default: { // first click: create track and make it tiny
+                        const newTrack = makeTrack(point2d, point2d)
+                        trackCreateTrack = allTracks.push(newTrack) - 1
+                        trackCreateState = trackCreateSteps.FIRST_PLACED
+                        break;
+                    }
+                }
+            } else if(editMode && trackCreateTrack !== null && justMoved) {
+                switch(trackCreateState) {
+                    case trackCreateSteps.FIRST_PLACED: {
+                        const startPoint = allTracks[trackCreateTrack].curve.points[0]
+                        const newControl = [(startPoint.x + point2d[0]) / 2, (startPoint.y + point2d[1]) / 2]
+                        updateTrack(allTracks[trackCreateTrack], {control: newControl, end: point2d})
+                        break;
+                    }
+                    case trackCreateSteps.SECOND_PLACED: {
+                        updateTrack(allTracks[trackCreateTrack], {control: point2d})
+                        break;
+                    }
+                }
+            }
         }
+        justClicked = false
+        justMoved = false
 
         //drawFloor()
 
@@ -188,11 +247,8 @@ const ktov = (x) => x * 0.25
 
 const setupChoo = () => {
     const app = choo()
-    app.route('/intro', intro(app))
     app.route('/trains', trains(app))
-    app.route('*', (state, emit) => {
-        emit('pushState', '/intro')
-    })
+    app.route('*', intro(app))
     app.mount('#choo')
 
     app.use((state, emitter) => {
