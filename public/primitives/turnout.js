@@ -10,15 +10,24 @@ const turnoutBush = new RBush()
 // there will only ever be at most 2 turnouts at a single point
 // turnouts on the same point will be facing opposite directions
 // turnouts can have any number of tracks, but only one is open
+// turnouts have a facing direction
+
+const whichEndpoint = (track, point) => vec2.distance(to_vec2(track.curve.get(0)), point) <=
+    vec2.distance(to_vec2(track.curve.get(1)), point) ? 0 : 1
 
 export const makeTurnout = (tracks, point) => {
     // TODO: assert endpoints match
+    const endpoints = tracks.map(track => whichEndpoint(track, point))
+    let facing = vec2.normalize([], to_vec2(tracks[0].curve.derivative(endpoints[0])))
+    if(endpoints[0] === 1) {
+        facing = vec2.negate([], facing)
+    }
     const turnout = {
         id: uuid(),
         tracks,
         point,
-        endpoints: tracks.map(track => vec2.distance(to_vec2(track.curve.get(0)), point) <=
-                                    vec2.distance(to_vec2(track.curve.get(1)), point) ? 0 : 1),
+        facing,
+        endpoints,
         open: 0
     }
     const region = box2Around(point, FROG_SIZE)
@@ -32,8 +41,7 @@ export const makeTurnout = (tracks, point) => {
 export const addTrackToTurnout = (turnout, track) => {
     // TODO: assert endpoints match
     turnout.tracks.push(track)
-    turnout.endpoints.push(vec2.distance(to_vec2(track.curve.get(0)), turnout.point) <
-                            vec2.distance(to_vec2(track.curve.get(1)), turnout.point) ? 0 : 1)
+    turnout.endpoints.push(whichEndpoint(track, turnout.point))
 }
 
 export const intersectTurnouts = (region) => {

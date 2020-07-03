@@ -19,13 +19,13 @@ export const drawDebugPoints = () => setupPoint(Object.values(debugPoints), draw
 
 
 const debugArrows = {}
-export const debugArrow = (key, curve, color) => {
+export const debugArrow = (key, curve, towardsEndpoint, color) => {
     if(debugArrows[key]) {
         debugArrows[key].curve = curve
         debugArrows[key].color = color
-        updateArrow(debugArrows[key].arrow, curve)
+        updateArrow(debugArrows[key].arrow, curve, towardsEndpoint)
     } else {
-        debugArrows[key] = {curve, color, arrow: arrow(curve, 1.0)}
+        debugArrows[key] = {curve, color, arrow: arrow(curve, towardsEndpoint, 1.0)}
     }
 }
 const setupArrow = regl({

@@ -48,12 +48,12 @@ export const intersectTracks = (region) => {
 export const trackRail = (curve, offset, height=-0.5) => {
     // guarantee we always generate the same number of points, no matter how many 'simple' segments are created from offset
     let pointsUsed = 0
-    const offsets = curve.offset(offset)
+    const offsets = offset === 0 ? [curve] : curve.offset(offset)
     const rail = offsets
-        .flatMap((curve, i) => {
+        .flatMap((innerCurve, i) => {
             let pointsUsedThisSegment = i === offsets.length-1 ? LINE_POINTS - pointsUsed : Math.floor(LINE_POINTS/offsets.length)
             pointsUsed += pointsUsedThisSegment
-            return curve.getLUT(pointsUsedThisSegment)
+            return innerCurve.getLUT(pointsUsedThisSegment)
         })
         .map(p => [p.x, height, p.y])
     return rail

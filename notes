@@ -48,7 +48,9 @@ X use endpoint tangents
 X creating switches
 X move debug stuff to separate file
 X switch to cubic bezier
-fix switches
+X fix switches
+fix moveBogie
+reorder tracks in turnout base on arbitrary line intersection through curves
 refactoring pass
 saving / exporting
 loading

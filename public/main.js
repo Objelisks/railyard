@@ -9,11 +9,12 @@ import { camera } from './camera.js'
 import intro from './components/intro.js'
 import trains from './components/trains.js'
 import choo from './libs/choo.mjs'
-import { intersectGround, getMouseRay, to_vec2, inBox2, projectOnLine, box2Around, log1s } from './utils.js'
-import { makeTurnout, toggleTurnout, intersectTurnouts } from './primitives/turnout.js'
+import { intersectGround, getMouseRay, to_vec2, inBox2, projectOnLine, box2Around, log, log1s, log100ms } from './utils.js'
+import { makeTurnout, toggleTurnout, intersectTurnouts, addTrackToTurnout } from './primitives/turnout.js'
 import { debugPoint, drawDebugPoints, debugArrow, drawDebugArrows } from './primitives/debug.js'
 
 let editMode = false
+const EPSILON = 0.001
 
 const placeTrainOnTrack = (train, track) => {
     const curve = track.curve
@@ -44,7 +45,9 @@ const generateDebugArrowsForTurnout = (turnout) => {
     const track = turnout.tracks[turnout.open]
     const t1 = turnout.endpoints[turnout.open] === 0 ? 0 : 0.5
     const t2 = turnout.endpoints[turnout.open] === 0 ? 0.5 : 1
-    debugArrow(`turnout-${turnout.id}`, track.curve.split(t1, t2), [1, .7, .28])
+    const direction = turnout.endpoints[turnout.open] === 0 ? 1 : 0
+    console.log(turnout.point, t1, t2, direction, track.curve.split(t1, t2))
+    debugArrow(`turnout-${turnout.id}`, track.curve.split(t1, t2), direction, [1, .7, .28])
 }
 allTurnouts.forEach(turnout => generateDebugArrowsForTurnout(turnout))
 
@@ -188,21 +191,6 @@ const render = () => {
                         trackCreateTrack = allTracks.push(newTrack) - 1
                         trackCreateState = trackCreateSteps.FIRST_PLACED
                         if(snappedPoint) {
-                            // create switch if already linked
-                            const newTrackDirection = to_vec2(newTrack.curve.derivative(0))
-                            const turnouts = intersectTurnouts(box2Around(snappedPoint, 0.1)).filter(turnout => {
-                                const aTrack = turnout.tracks[0]
-                                const directionOfATrack = to_vec2(aTrack.derivative(turnout.endpoints[0]))
-                                return vec2.dot(newTrackDirection, directionOfATrack) > 0
-                            })
-                            if(turnouts.length === 0) {
-                                const newTurnout = makeTurnout([
-                                    snappedPoint.track,
-                                    newTrack // TODO: this isn't the right track
-                                ], usePoint)
-                                allTurnouts.push(newTurnout)
-                                generateDebugArrowsForTurnout(newTurnout)
-                            }
                             trackCreateStartAxis = snappedPoint
                         }
                         break
@@ -212,8 +200,43 @@ const render = () => {
                         updateTrack(allTracks[trackCreateTrack], {end: usePoint})
                         trackCreateState = trackCreateSteps.SECOND_PLACED
                         if(snappedPoint) {
-                            // reverse track and create switch
                             trackCreateEndAxis = snappedPoint
+
+                            const getEnds = (curve) => [
+                                {
+                                    point: to_vec2(curve.get(0)),
+                                    facing: to_vec2(curve.derivative(0))
+                                },
+                                {
+                                    point: to_vec2(curve.get(1)),
+                                    facing: vec2.negate([], to_vec2(curve.derivative(1)))
+                                }
+                            ]
+                            const track = allTracks[trackCreateTrack]
+                            const endpoints = getEnds(track.curve)
+                            endpoints.forEach(endpoint => {
+                                const hitbox = box2Around(endpoint.point, 0.1)
+                                const turnout = intersectTurnouts(hitbox).map(entry => entry.turnout)
+                                    .find(turnout => vec2.distance(turnout.point, endpoint.point) < EPSILON && vec2.dot(turnout.facing, endpoint.facing) > 0)
+                                if(turnout) {
+                                    // we simply add the track
+                                    addTrackToTurnout(turnout, track)
+                                } else {
+                                    // find some track friends to create a turnout with
+                                    const tracks = intersectTracks(hitbox).map(entry => entry.track).filter(otherTrack => {
+                                        const otherEnds = getEnds(otherTrack.curve)
+                                        // there is some end on this track that matches our endpoint
+                                        return otherEnds.some(otherEnd =>
+                                            vec2.distance(otherEnd.point, endpoint.point) < EPSILON && vec2.dot(otherEnd.facing, endpoint.facing) > 0)
+                                    })
+                                    if(tracks.length > 0) {
+                                        // create turnout with this endpoint
+                                        const newTurnout = makeTurnout([...tracks, track], endpoint.point)
+                                        allTurnouts.push(newTurnout)
+                                        generateDebugArrowsForTurnout(newTurnout)
+                                    }
+                                }
+                            })
                         }
                         break
                     }
