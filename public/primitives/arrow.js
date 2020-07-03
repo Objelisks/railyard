@@ -1,5 +1,5 @@
 import regl from '../regl.js'
-import { model } from '../model.js'
+import { model } from './model.js'
 import { drawLines } from './lines.js'
 import { trackRail } from './track.js'
 

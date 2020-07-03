@@ -1,5 +1,5 @@
-import regl from "./regl.js"
-import { mat4 } from './libs/gl-matrix.mjs'
+import regl from "../regl.js"
+import { mat4 } from '../libs/gl-matrix.mjs'
 import { reglArg } from '../utils.js'
 
 const setUniforms = regl({

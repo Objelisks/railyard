@@ -2,7 +2,7 @@ import regl from '../regl.js'
 import Bezier from '../libs/bezier-js.mjs'
 import { v4 as uuid } from '../libs/uuid.mjs'
 import { vec2 } from '../libs/gl-matrix.mjs'
-import { model } from '../model.js'
+import { model } from './model.js'
 import { drawLines } from './lines.js'
 import RBush from '../libs/rbush.mjs'
 
@@ -75,7 +75,12 @@ export const makeTrack = (start, end, bend = 0) => {
     const ptB = end
     const perp = vec2.normalize([], vec2.rotate([], vec2.sub([], ptA, ptB), [0, 0], Math.PI/2))
     const mid = vec2.add([], vec2.scale([], vec2.add([], ptA, ptB), 0.5), vec2.scale([], vec2.normalize([], perp), bend))
-    const curve = new Bezier({x: ptA[0], y: ptA[1]}, {x: mid[0], y: mid[1]}, {x: ptB[0], y: ptB[1]})
+    const curve = new Bezier(
+        {x: ptA[0], y: ptA[1]}, // point 1
+        {x: mid[0], y: mid[1]}, // point 1 control point
+        {x: mid[0], y: mid[1]}, // point 2 control point TODO: make this better
+        {x: ptB[0], y: ptB[1]}  // point 2
+    )
     const pointsL = trackRail(curve, -TRACK_GAUGE)
     const trackL = regl.buffer({
         usage: 'dynamic',
@@ -100,11 +105,12 @@ export const makeTrack = (start, end, bend = 0) => {
     }
 }
 
-export const updateTrack = (track, {start, control, end}) => {
+export const updateTrack = (track, {start, control1, control2, end}) => {
     const startPoint = (start && {x: start[0], y: start[1]}) || track.curve.points[0]
-    const controlPoint = (control && {x: control[0], y: control[1]}) || track.curve.points[1]
-    const endPoint = (end && {x: end[0], y: end[1]}) || track.curve.points[2]
-    const newCurve = new Bezier(startPoint, controlPoint, endPoint)
+    const controlPoint1 = (control1 && {x: control1[0], y: control1[1]}) || track.curve.points[1]
+    const controlPoint2 = (control2 && {x: control2[0], y: control2[1]}) || track.curve.points[2]
+    const endPoint = (end && {x: end[0], y: end[1]}) || track.curve.points[3]
+    const newCurve = new Bezier(startPoint, controlPoint1, controlPoint2, endPoint)
     track.trackL.subdata(Float32Array.from(trackRail(newCurve, -TRACK_GAUGE).flat()))
     track.trackR.subdata(Float32Array.from(trackRail(newCurve, +TRACK_GAUGE).flat()))
     track.curve = newCurve

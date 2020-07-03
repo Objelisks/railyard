@@ -1,5 +1,6 @@
 import { vec2, vec3, mat4, vec4 } from "./libs/gl-matrix.mjs"
 
+// inline log for returning values and logging them
 export const log = (arg, label) => {
     if(label)
         console.log(label, arg)
@@ -7,6 +8,24 @@ export const log = (arg, label) => {
         console.log(arg)
     return arg
 }
+
+// run a function at most once per delay
+export const throttle = (func, delay) => {
+    let timeoutId = null
+    let cache = undefined
+    return (...args) => {
+        if(timeoutId !== null) {
+            return cache
+        } else {
+            timeoutId = setTimeout(() => { timeoutId = null }, delay)
+            cache = func(...args)
+            return cache
+        }
+    }
+}
+
+export const log1s = throttle(log, 1000)
+export const log100ms = throttle(log, 100)
 
 const findArg = (context, props, name, base) => (props && props[name]) || (context && context[name]) || base
 export const reglArg = (name, base, context, props) => {
@@ -33,10 +52,8 @@ export const box2Around = (pt, size=1) => ({
 export const inBox2 = (vec, box) => (vec[0] > box[0]) && (vec[0] < box[1]) && (vec[1] > box[2]) && (vec[1] < box[3])
 export const project2 = (vecA, vecB) => vec2.scale([], vecB, vec2.dot(vecA, vecB) / vec2.dot(vecB, vecB))
 
-export const projectOnAxes = (point, axes) => axes
-    .reduce((point, {point: axisPoint, tangent}) => 
-            vec2.add([], project2(vec2.sub([], point, axisPoint), tangent), axisPoint),
-        point)
+export const projectOnLine = (point, {point: axisPoint, tangent}) =>
+    vec2.add([], project2(vec2.sub([], point, axisPoint), tangent), axisPoint)
 
 export const getMouseRay = (mousePosition, context) => {
     const clipCoordinates = [

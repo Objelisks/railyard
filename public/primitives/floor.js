@@ -1,7 +1,7 @@
 import regl from '../regl.js'
 import resl from '../libs/resl.mjs'
 import { reglArg } from '../utils.js'
-import { model } from '../model.js'
+import { model } from './model.js'
 
 export const cubePosition = [
   [-0.5, 0, -0.5], [+0.5, 0, -0.5], [+0.5, 0, +0.5], [-0.5, 0, +0.5], // top face

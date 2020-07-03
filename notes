@@ -45,10 +45,11 @@ X drawing tracks dynamically
 X camera controls
 X snap to track endpoints
 X use endpoint tangents
-creating switches
-move debug stuff to separate file
+X creating switches
+X move debug stuff to separate file
+X switch to cubic bezier
+fix switches
 refactoring pass
-switch to cubic bezier
 saving / exporting
 loading
 

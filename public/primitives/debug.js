@@ -1,7 +1,7 @@
 import regl from '../regl.js'
 import { arrow, updateArrow } from './arrow.js'
 import { drawCube } from './cube.js'
-import { model } from '../model.js'
+import { model } from './model.js'
 
 const debugPoints = {}
 export const debugPoint = (key, position, color) => {

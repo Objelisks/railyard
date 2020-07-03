@@ -1,5 +1,5 @@
 import regl from "../regl.js"
-import { model } from '../model.js'
+import { model } from './model.js'
 import { drawCube } from './cube.js'
 import { intersectTracks } from './track.js'
 import { intersectTurnouts } from './turnout.js'
