@@ -3,7 +3,7 @@ import { v4 as uuid } from '../libs/uuid.mjs'
 import { vec2 } from '../libs/gl-matrix.mjs'
 import { to_vec2, box2Around } from '../utils.js'
 
-const FROG_SIZE = 1
+export const FROG_SIZE = 1
 const turnoutBush = new RBush()
 
 // assumptions about turnouts:

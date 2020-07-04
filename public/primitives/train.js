@@ -4,11 +4,12 @@ import { drawCube } from './cube.js'
 import { intersectTracks } from './track.js'
 import { intersectTurnouts } from './turnout.js'
 import { vec2, vec3, quat } from '../libs/gl-matrix.mjs'
-import { to_vec2, box2Around } from '../utils.js'
+import { to_vec2, box2Around, log100ms } from '../utils.js'
 import { v4 as uuid } from '../libs/uuid.mjs'
 
 const DERAILMENT_FACTOR = 0.1
 const BOGIE_SIZE = 1
+const TURNOUT_DETECTOR_SIZE = 10
 
 const drawTrain = regl({
     context: {
@@ -37,18 +38,20 @@ const moveBogie = (bogie, direction, speed) => {
     const newBogie = vec3.add([], bogie, velocity)
     const bogie2d = [newBogie[0], newBogie[2]]
 
-    const collider = box2Around(bogie2d, BOGIE_SIZE)
-    const tracks = intersectTracks(collider).map(entry => entry.track)
-    const turnouts = intersectTurnouts(collider).map(entry => entry.turnout)
+    const tracks = intersectTracks(box2Around(bogie2d, BOGIE_SIZE)).map(entry => entry.track)
+    const turnouts = intersectTurnouts(box2Around(bogie2d, TURNOUT_DETECTOR_SIZE)).map(entry => entry.turnout)
     const nearbyClosedEndpoints = turnouts.flatMap(turnout => turnout.tracks
-        .filter((_, i) => i !== turnout.open))
+        .filter((_, i) => i !== turnout.open)
+        .map((track, i) => ({turnoutTrack: track, end: turnout.endpoints[i]}))
+    )
 
     const curves = tracks.filter(track => {
         // find all intersecting turnouts?
         // filter out tracks in the turnout that aren't opened
-        const closerEndpoint = vec2.distance(bogie2d, to_vec2(track.curve.get(0))) < vec2.distance(bogie2d, to_vec2(track.curve.get(1))) ? 0 : 1
+        const closerEndpoint = vec2.distance(bogie2d, to_vec2(track.curve.get(0))) < vec2.distance(bogie2d, to_vec2(track.curve.get(1)))
+            ? 0 : 1
         const closerEndpointClosed = nearbyClosedEndpoints
-            .find(({track: turnoutTrack, end}) => turnoutTrack === track && end === closerEndpoint) !== undefined
+            .some(({turnoutTrack, end}) => turnoutTrack === track && end === closerEndpoint)
         const entranceDirection = to_vec2(track.curve.derivative(closerEndpoint))
         const isMovementDirection = vec2.dot(entranceDirection, [velocity[0], velocity[2]]) > 0
 
@@ -56,16 +59,19 @@ const moveBogie = (bogie, direction, speed) => {
         return !shouldFilterOutClosedPath
     }).map(track => track.curve)
 
+    log100ms(`${tracks.length}, ${curves.length}`)
+
     // find the nearest one, but also TODO: the one that is most along the axis of movement
     const projected = curves.map(curve => curve.project({x: newBogie[0], y: newBogie[2]}))
-    projected.sort((a, b) => vec2.distance([a.x, a.y], [newBogie[0], newBogie[2]])
-        - vec2.distance([b.x, b.y], [newBogie[0], newBogie[2]]))
+    projected.sort((a, b) => vec2.distance(to_vec2(a), bogie2d)
+        - vec2.distance(to_vec2(b), bogie2d))
 
     const nearestProjectedPoint = projected[0]
     if(nearestProjectedPoint) {
         let actualBogie = [nearestProjectedPoint.x, 0, nearestProjectedPoint.y]
         const error = vec3.dist(newBogie, actualBogie)
         if(error > DERAILMENT_FACTOR) {
+            console.log('derail')
             actualBogie = newBogie
         }
         return actualBogie
@@ -73,14 +79,14 @@ const moveBogie = (bogie, direction, speed) => {
     return newBogie
 }
 
-export const moveTrain = (train) => {
+export const moveTrain = (train, delta) => {
     // use momentum (last movement) instead of facing direction
-    const velocity = vec3.transformQuat([], [1, 0, 0], train.rotation)
-    const front = vec3.add([], train.position, vec3.scale([], velocity, 0.5))
-    const back = vec3.add([], train.position, vec3.scale([], velocity, -0.5))
+    const moveDirection = vec3.transformQuat([], [1, 0, 0], train.rotation)
+    const front = vec3.add([], train.position, vec3.scale([], moveDirection, 0.5))
+    const back = vec3.add([], train.position, vec3.scale([], moveDirection, -0.5))
 
-    const newFront = moveBogie(front, velocity, train.speed)
-    const newBack = moveBogie(back, velocity, train.speed)
+    const newFront = moveBogie(front, moveDirection, train.speed * delta)
+    const newBack = moveBogie(back, moveDirection, train.speed * delta)
 
     const midpoint = vec3.scale([], vec3.add([], newFront, newBack), 0.5)
     const newDirection = quat.rotationTo([], [1, 0, 0], vec3.normalize([], vec3.sub([], newFront, newBack)))

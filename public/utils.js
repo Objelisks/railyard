@@ -42,6 +42,8 @@ export const rand = (max) => Math.random() * max*2 - max
 export const to_vec2 = (pt) => [pt.x, pt.y]
 export const to_vec3 = (pt) => [pt.x, pt.y, pt.z]
 
+
+//TODO: refactor
 export const box2Around = (pt, size=1) => ({
     minX: pt[0] - size,
     maxX: pt[0] + size,

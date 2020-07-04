@@ -36,8 +36,8 @@ export const arrow = (curve, towardsEndpoint, height) => {
 }
 
 export const updateArrow = (arrow, curve, towardsEndpoint, height) => {
-    arrow.towardsEndpoint = towardsEndpoint || arrow.towardsEndpoint
-    arrow.height = height || arrow.height
+    arrow.towardsEndpoint = towardsEndpoint === undefined ? arrow.towardsEndpoint : towardsEndpoint
+    arrow.height = height === undefined ? arrow.height : height
     const points = generatePoints(curve, arrow.towardsEndpoint, arrow.height)
     arrow.buffer.subdata(Float32Array.from(points.flat()))
 }

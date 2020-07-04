@@ -10,7 +10,7 @@ import intro from './components/intro.js'
 import trains from './components/trains.js'
 import choo from './libs/choo.mjs'
 import { intersectGround, getMouseRay, to_vec2, inBox2, projectOnLine, box2Around, log, log1s, log100ms } from './utils.js'
-import { makeTurnout, toggleTurnout, intersectTurnouts, addTrackToTurnout } from './primitives/turnout.js'
+import { makeTurnout, toggleTurnout, intersectTurnouts, addTrackToTurnout, FROG_SIZE } from './primitives/turnout.js'
 import { debugPoint, drawDebugPoints, debugArrow, drawDebugArrows } from './primitives/debug.js'
 
 let editMode = false
@@ -43,10 +43,9 @@ const allTurnouts = [
 ]
 const generateDebugArrowsForTurnout = (turnout) => {
     const track = turnout.tracks[turnout.open]
-    const t1 = turnout.endpoints[turnout.open] === 0 ? 0 : 0.5
-    const t2 = turnout.endpoints[turnout.open] === 0 ? 0.5 : 1
+    const t1 = turnout.endpoints[turnout.open] === 0 ? 0.01 : 0.6
+    const t2 = turnout.endpoints[turnout.open] === 0 ? 0.4 : 0.99
     const direction = turnout.endpoints[turnout.open] === 0 ? 1 : 0
-    console.log(turnout.point, t1, t2, direction, track.curve.split(t1, t2))
     debugArrow(`turnout-${turnout.id}`, track.curve.split(t1, t2), direction, [1, .7, .28])
 }
 allTurnouts.forEach(turnout => generateDebugArrowsForTurnout(turnout))
@@ -121,7 +120,7 @@ const render = () => {
     lastFrameTime = regl.now()
 
     // move all trains
-    allTrains.forEach(train => moveTrain(train))
+    allTrains.forEach(train => moveTrain(train, delta))
     // TODO: process collision
     
     // process camera movement
@@ -159,8 +158,9 @@ const render = () => {
             const intersectedTurnouts = intersectTurnouts({
                 minX: box[0], maxX: box[1],
                 minY: box[2], maxY: box[3]
-            })
-            intersectedTurnouts.forEach(entry => entry.turnout.visible = true)
+            }).map(entry => entry.turnout)
+                .filter(turnout => inBox2(vec2.add([], turnout.point, turnout.facing), box))
+            intersectedTurnouts.forEach(turnout => turnout.visible = true)
             const intersectedTracks = intersectTracks({
                 minX: box[0], maxX: box[1],
                 minY: box[2], maxY: box[3]
@@ -177,9 +177,9 @@ const render = () => {
             debugPoint('ray', snappedPoint ? [snappedPoint.point[0], 0, snappedPoint.point[1]] : hit.point, [1, .7, .28])
             
             if(!editMode && justClicked) {
-                intersectedTurnouts.forEach(entry => {
-                    toggleTurnout(entry.turnout)
-                    generateDebugArrowsForTurnout(entry.turnout)
+                intersectedTurnouts.forEach(turnout => {
+                    toggleTurnout(turnout)
+                    generateDebugArrowsForTurnout(turnout)
                 })
             }
 
@@ -302,7 +302,7 @@ const render = () => {
         allTracks.forEach(track => track.draw(track))
         
         allTurnouts.forEach(turnout => drawBox({
-            position: [turnout.point[0], -1, turnout.point[1]],
+            position: vec3.add([], [turnout.point[0], -1, turnout.point[1]], [turnout.facing[0], 0, turnout.facing[1]]),
             scale: [2, 1, 2],
             color: turnout.visible ? [0.99, 0.99, 0.58] : [0.58, 0.58, 0.58]
         }))
@@ -317,7 +317,7 @@ const render = () => {
 }
 
 // TODO: knob to value
-const ktov = (x) => x * 0.25
+const ktov = (x) => x * 5
 
 const setupChoo = () => {
     const app = choo()
