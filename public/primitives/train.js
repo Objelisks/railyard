@@ -7,9 +7,9 @@ import { vec2, vec3, quat } from '../libs/gl-matrix.mjs'
 import { to_vec2, box2Around, log100ms } from '../utils.js'
 import { v4 as uuid } from '../libs/uuid.mjs'
 
-const DERAILMENT_FACTOR = 0.1
+const DERAILMENT_FACTOR = 0.2
 const BOGIE_SIZE = 1
-const TURNOUT_DETECTOR_SIZE = 10
+const TURNOUT_DETECTOR_SIZE = 20
 
 const drawTrain = regl({
     context: {
@@ -45,36 +45,45 @@ const moveBogie = (bogie, direction, speed) => {
         .map((track, i) => ({turnoutTrack: track, end: turnout.endpoints[i]}))
     )
 
-    const curves = tracks.filter(track => {
+    const shouldFilterClosed = (track) => {
         // find all intersecting turnouts?
         // filter out tracks in the turnout that aren't opened
         const closerEndpoint = vec2.distance(bogie2d, to_vec2(track.curve.get(0))) < vec2.distance(bogie2d, to_vec2(track.curve.get(1)))
             ? 0 : 1
         const closerEndpointClosed = nearbyClosedEndpoints
             .some(({turnoutTrack, end}) => turnoutTrack === track && end === closerEndpoint)
-        const entranceDirection = to_vec2(track.curve.derivative(closerEndpoint))
+        const entranceDirection = vec2.scale([], to_vec2(track.curve.derivative(closerEndpoint)), closerEndpoint === 0 ? 1 : -1)
         const isMovementDirection = vec2.dot(entranceDirection, [velocity[0], velocity[2]]) > 0
 
         const shouldFilterOutClosedPath = closerEndpointClosed && isMovementDirection
-        return !shouldFilterOutClosedPath
-    }).map(track => track.curve)
+        return shouldFilterOutClosedPath ? 10000 : 0
+    }
+    // sort instead of filter to prefer open paths over closed paths
+    // rate the tracks based on which is the best fit to follow
+    const rateTrack = (track) => shouldFilterClosed(track) + vec2.distance(to_vec2(track.curve.project({x: newBogie[0], y: newBogie[2]})), bogie2d)
+    let sortedTracks = tracks
+        .sort((trackA, trackB) => rateTrack(trackA) - rateTrack(trackB))
+    const projected = sortedTracks
+        .map(track => track.curve.project({x: newBogie[0], y: newBogie[2]}))
+        .filter(projectedPoint => vec2.dist(bogie2d, to_vec2(projectedPoint)) <= DERAILMENT_FACTOR)
 
-    log100ms(`${tracks.length}, ${curves.length}`)
+    if(sortedTracks.length > 0 && shouldFilterClosed(sortedTracks[0]) === 10000) {
+        console.log('taking closed path')
+    }
 
-    // find the nearest one, but also TODO: the one that is most along the axis of movement
-    const projected = curves.map(curve => curve.project({x: newBogie[0], y: newBogie[2]}))
-    projected.sort((a, b) => vec2.distance(to_vec2(a), bogie2d)
-        - vec2.distance(to_vec2(b), bogie2d))
+    // let actualBogie = [nearestProjectedPoint.x, 0, nearestProjectedPoint.y]
+    // const error = vec3.dist(newBogie, actualBogie)
+    // if(error > DERAILMENT_FACTOR) {
+    //     console.log('derail')
+    //     actualBogie = newBogie
+    // }
+    // return actualBogie
 
     const nearestProjectedPoint = projected[0]
     if(nearestProjectedPoint) {
-        let actualBogie = [nearestProjectedPoint.x, 0, nearestProjectedPoint.y]
-        const error = vec3.dist(newBogie, actualBogie)
-        if(error > DERAILMENT_FACTOR) {
-            console.log('derail')
-            actualBogie = newBogie
-        }
-        return actualBogie
+        return [nearestProjectedPoint.x, 0, nearestProjectedPoint.y]
+    } else {
+        console.log('no nearest point')
     }
     return newBogie
 }
@@ -85,8 +94,8 @@ export const moveTrain = (train, delta) => {
     const front = vec3.add([], train.position, vec3.scale([], moveDirection, 0.5))
     const back = vec3.add([], train.position, vec3.scale([], moveDirection, -0.5))
 
-    const newFront = moveBogie(front, moveDirection, train.speed * delta)
-    const newBack = moveBogie(back, moveDirection, train.speed * delta)
+    const newFront = moveBogie(front, moveDirection, train.speed)
+    const newBack = moveBogie(back, moveDirection, train.speed)
 
     const midpoint = vec3.scale([], vec3.add([], newFront, newBack), 0.5)
     const newDirection = quat.rotationTo([], [1, 0, 0], vec3.normalize([], vec3.sub([], newFront, newBack)))

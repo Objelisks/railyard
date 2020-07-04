@@ -317,7 +317,7 @@ const render = () => {
 }
 
 // TODO: knob to value
-const ktov = (x) => x * 5
+const ktov = (x) => x * .25
 
 const setupChoo = () => {
     const app = choo()
