@@ -6,10 +6,11 @@ import { vec3 } from './libs/gl-matrix.mjs'
 import { toggleTurnout, drawTurnout } from './primitives/turnout.js'
 import { drawTrain, moveTrain } from './primitives/train.js'
 import { drawDebugPoints, drawDebugArrows, generateDebugArrowsForTurnout } from './primitives/debug.js'
-import { camera, getCameraPos, getCameraDir } from './camera.js'
+import { camera, getCameraPos, getCameraDir, cameraControlTool } from './camera.js'
 import { createTrackTool } from './tools/createTrack.js'
 import { playModeTool } from './tools/playMode.js'
 import { getTracks, getTurnouts, getTrains } from './railyard.js'
+import { mouseListenerTool } from './mouse.js'
 
 // debug keyboard listener
 window.addEventListener('keypress', (e) => {
@@ -38,8 +39,9 @@ const setTool = (tool, active) => {
     }
 }
 const toggleTool = (tool) => setTool(tool, !toolset.has(tool))
+setTool(mouseListenerTool, true)
 setTool(playModeTool, true)
-
+setTool(cameraControlTool, false)
 
 const render = () => {
     regl.poll()
@@ -117,6 +119,7 @@ const setupChoo = () => {
         })
         emitter.on(state.events.FLIPPER, ({id, data}) => {
             setTool(createTrackTool, data)
+            setTool(cameraControlTool, data)
         })
     })
 }

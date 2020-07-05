@@ -77,7 +77,7 @@ export const makeTrack = (start, end, bend = 0) => {
     const curve = new Bezier(
         {x: ptA[0], y: ptA[1]}, // point 1
         {x: mid[0], y: mid[1]}, // point 1 control point
-        {x: mid[0], y: mid[1]}, // point 2 control point TODO: make this better
+        {x: mid[0], y: mid[1]}, // point 2 control point
         {x: ptB[0], y: ptB[1]}  // point 2
     )
     const pointsL = trackRail(curve, -TRACK_GAUGE)

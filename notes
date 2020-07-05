@@ -8,61 +8,45 @@ something for game state?
 
 milestones
 
-index.html
-script.js
-serve libraries
-set up camera params
-render a box
-render a train
-i think i need browserify, BUT just for libraries
-initial network connections
-simple input
-simple ui
-connect tracks
-figure out switches (disable a segment in a direction?) 
 sync tracks
 sync positions
 sync movement
-selecting trains
-move a train from x to yz
-render a track
+? selecting trains
+? move a train from x to yz
+render a geometry track
 pull request esm modules for peerjs and choo https://github.com/rollup/rollup/wiki/pkg.module
-pbr shader
 
-
-drawing tracks:
-sqrt(2)*side/4 for 90 degree curve?
-snap endpoints based on closest other endpoints
-track options: straight, 45, 90, S, switch, quad bezier
-drag a line and bend it
-revisit whether i wanna keep doing quadratic or use cubic to make it easier to match angles
-
-
-today:
-X fix choo routing issue
-X clicking ground
-X drawing tracks dynamically
-X camera controls
-X snap to track endpoints
-X use endpoint tangents
-X creating switches
-X move debug stuff to separate file
-X switch to cubic bezier
-X fix switches
-X fix moveBogie
-refactoring pass
 reorder tracks in turnout based on arbitrary line intersection through curves
 build a module
-saving / exporting
-loading
+saving / exporting modules
+loading modules
 
+track options: straight, 45, 90, S, switch, cubic bezier
 
-throttled log
 sync networking on regl tick
-render canvas from choo to use state
 blend avg of player updates but rewind and extrapolate, window of 10 updates (60 frames)
 static modules??
 
+unpowered train cars
+connect/disconnect (shouldn't be able to connect to another full train, maybe?)
+mass considerations?
+loading/unload resources
+buildings
+
+signals?
+stations
+track ends
+
+
+The Networking Integration
+
+
+The Train Car Conjuction
+
+
+The Modular Track Invention
+    skyboard
+    standards: minimum two through tracks
 
 
 gameplay:
@@ -74,7 +58,7 @@ gameplay:
         speed when not actively controlled?
         interaction with collision
     switch control
-        just a direction indicator that automatically flips switches in front of your train
+        X just a direction indicator that automatically flips switches in front of your train (can have turnouts with 8 tracks output??)
         click on switches to toggle them
     train control
         multiple trains?
@@ -142,3 +126,34 @@ https://github.com/regl-project/regl/blob/gh-pages/API.md
 http://glmatrix.net/docs/
 http://pomax.github.io/bezierjs/
 https://github.com/mourner/rbush
+
+
+done:
+
+X index.html
+X script.js
+X serve libraries
+X set up camera params
+X render a box
+X render a train
+X i think i need browserify, BUT just for libraries
+X initial network connections
+X simple input
+X simple ui
+X connect tracks
+X figure out switches (disable a segment in a direction?) 
+X pbr shader
+X fix choo routing issue
+X clicking ground
+X drawing tracks dynamically
+X camera controls
+X snap to track endpoints
+X use endpoint tangents
+X creating switches
+X move debug stuff to separate file
+X switch to cubic bezier
+X fix switches
+X fix moveBogie
+X refactoring pass
+X throttled log
+X render canvas from choo to use state

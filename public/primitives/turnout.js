@@ -19,7 +19,6 @@ const whichEndpoint = (track, point) => vec2.distance(to_vec2(track.curve.get(0)
     vec2.distance(to_vec2(track.curve.get(1)), point) ? 0 : 1
 
 export const makeTurnout = (tracks, point) => {
-    // TODO: assert endpoints match
     const endpoints = tracks.map(track => whichEndpoint(track, point))
     let facing = vec2.normalize([], to_vec2(tracks[0].curve.derivative(endpoints[0])))
     if(endpoints[0] === 1) {
@@ -42,7 +41,6 @@ export const makeTurnout = (tracks, point) => {
 }
 
 export const addTrackToTurnout = (turnout, track) => {
-    // TODO: assert endpoints match
     turnout.tracks.push(track)
     turnout.endpoints.push(whichEndpoint(track, turnout.point))
 }

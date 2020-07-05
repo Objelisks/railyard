@@ -3,9 +3,6 @@ import knob from './knob.js'
 import { connect } from '../network.js'
 import flipper from './flipper.js'
 
-// TODO: what if nanohooks
-
-
 const trains = (app) => {
     const knob1 = knob(app, 'knob1')
     const flipper1 = flipper(app, 'flipper1', 'edit mode')

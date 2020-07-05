@@ -27,7 +27,6 @@ export const makeTrain = () => ({
 })
 
 
-// TODO: weird stuff at very slow speeds
 const moveBogie = (bogie, direction, speed) => {
     const velocity = vec3.scale([], direction, speed)
     const newBogie = vec3.add([], bogie, velocity)
