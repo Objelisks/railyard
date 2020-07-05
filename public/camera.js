@@ -1,5 +1,13 @@
 import regl from './regl.js'
-import { mat4 } from './libs/gl-matrix.mjs'
+import { vec3, mat4 } from './libs/gl-matrix.mjs'
+import { keysPressed } from './keyboard.js'
+
+const editCameraPosition = [10, 10, 10]
+const editCameraLookDirection = [-10, -10, -10]
+const cameraMoveSpeed = 0.01
+
+export const getCameraPos = () => editCameraPosition
+export const getCameraDir = () => editCameraLookDirection
 
 // This scoped command sets up the camera parameters
 export const camera = regl({
@@ -19,7 +27,8 @@ export const camera = regl({
                 [0, 1, 0])
         },
 
-        eye: regl.prop('eye')
+        eye: regl.prop('eye'),
+        target: regl.prop('target')
     },
 
     uniforms: {
@@ -28,4 +37,23 @@ export const camera = regl({
         invView: (context) => mat4.invert([], context.view),
         projection: regl.context('projection')
     },
+})
+
+// TODO: make this a tool
+window.addEventListener('preupdate', () => {
+    const cameraRight = vec3.cross([], editCameraLookDirection, [0, 1, 0])
+    const cameraForward = vec3.cross([], [0, 1, 0], cameraRight)
+    if(keysPressed()['a']) {
+        vec3.add(editCameraPosition, editCameraPosition, vec3.scale([], cameraRight, -cameraMoveSpeed ))
+    }
+    if(keysPressed()['d']) {
+        vec3.add(editCameraPosition, editCameraPosition, vec3.scale([], cameraRight, cameraMoveSpeed))
+    }
+    if(keysPressed()['w']) {
+        vec3.add(editCameraPosition, editCameraPosition, vec3.scale([], cameraForward, cameraMoveSpeed))
+    }
+    if(keysPressed()['s']) {
+        vec3.add(editCameraPosition, editCameraPosition, vec3.scale([], cameraForward, -cameraMoveSpeed))
+    }
+
 })

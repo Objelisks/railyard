@@ -5,9 +5,8 @@ import { vec2 } from '../libs/gl-matrix.mjs'
 import { model } from './model.js'
 import { drawLines } from './lines.js'
 import RBush from '../libs/rbush.mjs'
+import { LINE_POINTS, TRACK_GAUGE } from '../constants.js'
 
-const LINE_POINTS = 32
-const TRACK_GAUGE = 0.2
 const bush = new RBush()
 
 export const addToBush = (track) => {

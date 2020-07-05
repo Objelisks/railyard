@@ -3,8 +3,6 @@ import { model } from './model.js'
 import { drawLines } from './lines.js'
 import { trackRail } from './track.js'
 
-const SMOOTHNESS = 10
-
 const reverse = (array) => array.reduceRight((acc, val) => acc.concat([val]), [])
 
 const generatePoints = (curve, towardsEndpoint, height) => {

@@ -49,9 +49,10 @@ X creating switches
 X move debug stuff to separate file
 X switch to cubic bezier
 X fix switches
-fix moveBogie
-reorder tracks in turnout basede on arbitrary line intersection through curves
+X fix moveBogie
 refactoring pass
+reorder tracks in turnout based on arbitrary line intersection through curves
+build a module
 saving / exporting
 loading
 

@@ -4,25 +4,19 @@ import { drawCube } from './cube.js'
 import { intersectTracks } from './track.js'
 import { intersectTurnouts } from './turnout.js'
 import { vec2, vec3, quat } from '../libs/gl-matrix.mjs'
-import { to_vec2, box2Around, log100ms } from '../utils.js'
+import { to_vec2, box2Around } from '../utils.js'
 import { v4 as uuid } from '../libs/uuid.mjs'
+import { DERAILMENT_FACTOR, BOGIE_SIZE, TURNOUT_DETECTOR_SIZE } from '../constants.js'
 
-const DERAILMENT_FACTOR = 0.2
-const BOGIE_SIZE = 1
-const TURNOUT_DETECTOR_SIZE = 20
-
-const drawTrain = regl({
+const setupTrain = regl({
     context: {
         position: regl.prop('position'),
         rotation: regl.prop('rotation'),
         scale: [2, 1, 1]
     }
 })
-
-export const train = () => {
-    const draw = model(() => drawCube())
-    return (props) => drawTrain(props, draw)
-}
+const draw = model(() => drawCube())
+export const drawTrain = (props) => setupTrain(props, draw)
 
 export const makeTrain = () => ({
     id: uuid(),
@@ -31,6 +25,7 @@ export const makeTrain = () => ({
     speed: 0.2,
     powered: false
 })
+
 
 // TODO: weird stuff at very slow speeds
 const moveBogie = (bogie, direction, speed) => {
@@ -45,45 +40,30 @@ const moveBogie = (bogie, direction, speed) => {
         .map((track, i) => ({turnoutTrack: track, end: turnout.endpoints[i]}))
     )
 
-    const shouldFilterClosed = (track) => {
-        // find all intersecting turnouts?
-        // filter out tracks in the turnout that aren't opened
+    const isClosedInThisDirection = (track) => {
         const closerEndpoint = vec2.distance(bogie2d, to_vec2(track.curve.get(0))) < vec2.distance(bogie2d, to_vec2(track.curve.get(1)))
             ? 0 : 1
         const closerEndpointClosed = nearbyClosedEndpoints
             .some(({turnoutTrack, end}) => turnoutTrack === track && end === closerEndpoint)
         const entranceDirection = vec2.scale([], to_vec2(track.curve.derivative(closerEndpoint)), closerEndpoint === 0 ? 1 : -1)
         const isMovementDirection = vec2.dot(entranceDirection, [velocity[0], velocity[2]]) > 0
-
+    
         const shouldFilterOutClosedPath = closerEndpointClosed && isMovementDirection
         return shouldFilterOutClosedPath ? 10000 : 0
     }
+
     // sort instead of filter to prefer open paths over closed paths
     // rate the tracks based on which is the best fit to follow
-    const rateTrack = (track) => shouldFilterClosed(track) + vec2.distance(to_vec2(track.curve.project({x: newBogie[0], y: newBogie[2]})), bogie2d)
+    const rateTrack = (track) => isClosedInThisDirection(track) + vec2.distance(to_vec2(track.curve.project({x: newBogie[0], y: newBogie[2]})), bogie2d)
     let sortedTracks = tracks
         .sort((trackA, trackB) => rateTrack(trackA) - rateTrack(trackB))
     const projected = sortedTracks
         .map(track => track.curve.project({x: newBogie[0], y: newBogie[2]}))
         .filter(projectedPoint => vec2.dist(bogie2d, to_vec2(projectedPoint)) <= DERAILMENT_FACTOR)
 
-    if(sortedTracks.length > 0 && shouldFilterClosed(sortedTracks[0]) === 10000) {
-        console.log('taking closed path')
-    }
-
-    // let actualBogie = [nearestProjectedPoint.x, 0, nearestProjectedPoint.y]
-    // const error = vec3.dist(newBogie, actualBogie)
-    // if(error > DERAILMENT_FACTOR) {
-    //     console.log('derail')
-    //     actualBogie = newBogie
-    // }
-    // return actualBogie
-
     const nearestProjectedPoint = projected[0]
     if(nearestProjectedPoint) {
         return [nearestProjectedPoint.x, 0, nearestProjectedPoint.y]
-    } else {
-        console.log('no nearest point')
     }
     return newBogie
 }

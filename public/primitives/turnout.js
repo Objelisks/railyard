@@ -2,8 +2,11 @@ import RBush from '../libs/rbush.mjs'
 import { v4 as uuid } from '../libs/uuid.mjs'
 import { vec2 } from '../libs/gl-matrix.mjs'
 import { to_vec2, box2Around } from '../utils.js'
+import { FROG_SIZE } from '../constants.js'
+import { drawCube } from './cube.js'
+import { setColor } from '../reglhelpers.js'
+import { model } from './model.js'
 
-export const FROG_SIZE = 1
 const turnoutBush = new RBush()
 
 // assumptions about turnouts:
@@ -40,7 +43,6 @@ export const makeTurnout = (tracks, point) => {
 
 export const addTrackToTurnout = (turnout, track) => {
     // TODO: assert endpoints match
-    console.log('add track to turnout')
     turnout.tracks.push(track)
     turnout.endpoints.push(whichEndpoint(track, turnout.point))
 }
@@ -53,3 +55,6 @@ export const toggleTurnout = (turnout) => {
     turnout.open = (turnout.open + 1) % turnout.tracks.length
     return turnout.open
 }
+
+const box = model(() => drawCube())
+export const drawTurnout = (props) => setColor(props, () => box(props))
