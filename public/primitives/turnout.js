@@ -40,6 +40,7 @@ export const makeTurnout = (tracks, point) => {
 
 export const addTrackToTurnout = (turnout, track) => {
     // TODO: assert endpoints match
+    console.log('add track to turnout')
     turnout.tracks.push(track)
     turnout.endpoints.push(whichEndpoint(track, turnout.point))
 }

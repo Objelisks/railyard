@@ -201,43 +201,43 @@ const render = () => {
                         trackCreateState = trackCreateSteps.SECOND_PLACED
                         if(snappedPoint) {
                             trackCreateEndAxis = snappedPoint
-
-                            const getEnds = (curve) => [
-                                {
-                                    point: to_vec2(curve.get(0)),
-                                    facing: to_vec2(curve.derivative(0))
-                                },
-                                {
-                                    point: to_vec2(curve.get(1)),
-                                    facing: vec2.negate([], to_vec2(curve.derivative(1)))
-                                }
-                            ]
-                            const track = allTracks[trackCreateTrack]
-                            const endpoints = getEnds(track.curve)
-                            endpoints.forEach(endpoint => {
-                                const hitbox = box2Around(endpoint.point, 0.1)
-                                const turnout = intersectTurnouts(hitbox).map(entry => entry.turnout)
-                                    .find(turnout => vec2.distance(turnout.point, endpoint.point) < EPSILON && vec2.dot(turnout.facing, endpoint.facing) > 0)
-                                if(turnout) {
-                                    // we simply add the track
-                                    addTrackToTurnout(turnout, track)
-                                } else {
-                                    // find some track friends to create a turnout with
-                                    const tracks = intersectTracks(hitbox).map(entry => entry.track).filter(otherTrack => {
-                                        const otherEnds = getEnds(otherTrack.curve)
-                                        // there is some end on this track that matches our endpoint
-                                        return otherEnds.some(otherEnd =>
-                                            vec2.distance(otherEnd.point, endpoint.point) < EPSILON && vec2.dot(otherEnd.facing, endpoint.facing) > 0)
-                                    })
-                                    if(tracks.length > 0) {
-                                        // create turnout with this endpoint
-                                        const newTurnout = makeTurnout([...tracks, track], endpoint.point)
-                                        allTurnouts.push(newTurnout)
-                                        generateDebugArrowsForTurnout(newTurnout)
-                                    }
-                                }
-                            })
                         }
+
+                        const getEnds = (curve) => [
+                            {
+                                point: to_vec2(curve.get(0)),
+                                facing: to_vec2(curve.derivative(0))
+                            },
+                            {
+                                point: to_vec2(curve.get(1)),
+                                facing: vec2.negate([], to_vec2(curve.derivative(1)))
+                            }
+                        ]
+                        const track = allTracks[trackCreateTrack]
+                        const endpoints = getEnds(track.curve)
+                        endpoints.forEach(endpoint => {
+                            const hitbox = box2Around(endpoint.point, 0.1)
+                            const turnout = intersectTurnouts(hitbox).map(entry => entry.turnout)
+                                .find(turnout => vec2.distance(turnout.point, endpoint.point) < EPSILON && vec2.dot(turnout.facing, endpoint.facing) > 0)
+                            if(turnout) {
+                                // we simply add the track
+                                addTrackToTurnout(turnout, track)
+                            } else {
+                                // find some track friends to create a turnout with
+                                const tracks = intersectTracks(hitbox).map(entry => entry.track).filter(otherTrack => {
+                                    const otherEnds = getEnds(otherTrack.curve)
+                                    // there is some end on this track that matches our endpoint
+                                    return otherEnds.some(otherEnd =>
+                                        vec2.distance(otherEnd.point, endpoint.point) < EPSILON && vec2.dot(otherEnd.facing, endpoint.facing) > 0)
+                                })
+                                if(tracks.length > 0) {
+                                    // create turnout with this endpoint
+                                    const newTurnout = makeTurnout([...tracks, track], endpoint.point)
+                                    allTurnouts.push(newTurnout)
+                                    generateDebugArrowsForTurnout(newTurnout)
+                                }
+                            }
+                        })
                         break
                     }
                     case trackCreateSteps.SECOND_PLACED: { // third point clicked, set the control point for the first point
