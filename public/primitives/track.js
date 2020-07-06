@@ -6,6 +6,7 @@ import { model } from './model.js'
 import { drawLines } from './lines.js'
 import RBush from '../libs/rbush.mjs'
 import { LINE_POINTS, TRACK_GAUGE } from '../constants.js'
+import { to_vec2 } from '../utils.js'
 
 const bush = new RBush()
 
@@ -69,17 +70,8 @@ const track = (trackL, trackR, length) => {
 
 // hmm, need to do a separate draw call for each piece of track, if they're all unique curves
 // if i decide to limit track pieces to 90, 45, straight angles, then i can batch them
-export const makeTrack = (start, end, bend = 0) => {
-    const ptA = start
-    const ptB = end
-    const perp = vec2.normalize([], vec2.rotate([], vec2.sub([], ptA, ptB), [0, 0], Math.PI/2))
-    const mid = vec2.add([], vec2.scale([], vec2.add([], ptA, ptB), 0.5), vec2.scale([], vec2.normalize([], perp), bend))
-    const curve = new Bezier(
-        {x: ptA[0], y: ptA[1]}, // point 1
-        {x: mid[0], y: mid[1]}, // point 1 control point
-        {x: mid[0], y: mid[1]}, // point 2 control point
-        {x: ptB[0], y: ptB[1]}  // point 2
-    )
+export const makeTrack = ([x0, y0], [x1, y1], [x2, y2], [x3, y3]) => {
+    const curve = new Bezier(x0, y0, x1, y1, x2, y2, x3, y3)
     const pointsL = trackRail(curve, -TRACK_GAUGE)
     const trackL = regl.buffer({
         usage: 'dynamic',
@@ -100,7 +92,8 @@ export const makeTrack = (start, end, bend = 0) => {
         curve: curve,
         draw: track(trackL, trackR, length),
         trackL,
-        trackR
+        trackR,
+        points: [[x0, y0], [x1, y1], [x2, y2], [x3, y3]]
     }
 }
 
@@ -113,4 +106,5 @@ export const updateTrack = (track, {start, control1, control2, end}) => {
     track.trackL.subdata(Float32Array.from(trackRail(newCurve, -TRACK_GAUGE).flat()))
     track.trackR.subdata(Float32Array.from(trackRail(newCurve, +TRACK_GAUGE).flat()))
     track.curve = newCurve
+    track.points = track.curve.points.map(to_vec2)
 }

@@ -32,6 +32,8 @@ export const makeTurnout = (tracks, point) => {
         endpoints,
         open: 0
     }
+
+    // TODO: consistency around adding to bushes
     const region = box2Around(point, FROG_SIZE)
     turnoutBush.insert({
         ...region,

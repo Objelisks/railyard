@@ -21,6 +21,14 @@ window.addEventListener('keypress', (e) => {
             generateDebugArrowsForTurnout(turnout)
         })
     }
+    if(e.key === '2') {
+        getTracks().forEach((track, i) => {
+            console.log(`track ${i}`, JSON.stringify(track.points))
+        })
+        getTurnouts().forEach((turnout, i) => {
+            console.log(`turnout ${i}`, JSON.stringify(turnout.tracks.map(track => getTracks().findIndex(search => search.id === track.id))))
+        })
+    }
 })
 
 // setup tools

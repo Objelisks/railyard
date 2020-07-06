@@ -2,6 +2,14 @@ regl for three d rendering
 choo because trains and also for ui
 peerjs for networking
 
+documentation:
+https://github.com/choojs/choo#api
+https://github.com/regl-project/regl/blob/gh-pages/API.md
+http://glmatrix.net/docs/
+http://pomax.github.io/bezierjs/
+https://github.com/mourner/rbush
+
+
 
 milestones
 
@@ -11,7 +19,6 @@ sync movement
 ? selecting trains
 ? move a train from x to yz
 render a geometry track
-pull request esm modules for peerjs and choo https://github.com/rollup/rollup/wiki/pkg.module
 
 reorder tracks in turnout based on arbitrary line intersection through curves
 build a module
@@ -20,8 +27,6 @@ loading modules
 
 track options: straight, 45, 90, S, switch, cubic bezier
 
-sync networking on regl tick
-blend avg of player updates but rewind and extrapolate, window of 10 updates (60 frames)
 static modules??
 
 unpowered train cars
@@ -38,16 +43,35 @@ track ends
 The Networking Integration
     voting:
         array of voting members, set to current users (ignore anyone who joins during the voting process)
-        max attempts, and then take the value with most votes, and then local value
+        try for consensus until max attempts, and then take the value with most votes, and then local value
     welcome to room
     vote on placement
     place neutral track
-    sync train positions, rotations, speed
+    X sync train positions, rotations, speed
+    sync tracks
 
-local state (exists in the future)
-network state (avg of other's view, exists in the past)
-simulation from tick
+rubberband state on update
 button to toggle train collision
+events:
+    player join
+    player leave
+    data update (all trains state, all turnouts state)
+    turnout activation
+    tracks placement
+    switch train controlled
+    vote request: type
+    vote response: accept, revision
+    vote result: type, data
+
+data compression (make ids smaller) (do this last or only if an issue comes up)
+    train: pos, rot, speed, id
+    turnout init: list of track ids, open
+    turnout state: list of bool
+    track: id, 4 points
+
+don't need yet probably:
+    blend avg of player updates but rewind and extrapolate, window of 10 updates (60 frames)
+    sync networking on regl tick
 
 
 The Train Car Conjuction
@@ -80,7 +104,7 @@ gameplay:
         speed when not actively controlled?
         interaction with collision
     switch control
-        X just a direction indicator that automatically flips switches in front of your train (can have turnouts with 8 tracks output??)
+        N just a direction indicator that automatically flips switches in front of your train (can have turnouts with 8 tracks output??)
         click on switches to toggle them
     train control
         multiple trains?
@@ -126,15 +150,11 @@ stations that will load cars with resource
 stations that will unload cars of resource
 train whistle
 
+
+bonus:
+
 hook it up to midi input so we can use knobs!!!
-
-
-documentation:
-https://github.com/choojs/choo#api
-https://github.com/regl-project/regl/blob/gh-pages/API.md
-http://glmatrix.net/docs/
-http://pomax.github.io/bezierjs/
-https://github.com/mourner/rbush
+pull request esm modules for peerjs and choo https://github.com/rollup/rollup/wiki/pkg.module
 
 
 done:

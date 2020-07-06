@@ -20,6 +20,10 @@ export const drawDebugPoints = () => setupPoint(Object.values(debugPoints), draw
 
 const debugArrows = {}
 export const debugArrow = (key, curve, towardsEndpoint, color) => {
+    if(curve === null) {
+        delete debugArrows[key]
+        return
+    }
     if(debugArrows[key]) {
         debugArrows[key].curve = curve
         debugArrows[key].color = color

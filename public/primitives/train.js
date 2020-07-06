@@ -8,12 +8,16 @@ import { to_vec2, box2Around, reglArg } from '../utils.js'
 import { v4 as uuid } from '../libs/uuid.mjs'
 import { DERAILMENT_FACTOR, BOGIE_SIZE, TURNOUT_DETECTOR_SIZE } from '../constants.js'
 
+const getTrainColor = (train) => {
+    return train.remote ? [0.81, 0.94, 0.8] : [1.0, .412, .38]
+}
+
 const setupTrain = regl({
     context: {
         position: regl.prop('position'),
         rotation: regl.prop('rotation'),
         scale: [2, 1, 1],
-        color: reglArg('color', [1.0, .412, .38])
+        color: (context, props) => getTrainColor({remote: reglArg('remote', false, context, props)})
     }
 })
 const draw = model(() => drawCube())

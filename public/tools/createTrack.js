@@ -4,8 +4,9 @@ import { makeTurnout, intersectTurnouts, addTrackToTurnout } from '../primitives
 import { makeTrack, updateTrack, intersectTracks, addToBush } from '../primitives/track.js'
 import { to_vec2, box2Around, projectOnLine } from '../utils.js'
 import { vec2 } from '../libs/gl-matrix.mjs'
-import { generateDebugArrowsForTurnout } from '../primitives/debug.js'
+import { generateDebugArrowsForTurnout, debugArrow } from '../primitives/debug.js'
 import { addTrack, addTurnout, getTracks } from '../railyard.js'
+import Bezier from '../libs/bezier-js.mjs'
 
 const trackCreateSteps = {
     FIRST_PLACED: 'first',
@@ -27,7 +28,7 @@ export const createTrackTool = {
             switch(trackCreateState) {
                 default: { // first click: create track and make it tiny
                     const usePoint = snappedPoint ? snappedPoint : point2d
-                    const newTrack = makeTrack(usePoint, usePoint)
+                    const newTrack = makeTrack(usePoint, usePoint, usePoint, usePoint)
                     trackCreateTrack = addTrack(newTrack) // id
                     trackCreateState = trackCreateSteps.FIRST_PLACED
                     if(snappedPoint) {
@@ -92,14 +93,18 @@ export const createTrackTool = {
                 }
                 case trackCreateSteps.THIRD_PLACED: { // fourth point clicked, set the control point for the end, finish track
                     const axisProjected = trackCreateEndAxis ? projectOnLine(point2d, trackCreateEndAxis) : point2d
-                    updateTrack(getTracks()[trackCreateTrack], {control2: axisProjected})
-                    addToBush(getTracks()[trackCreateTrack]) // finalized, so it shouldn't change anymore
+                    const newTrack = getTracks()[trackCreateTrack]
+                    updateTrack(newTrack, {control2: axisProjected})
+                    addToBush(newTrack) // finalized, so it shouldn't change anymore
+
+                    window.dispatchEvent(new CustomEvent('trackcreate', { detail: newTrack }))
 
                     // done with placement, reset vars
                     trackCreateState = null
                     trackCreateTrack = null
                     trackCreateStartAxis = null
                     trackCreateEndAxis = null
+                    debugArrow('createTrack', null)
                 }
             }
         } else if(trackCreateTrack !== null && justMovedMouse()) {
@@ -115,11 +120,23 @@ export const createTrackTool = {
                 }
                 case trackCreateSteps.SECOND_PLACED: {
                     const axisProjected = trackCreateStartAxis ? projectOnLine(point2d, trackCreateStartAxis) : point2d
+                    const startPoint = getTracks()[trackCreateTrack].curve.points[0]
+                    debugArrow('createTrack', new Bezier(startPoint,
+                        {x: (startPoint.x + axisProjected[0]) / 2, y: (startPoint.y + axisProjected[1]) / 2},
+                        {x: axisProjected[0], y: axisProjected[1]}),
+                        1,
+                        [1, 0, 0])
                     updateTrack(getTracks()[trackCreateTrack], {control1: axisProjected})
                     break
                 }
                 case trackCreateSteps.THIRD_PLACED: {
                     const axisProjected = trackCreateEndAxis ? projectOnLine(point2d, trackCreateEndAxis) : point2d
+                    const startPoint = getTracks()[trackCreateTrack].curve.points[3]
+                    debugArrow('createTrack', new Bezier(startPoint,
+                        {x: (startPoint.x + axisProjected[0]) / 2, y: (startPoint.y + axisProjected[1]) / 2},
+                        {x: axisProjected[0], y: axisProjected[1]}),
+                        1,
+                        [1, 0, 0])
                     updateTrack(getTracks()[trackCreateTrack], {control2: axisProjected})
                     break
                 }

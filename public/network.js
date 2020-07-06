@@ -1,19 +1,23 @@
 import swarm from './libs/webrtc-swarm.mjs'
 import signalhub from './libs/signalhub.mjs'
 import { getTracks, getTurnouts, getTrains, setTrains } from './railyard.js'
+import { makeTrack } from './primitives/track.js'
 
 // { peerid: { trainid: data } }
-const remoteTrains = {
+const remoteTrains = { }
 
-}
+let eventQueue = []
 
-const markAsNetworked = (train, id) => {
+const markAsNetworked = (obj, id) => {
     return {
-        ...train,
-        color: [0.81, 0.94, 0.8],
+        ...obj,
         remote: true,
         owner: id
     }
+}
+
+const hydrateTrack = (trackData) => {
+    const newTrack = makeTrack(...trackData.points)
 }
 
 export const connect = (room) => {
@@ -40,15 +44,30 @@ export const connect = (room) => {
             parsed.trains.forEach(train => {
                 remoteTrains[id][train.id] = markAsNetworked(train, id)
             })
+            parsed.tracks.forEach(track => {
+                remoteTrains[id][track.id] = markAsNetworked(track, id)
+            })
         })
     
         // send a message
         const peerInterval = setInterval(() => {
             // package up all the local trains
-            const trains = getTrains().filter(train => !train.remote)
             const networkPacket = {
-                trains
+                trains: getTrains().filter(train => !train.remote),
+                tracks: []
             }
+
+            // go through events and add data to packet
+            let event
+            while(event = eventQueue.shift()) {
+                switch(event.type) {
+                    case 'track':
+                        networkPacket.tracks.push(event.data)
+                    break
+                }
+            }
+
+            // send data
             peer.send(JSON.stringify(networkPacket))
         }, 1000)
 
@@ -63,6 +82,13 @@ export const connect = (room) => {
             delete remoteTrains[id]
         })
     })
+}
+
+export const sanitizeTrack = (track) => {
+    return {
+        id: track.id,
+        points: track.points
+    }
 }
 
 export const networkedTrainTool = {
@@ -84,5 +110,11 @@ export const networkedTrainTool = {
                     allTrains[localRemoteTrainIndex] = remoteTrain
                 }
             })
+    },
+    trackcreate: ({detail: newTrack}) => {
+        eventQueue.push({
+            type: 'track',
+            data: sanitizeTrack(newTrack)
+        })
     }
 }
