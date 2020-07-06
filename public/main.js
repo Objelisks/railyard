@@ -104,9 +104,10 @@ const render = () => {
 // setup choo routing
 const setupChoo = () => {
     const app = choo({
-        history: false,
         href: false
     })
+
+    let activeUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`
 
     // initialize
     app.route('/trains', trains(app))

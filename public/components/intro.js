@@ -4,8 +4,7 @@ const intro = (app) => (state, emit) => {
     const click = () => {
         const roomName = document.body.querySelector('#input').value
         state.roomName = roomName
-        emit('dialog', 'trains')
-        //emit('pushState', `/trains?room=${roomName}`)
+        emit('pushState', `/trains?room=${roomName}`)
     }
 
     return html`<div class="dialog">
