@@ -7,6 +7,7 @@ import { vec2, vec3, quat } from '../libs/gl-matrix.mjs'
 import { to_vec2, box2Around, reglArg } from '../utils.js'
 import { v4 as uuid } from '../libs/uuid.mjs'
 import { DERAILMENT_FACTOR, BOGIE_SIZE, TURNOUT_DETECTOR_SIZE } from '../constants.js'
+import { flags } from '../flags.js'
 
 const getTrainColor = (train) => {
     return train.remote ? [0.81, 0.94, 0.8] : [1.0, .412, .38]
@@ -40,8 +41,8 @@ const moveBogie = (bogie, direction, speed) => {
     const tracks = intersectTracks(box2Around(bogie2d, BOGIE_SIZE)).map(entry => entry.track)
     const turnouts = intersectTurnouts(box2Around(bogie2d, TURNOUT_DETECTOR_SIZE)).map(entry => entry.turnout)
     const nearbyClosedEndpoints = turnouts.flatMap(turnout => turnout.tracks
-        .filter((_, i) => i !== turnout.open)
         .map((track, i) => ({turnoutTrack: track, end: turnout.endpoints[i]}))
+        .filter((_, i) => i !== turnout.open)
     )
 
     const isClosedInThisDirection = (track) => {
@@ -49,7 +50,7 @@ const moveBogie = (bogie, direction, speed) => {
             ? 0 : 1
         const closerEndpointClosed = nearbyClosedEndpoints
             .some(({turnoutTrack, end}) => turnoutTrack === track && end === closerEndpoint)
-        const entranceDirection = vec2.scale([], to_vec2(track.curve.derivative(closerEndpoint)), closerEndpoint === 0 ? 1 : -1)
+        const entranceDirection = vec2.scale([], vec2.normalize([], to_vec2(track.curve.derivative(closerEndpoint))), closerEndpoint === 0 ? 1 : -1)
         const isMovementDirection = vec2.dot(entranceDirection, [velocity[0], velocity[2]]) > 0
     
         const shouldFilterOutClosedPath = closerEndpointClosed && isMovementDirection

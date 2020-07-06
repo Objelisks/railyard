@@ -12,6 +12,9 @@ import { playModeTool } from './tools/playMode.js'
 import { getTracks, getTurnouts, getTrains } from './railyard.js'
 import { mouseListenerTool } from './mouse.js'
 import { networkedTrainTool } from './network.js'
+import { flags } from './flags.js'
+
+let stepMode = false
 
 // debug keyboard listener
 window.addEventListener('keypress', (e) => {
@@ -28,6 +31,12 @@ window.addEventListener('keypress', (e) => {
         getTurnouts().forEach((turnout, i) => {
             console.log(`turnout ${i}`, JSON.stringify(turnout.tracks.map(track => getTracks().findIndex(search => search.id === track.id))))
         })
+    }
+    if(e.key === '3') {
+        flags.stepMode = !flags.stepMode
+    }
+    if(e.key === '4') {
+        render()
     }
 })
 
@@ -53,7 +62,7 @@ setTool(playModeTool, true)
 setTool(cameraControlTool, false)
 setTool(networkedTrainTool, true)
 
-const render = () => {
+const render = (delta=1/60) => {
     regl.poll()
 
     /// update time
@@ -106,7 +115,9 @@ const render = () => {
     // reset turnout visibility
     getTurnouts().forEach(turnout => turnout.visible = false)
 
-    requestAnimationFrame(render)
+    if(!flags.stepMode) {
+        requestAnimationFrame(render)
+    }
 }
 
 // setup choo routing

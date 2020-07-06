@@ -44,9 +44,10 @@ export const connect = (room) => {
             parsed.trains.forEach(train => {
                 remoteTrains[id][train.id] = markAsNetworked(train, id)
             })
-            parsed.tracks.forEach(track => {
-                remoteTrains[id][track.id] = markAsNetworked(track, id)
-            })
+            // TODO: do this
+            // parsed.tracks.forEach(track => {
+            //     remoteTrains[id][track.id] = markAsNetworked(track, id)
+            // })
         })
     
         // send a message
