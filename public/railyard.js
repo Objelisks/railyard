@@ -62,3 +62,5 @@ export const addTrain = (train) => {
 }
 
 export const getTrains = () => state.trains
+
+export const setTrains = (trains) => state.trains = trains

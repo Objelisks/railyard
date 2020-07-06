@@ -4,7 +4,7 @@ import { drawCube } from './cube.js'
 import { intersectTracks } from './track.js'
 import { intersectTurnouts } from './turnout.js'
 import { vec2, vec3, quat } from '../libs/gl-matrix.mjs'
-import { to_vec2, box2Around } from '../utils.js'
+import { to_vec2, box2Around, reglArg } from '../utils.js'
 import { v4 as uuid } from '../libs/uuid.mjs'
 import { DERAILMENT_FACTOR, BOGIE_SIZE, TURNOUT_DETECTOR_SIZE } from '../constants.js'
 
@@ -12,7 +12,8 @@ const setupTrain = regl({
     context: {
         position: regl.prop('position'),
         rotation: regl.prop('rotation'),
-        scale: [2, 1, 1]
+        scale: [2, 1, 1],
+        color: reglArg('color', [1.0, .412, .38])
     }
 })
 const draw = model(() => drawCube())

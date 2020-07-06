@@ -16,8 +16,8 @@ export const camera = regl({
             return mat4.perspective([],
                 Math.PI / 4,
                 context.viewportWidth / context.viewportHeight,
-                0.01,
-                1000.0)
+                0.1,
+                100.0)
         },
 
         view: (context, props) => {

@@ -11,6 +11,7 @@ import { createTrackTool } from './tools/createTrack.js'
 import { playModeTool } from './tools/playMode.js'
 import { getTracks, getTurnouts, getTrains } from './railyard.js'
 import { mouseListenerTool } from './mouse.js'
+import { networkedTrainTool } from './network.js'
 
 // debug keyboard listener
 window.addEventListener('keypress', (e) => {
@@ -42,6 +43,7 @@ const toggleTool = (tool) => setTool(tool, !toolset.has(tool))
 setTool(mouseListenerTool, true)
 setTool(playModeTool, true)
 setTool(cameraControlTool, false)
+setTool(networkedTrainTool, true)
 
 const render = () => {
     regl.poll()
@@ -49,16 +51,18 @@ const render = () => {
     /// update time
     window.dispatchEvent(new CustomEvent('preupdate'))
 
-    // move all trains
-    getTrains().forEach(train => moveTrain(train))
-    // TODO: process collision
-    
     // set up camera
     camera({
         eye: getCameraPos(),
         target: toolset.has(createTrackTool) ? vec3.add([], getCameraPos(), getCameraDir()) : getTrains()[0].position
     }, (context) => {
+
         window.dispatchEvent(new CustomEvent('update', {detail: context}))
+        // move all trains
+        // TODO: process collision
+        // TODO: process network events
+        getTrains().forEach(train => moveTrain(train))
+
         window.dispatchEvent(new CustomEvent('postupdate', {detail: context}))
 
         /// drawing time

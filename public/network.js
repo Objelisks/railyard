@@ -1,5 +1,20 @@
 import swarm from './libs/webrtc-swarm.mjs'
 import signalhub from './libs/signalhub.mjs'
+import { getTracks, getTurnouts, getTrains, setTrains } from './railyard.js'
+
+// { peerid: { trainid: data } }
+const remoteTrains = {
+
+}
+
+const markAsNetworked = (train, id) => {
+    return {
+        ...train,
+        color: [0.81, 0.94, 0.8],
+        remote: true,
+        owner: id
+    }
+}
 
 export const connect = (room) => {
     const roomName = `railyard-${room}`
@@ -16,14 +31,58 @@ export const connect = (room) => {
     // listen for new peers
     sw.on('peer', (peer, id) => {
         console.log('connected to peer', id, 'total', sw.peers.length)
+
+        remoteTrains[id] = {}
+
         // set up data listener on new peer
         peer.on('data', (data) => {
-            console.log(`from: ${id}`, data)
+            const parsed = JSON.parse(data)
+            parsed.trains.forEach(train => {
+                remoteTrains[id][train.id] = markAsNetworked(train, id)
+            })
+        })
+    
+        // send a message
+        const peerInterval = setInterval(() => {
+            // package up all the local trains
+            const trains = getTrains().filter(train => !train.remote)
+            const networkPacket = {
+                trains
+            }
+            peer.send(JSON.stringify(networkPacket))
+        }, 1000)
+
+        peer.on('error', (error) => console.log('ERROR', error))
+
+        peer.on('close', () => {
+            console.log('CLOSE')
+            // stop sending data
+            clearInterval(peerInterval)
+            
+            // remove any remote trains belonging to this player
+            delete remoteTrains[id]
         })
     })
-    
-    // send a test message
-    setInterval(() => {
-        sw.peers.forEach((peer) => peer.send({hello: `peer ${peer.id}`}))
-    }, 1000)
+}
+
+export const networkedTrainTool = {
+    update: () => {
+        let allTrains = getTrains()
+        const allPlayers = Object.keys(remoteTrains)
+        allTrains = allTrains.filter(train => !train.remote || allPlayers.includes(train.owner))
+        setTrains(allTrains)
+
+        Object.values(remoteTrains)
+            .flatMap(player => Object.values(player))
+            .forEach(remoteTrain => {
+                let localRemoteTrainIndex = allTrains.findIndex(train => train.id === remoteTrain.id)
+                if(localRemoteTrainIndex === -1) {
+                    // TODO: fade in effect
+                    allTrains.push(remoteTrain)
+                } else {
+                    // TODO: rubberband
+                    allTrains[localRemoteTrainIndex] = remoteTrain
+                }
+            })
+    }
 }
