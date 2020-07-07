@@ -46,6 +46,6 @@ export const generateDebugArrowsForTurnout = (turnout) => {
     const t1 = turnout.endpoints[turnout.open] === 0 ? 0.01 : 0.6
     const t2 = turnout.endpoints[turnout.open] === 0 ? 0.4 : 0.99
     const direction = turnout.endpoints[turnout.open] === 0 ? 1 : 0
-    debugArrow(`turnout-${turnout.id}`, track.curve.split(t1, t2), direction, [1, .7, .28])
+    debugArrow(`turnout-${turnout.index}`, track.curve.split(t1, t2), direction, [1, .7, .28])
 }
 

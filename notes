@@ -48,16 +48,16 @@ The Networking Integration
     vote on placement
     place neutral track
     X sync train positions, rotations, speed
-    sync tracks
+    X sync tracks
 
 rubberband state on update
 button to toggle train collision
 events:
-    player join
-    player leave
-    data update (all trains state, all turnouts state)
-    turnout activation
-    tracks placement
+    X player join
+    X player leave
+    X data update (all trains state, all turnouts state)
+    X turnout activation
+    X tracks placement
     switch train controlled
     vote request: type
     vote response: accept, revision
@@ -70,12 +70,14 @@ data compression (make ids smaller) (do this last or only if an issue comes up)
     track: id, 4 points
 
 don't need yet probably:
+    sync turnout state harder
     blend avg of player updates but rewind and extrapolate, window of 10 updates (60 frames)
     sync networking on regl tick
 
 
 The Train Car Conjuction
     train to train collision
+    X raycast boxes
     spawn cars
     connect / disconnect cars
     stations

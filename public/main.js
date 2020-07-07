@@ -109,9 +109,6 @@ const render = (delta=1/60) => {
         window.dispatchEvent(new CustomEvent('postrender', {detail: context}))
     })
 
-    // reset turnout visibility
-    getTurnouts().forEach(turnout => turnout.visible = false)
-
     if(!flags.stepMode) {
         requestAnimationFrame(render)
     }

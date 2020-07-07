@@ -1,6 +1,6 @@
 import swarm from './libs/webrtc-swarm.mjs'
 import signalhub from './libs/signalhub.mjs'
-import { getTracks, setTracks, getTurnouts, setTurnouts, getTrains, setTrains, detectAndFixTurnouts } from './railyard.js'
+import { addTrack, getTracks, setTracks, getTurnouts, setTurnouts, addTrain, getTrains, setTrains, detectAndFixTurnouts } from './railyard.js'
 import { makeTrack, addToBush, removeFromBush } from './primitives/track.js'
 import { toggleTurnout } from './primitives/turnout.js'
 
@@ -23,6 +23,7 @@ const remoteData = { }
 
 let outgoingEvents = []
 let incomingEvents = []
+const OUTGOING_FREQUENCY = 1000
 
 const markAsNetworked = (obj, id) => {
     return {
@@ -59,7 +60,8 @@ export const connect = (room) => {
             tracks: {}
         }
 
-        // set up data listener on new peer
+        /// INCOMING
+        // parse incoming data and create network objects or queue incoming events
         peer.on('data', (data) => {
             const parsed = JSON.parse(data)
             parsed.trains.forEach(train => {
@@ -77,6 +79,7 @@ export const connect = (room) => {
             })
         })
     
+        /// OUTGOING
         // send a message
         const peerInterval = setInterval(() => {
             // package up all the local trains
@@ -90,7 +93,7 @@ export const connect = (room) => {
             let event
             while(event = outgoingEvents.shift()) {
                 switch(event.type) {
-                    case 'track':
+                    case 'createtrack':
                         networkPacket.tracks.push(event.data)
                         break
                     case 'turnoutswitch':
@@ -101,7 +104,7 @@ export const connect = (room) => {
 
             // send data
             peer.send(JSON.stringify(networkPacket))
-        }, 1000)
+        }, OUTGOING_FREQUENCY)
 
         peer.on('error', (error) => console.log('oh no', error))
 
@@ -119,11 +122,11 @@ export const connect = (room) => {
 export const sanitizeTrack = (track) => {
     return {
         id: track.id,
+        index: track.index,
         points: track.points
     }
 }
 export const sanitizeTurnout = (turnout) => {
-    console.log('sanitize', turnout)
     return {
         id: turnout.id,
         index: turnout.index,
@@ -131,7 +134,7 @@ export const sanitizeTurnout = (turnout) => {
     }
 }
 
-const syncNetworkList = (list, type, setList) => {
+const syncNetworkList = (list, type, addList, setList) => {
     const allPlayers = Object.keys(remoteData)
     const exit = list.filter(local => local.remote && !allPlayers.includes(local.owner))
     list = list.filter(local => !local.remote || allPlayers.includes(local.owner))
@@ -145,7 +148,7 @@ const syncNetworkList = (list, type, setList) => {
             if(localRemoteIndex === -1) {
                 // TODO: fade in effect
                 // new
-                list.push(remote)
+                addList(remote)
                 enter.push(remote)
             } else {
                 // TODO: rubberband
@@ -158,8 +161,8 @@ const syncNetworkList = (list, type, setList) => {
 
 export const networkedTrainTool = {
     update: () => {
-        syncNetworkList(getTrains(), 'trains', setTrains)
-        const [enter, exit] = syncNetworkList(getTracks(), 'tracks', setTracks)
+        syncNetworkList(getTrains(), 'trains', addTrain, setTrains)
+        const [enter, exit] = syncNetworkList(getTracks(), 'tracks', addTrack, setTracks)
         enter.forEach((track) => {
             addToBush(track)
         })
@@ -167,7 +170,6 @@ export const networkedTrainTool = {
             removeFromBush(track)
         })
         if(enter.length > 0 || exit.length > 0) {
-            setTurnouts([])
             detectAndFixTurnouts()
         }
 
@@ -189,8 +191,9 @@ export const networkedTrainTool = {
         // for now lets just send switch events and itll converge as long as packets aren't dropped
     },
     trackcreate: ({detail: newTrack}) => {
+        detectAndFixTurnouts()
         outgoingEvents.push({
-            type: 'track',
+            type: 'createtrack',
             data: sanitizeTrack(newTrack)
         })
     },

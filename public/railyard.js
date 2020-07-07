@@ -1,5 +1,5 @@
 import { makeTrack, loadToBush } from './primitives/track.js'
-import { makeTurnout } from './primitives/turnout.js'
+import { makeTurnout, resetTurnoutBush } from './primitives/turnout.js'
 import { makeTrain } from './primitives/train.js'
 import { generateDebugArrowsForTurnout } from './primitives/debug.js'
 import { quat, vec2, vec3 } from './libs/gl-matrix.mjs'
@@ -15,6 +15,9 @@ const precise = (x) => x.toPrecision(4)
 const getKey = (endpoint) => `${precise(endpoint.end[0])},${precise(endpoint.end[1])}:${precise(endpoint.facing[0])},${precise(endpoint.facing[1])}`
 
 export const detectAndFixTurnouts = () => {
+    setTurnouts([])
+    resetTurnoutBush()
+
     const turnoutLocations = {}
     const endpoints = state.tracks.flatMap(track => [
         {track, end: to_vec2(track.curve.get(0)), facing: vec2.normalize([], to_vec2(track.curve.derivative(0)))},
@@ -29,14 +32,15 @@ export const detectAndFixTurnouts = () => {
         }
     })
     let added = 0
-    Object.values(turnoutLocations).forEach(endpoints => {
-        if(endpoints.length > 1) {
-            const turnout = makeTurnout(endpoints.map(endpoint => endpoint.track), endpoints[0].end)
-            addTurnout(turnout)
-            added += 1
-        }
-    })
-    console.log(`generated ${added} turnouts`, `${getTurnouts().length} total turnouts`)
+    Object.entries(turnoutLocations)
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .forEach(([_, endpoints]) => {
+            if(endpoints.length > 1) {
+                const turnout = makeTurnout(endpoints.map(endpoint => endpoint.track), endpoints[0].end)
+                addTurnout(turnout)
+                added += 1
+            }
+        })
 }
 
 const placeTrainOnTrack = (train, track) => {
@@ -49,16 +53,6 @@ const placeTrainOnTrack = (train, track) => {
 }
 
 
-export const addTrack = (track) => {
-    const index = state.tracks.push(track) - 1
-    track.index = index
-    return index
-}
-
-export const getTracks = () => state.tracks
-export const setTracks = (tracks) => state.tracks = tracks
-
-
 export const addTurnout = (turnout) => {
     const index = state.turnouts.push(turnout) - 1
     turnout.index = index
@@ -68,6 +62,16 @@ export const addTurnout = (turnout) => {
 
 export const getTurnouts = () => state.turnouts
 export const setTurnouts = (turnouts) => state.turnouts = turnouts
+
+
+export const addTrack = (track) => {
+    const index = state.tracks.push(track) - 1
+    track.index = index
+    return index
+}
+
+export const getTracks = () => state.tracks
+export const setTracks = (tracks) => state.tracks = tracks
 
 
 export const addTrain = (train) => {

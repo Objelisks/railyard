@@ -1,6 +1,5 @@
 import { intersectGround, getMouseRay, to_vec2, inBox2 } from './utils.js'
 import { SNAP_THRESHOLD } from './constants.js'
-import { intersectTurnouts } from './primitives/turnout.js'
 import { intersectTracks } from './primitives/track.js'
 import { vec2 } from './libs/gl-matrix.mjs'
 import { debugPoint } from './primitives/debug.js'
@@ -9,6 +8,7 @@ const mousePosition = [0, 0]
 let justClicked = false
 let justMoved = false
 let mouse3d = [0, 0, 0]
+let mouseRay = [0, 0, 0]
 let snappedPoint = null
 let snappedAxis = null
 
@@ -24,6 +24,7 @@ window.addEventListener('mousedown', (e) => {
 })
 
 export const getMouse3d = () => mouse3d
+export const getRay = () => mouseRay
 export const getSnappedPoint = () => snappedPoint
 export const getSnappedAxis = () => snappedAxis
 export const justClickedMouse = () => justClicked
@@ -32,6 +33,7 @@ export const justMovedMouse = () => justMoved
 export const mouseListenerTool = {
     prerender: ({detail: context}) => {
         const rayDirection = getMouseRay(mousePosition, context)
+        mouseRay = rayDirection
         const hit = intersectGround(context.eye, rayDirection)
         mouse3d = hit.collision ? hit.point : [0, 0, 0]
         
@@ -40,14 +42,6 @@ export const mouseListenerTool = {
             point2d[0] - SNAP_THRESHOLD, point2d[0] + SNAP_THRESHOLD,
             point2d[1] - SNAP_THRESHOLD, point2d[1] + SNAP_THRESHOLD
         ]
-
-        // find turnouts to highlight
-        const intersectedTurnouts = intersectTurnouts({
-            minX: box[0], maxX: box[1],
-            minY: box[2], maxY: box[3]
-        }).map(entry => entry.turnout)
-            .filter(turnout => inBox2(vec2.add([], turnout.point, turnout.facing), box))
-        intersectedTurnouts.forEach(turnout => turnout.visible = true)
 
         // find nearby snap points (currently just track endpoints)
         const intersectedTracks = intersectTracks({

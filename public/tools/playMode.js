@@ -1,28 +1,38 @@
-import { getMouse3d, justClickedMouse } from '../mouse.js'
-import { SNAP_THRESHOLD } from '../constants.js'
-import { toggleTurnout, intersectTurnouts } from '../primitives/turnout.js'
-import { inBox2 } from '../utils.js'
-import { vec2 } from '../libs/gl-matrix.mjs'
+import { getRay, justClickedMouse } from '../mouse.js'
+import { toggleTurnout } from '../primitives/turnout.js'
+import { getTurnouts } from '../railyard.js'
+import createRay from '../libs/ray-aabb.mjs'
+import { vec3 } from '../libs/gl-matrix.mjs'
 
 export const playModeTool = {
-    update: () => {
-        if(justClickedMouse()) {
-            const mouse3d = getMouse3d()
-            const point2d = [mouse3d[0], mouse3d[2]]
+    update: ({detail: context}) => {
+        const rayDirection = getRay()
+        const ray = createRay(context.eye, rayDirection)
+        let nearestHit = null
+        let nearest = Infinity
+        getTurnouts().forEach(turnout => {
+            const turnoutPosition = vec3.add([], [turnout.point[0], -1, turnout.point[1]], [turnout.facing[0], 0, turnout.facing[1]])
             const box = [
-                point2d[0] - SNAP_THRESHOLD, point2d[0] + SNAP_THRESHOLD,
-                point2d[1] - SNAP_THRESHOLD, point2d[1] + SNAP_THRESHOLD
+                [turnoutPosition[0]-1, turnoutPosition[1]-0.5, turnoutPosition[2]-1],
+                [turnoutPosition[0]+1, turnoutPosition[1]+0.5, turnoutPosition[2]+1],
             ]
-            const intersectedTurnouts = intersectTurnouts({
-                minX: box[0], maxX: box[1],
-                minY: box[2], maxY: box[3]
-            })
-                .map(entry => entry.turnout)
-                .filter(turnout => inBox2(vec2.add([], turnout.point, turnout.facing), box))
-            // TODO: bug here. need actual raycast against boxes
-            intersectedTurnouts.forEach(turnout => {
-                toggleTurnout(turnout)
-            })
+            const normal = [0, 0, 0]
+            const hit = ray.intersects(box, normal)
+            if(hit !== false) {
+                if(hit < nearest) {
+                    nearest = hit
+                    nearestHit = turnout
+                }
+            }
+        })
+        if(nearestHit !== null) {
+            nearestHit.visible = true
+            if(justClickedMouse()) {
+                toggleTurnout(nearestHit)
+            }
         }
+    },
+    postrender: () => {
+        getTurnouts().forEach(turnout => turnout.visible = false)
     }
 }

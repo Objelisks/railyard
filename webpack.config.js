@@ -14,6 +14,7 @@ module.exports = {
         'bezier-js': 'bezier-js',
         'rbush': 'rbush',
         'nanohtml': 'nanohtml',
+        'ray-aabb': 'ray-aabb',
     },
     output: {
         path: path.resolve(__dirname, "public/libs"),
