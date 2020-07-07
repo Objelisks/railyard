@@ -1,7 +1,6 @@
 import { getMouse3d, justClickedMouse } from '../mouse.js'
 import { SNAP_THRESHOLD } from '../constants.js'
 import { toggleTurnout, intersectTurnouts } from '../primitives/turnout.js'
-import { generateDebugArrowsForTurnout } from '../primitives/debug.js'
 import { inBox2 } from '../utils.js'
 import { vec2 } from '../libs/gl-matrix.mjs'
 
@@ -20,9 +19,9 @@ export const playModeTool = {
             })
                 .map(entry => entry.turnout)
                 .filter(turnout => inBox2(vec2.add([], turnout.point, turnout.facing), box))
+            // TODO: bug here. need actual raycast against boxes
             intersectedTurnouts.forEach(turnout => {
                 toggleTurnout(turnout)
-                generateDebugArrowsForTurnout(turnout)
             })
         }
     }

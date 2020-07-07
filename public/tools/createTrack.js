@@ -79,7 +79,6 @@ export const createTrackTool = {
                                 // create turnout with this endpoint
                                 const newTurnout = makeTurnout([...tracks, track], endpoint.point)
                                 addTurnout(newTurnout)
-                                generateDebugArrowsForTurnout(newTurnout)
                             }
                         }
                     })

@@ -37,6 +37,10 @@ export const loadToBush = (tracks) => {
     bush.load(regions)
 }
 
+export const removeFromBush = (track) => {
+    bush.remove(track, (a, b) => a.id === b.id)
+}
+
 export const resetBush = () => {
     bush.clear()
 }

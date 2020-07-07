@@ -6,6 +6,7 @@ import { FROG_SIZE } from '../constants.js'
 import { drawCube } from './cube.js'
 import { setColor } from '../reglhelpers.js'
 import { model } from './model.js'
+import { generateDebugArrowsForTurnout } from '../primitives/debug.js'
 
 const turnoutBush = new RBush()
 
@@ -51,8 +52,12 @@ export const intersectTurnouts = (region) => {
     return turnoutBush.search(region)
 }
 
-export const toggleTurnout = (turnout) => {
+export const toggleTurnout = (turnout, dispatch=true) => {
     turnout.open = (turnout.open + 1) % turnout.tracks.length
+    if(dispatch) {
+        window.dispatchEvent(new CustomEvent('turnoutswitch', {detail: turnout}))
+    }
+    generateDebugArrowsForTurnout(turnout)
     return turnout.open
 }
 

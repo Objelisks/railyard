@@ -5,7 +5,7 @@ import choo from './libs/choo.mjs'
 import { vec3 } from './libs/gl-matrix.mjs'
 import { toggleTurnout, drawTurnout } from './primitives/turnout.js'
 import { drawTrain, moveTrain } from './primitives/train.js'
-import { drawDebugPoints, drawDebugArrows, generateDebugArrowsForTurnout } from './primitives/debug.js'
+import { drawDebugPoints, drawDebugArrows } from './primitives/debug.js'
 import { camera, getCameraPos, getCameraDir, cameraControlTool } from './camera.js'
 import { createTrackTool } from './tools/createTrack.js'
 import { playModeTool } from './tools/playMode.js'
@@ -14,14 +14,11 @@ import { mouseListenerTool } from './mouse.js'
 import { networkedTrainTool } from './network.js'
 import { flags } from './flags.js'
 
-let stepMode = false
-
 // debug keyboard listener
 window.addEventListener('keypress', (e) => {
     if(e.key === '1') {
         getTurnouts().forEach(turnout => {
             toggleTurnout(turnout)
-            generateDebugArrowsForTurnout(turnout)
         })
     }
     if(e.key === '2') {
