@@ -1,6 +1,7 @@
 import regl from './regl.js'
 import { vec3, mat4 } from './libs/gl-matrix.mjs'
 import { keysPressed } from './keyboard.js'
+import { WIDTH, HEIGHT } from './constants.js'
 
 const editCameraPosition = [10, 10, 10]
 const editCameraLookDirection = [-10, -10, -10]
@@ -36,7 +37,7 @@ export const camera = regl({
         model:  () => mat4.create(),
         invView: (context) => mat4.invert([], context.view),
         projection: regl.context('projection')
-    },
+    }
 })
 
 export const cameraControlTool = {
