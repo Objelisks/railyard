@@ -11,49 +11,67 @@ export const cubeNormal = [
 [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], // top face
 ]
 
+const tile = 2.0
 export const cubeUv = [
-  [0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0], // top face
+  [0.0, 0.0], [tile, 0.0], [tile, tile], [0.0, tile], // top face
 ]
 
 export const cubeElements = [
   [2, 1, 0], [2, 0, 3],       // top face.
 ]
 
-const albedoMap = regl.texture({ shape: [2048, 2048] })
-const normalMap = regl.texture({ shape: [2048, 2048] })
-const metallicMap = regl.texture({ shape: [2048, 2048] })
-const roughnessMap = regl.texture({ shape: [2048, 2048] })
-const aoMap = regl.texture({ shape: [2048, 2048] })
+const res = 512
+const init = { radius: res, wrapS: 'repeat', wrapT: 'repeat' }
+const albedoMap = regl.texture(init)
+const normalMap = regl.texture(init)
+const metallicMap = regl.texture(init)
+const roughnessMap = regl.texture(init)
+const aoMap = regl.texture(init)
 
 resl({
     manifest: {
         albedo: {
             type: 'image',
-            src: '/materials/concrete/test_basecolor.png'
+            src: '/materials/table/table_basecolor.png'
         },
         normal: {
             type: 'image',
-            src: '/materials/concrete/test_normal.png'
+            src: '/materials/table/table_normal.png'
         },
         metallic: {
             type: 'image',
-            src: '/materials/concrete/test_metallic.png'
+            src: '/materials/table/table_metallic.png'
         },
         roughness: {
             type: 'image',
-            src: '/materials/concrete/test_roughness.png'
+            src: '/materials/table/table_roughness.png'
         },
         ao: {
             type: 'image',
-            src: '/materials/concrete/test_ambientocclusion.png'
+            src: '/materials/table/table_ambientocclusion.png'
         }
     },
     onDone: (assets) => {
-        albedoMap(assets.albedo)
-        normalMap(assets.normal)
-        metallicMap(assets.metallic)
-        roughnessMap(assets.roughness)
-        aoMap(assets.ao)
+        albedoMap({
+            ...init,
+            data: assets.albedo
+        })
+        normalMap({
+            ...init,
+            data: assets.normal
+        })
+        metallicMap({
+            ...init,
+            data: assets.metallic
+        })
+        roughnessMap({
+            ...init,
+            data: assets.roughness
+        })
+        aoMap({
+            ...init,
+            data: assets.ao
+        })
     }
 })
 

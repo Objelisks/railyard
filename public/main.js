@@ -117,6 +117,7 @@ const copyToScreen = regl({
     framebuffer: null,
 })
 
+// blur from https://github.com/Jam3/glsl-fast-gaussian-blur
 const tiltShiftEffect = regl({
     frag: `
     precision mediump float;
