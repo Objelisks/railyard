@@ -3,6 +3,7 @@ import signalhub from './libs/signalhub.mjs'
 import { addTrack, getTracks, setTracks, getTurnouts, setTurnouts, addTrain, getTrains, setTrains, detectAndFixTurnouts } from './railyard.js'
 import { makeTrack, addToBush, removeFromBush } from './primitives/track.js'
 import { toggleTurnout } from './primitives/turnout.js'
+import regl from './regl.js'
 
 
 // don't need to sync turnout objects, because those can be inferred from tracks
@@ -24,6 +25,8 @@ const remoteData = { }
 let outgoingEvents = []
 let incomingEvents = []
 const OUTGOING_FREQUENCY = 1000
+let lastUpdate = 0
+let sw = null
 
 const markAsNetworked = (obj, id) => {
     return {
@@ -42,7 +45,7 @@ const hydrateTrack = (trackData) => {
 export const connect = (room) => {
     const roomName = `railyard-${room}`
     const hub = signalhub(roomName, ['127.0.0.1:8080'])
-    const sw = swarm(hub)
+    sw = swarm(hub)
     console.log(`connecting to ${roomName}`)
 
     // cleanup on page unload
@@ -79,33 +82,6 @@ export const connect = (room) => {
             })
         })
     
-        /// OUTGOING
-        // send a message
-        const peerInterval = setInterval(() => {
-            // package up all the local trains
-            const networkPacket = {
-                trains: getTrains().filter(train => !train.remote),
-                tracks: [],
-                turnouts: []
-            }
-
-            // go through events and add data to packet
-            let event
-            while(event = outgoingEvents.shift()) {
-                switch(event.type) {
-                    case 'createtrack':
-                        networkPacket.tracks.push(event.data)
-                        break
-                    case 'turnoutswitch':
-                        networkPacket.turnouts.push(event.data)
-                        break
-                }
-            }
-
-            // send data
-            peer.send(JSON.stringify(networkPacket))
-        }, OUTGOING_FREQUENCY)
-
         peer.on('error', (error) => console.log('oh no', error))
 
         peer.on('close', () => {
@@ -161,6 +137,37 @@ const syncNetworkList = (list, type, addList, setList) => {
 
 export const networkedTrainTool = {
     update: () => {
+        // send some stuff outwards
+        if(sw !== null && regl.now() > lastUpdate + OUTGOING_FREQUENCY) {
+            // package up all the local trains
+            const networkPacket = {
+                trains: getTrains().filter(train => !train.remote),
+                tracks: [],
+                turnouts: []
+            }
+
+            // go through events and add data to packet
+            let event
+            while(event = outgoingEvents.shift()) {
+                switch(event.type) {
+                    case 'createtrack':
+                        networkPacket.tracks.push(event.data)
+                        break
+                    case 'turnoutswitch':
+                        networkPacket.turnouts.push(event.data)
+                        break
+                }
+            }
+
+            // pack it up
+            const packetStringified = JSON.stringify(networkPacket)
+
+            // send data to all the friends
+            sw.peers.forEach(peer => peer.send(packetStringified))
+            lastUpdate = regl.now()
+        }
+
+        // deal with incoming stuff
         syncNetworkList(getTrains(), 'trains', addTrain, setTrains)
         const [enter, exit] = syncNetworkList(getTracks(), 'tracks', addTrack, setTracks)
         enter.forEach((track) => {

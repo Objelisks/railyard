@@ -43,7 +43,7 @@ export const detectAndFixTurnouts = () => {
         })
 }
 
-const placeTrainOnTrack = (train, track) => {
+export const placeTrainOnTrack = (train, track) => {
     const curve = track.curve
     const point = curve.get(0.1)
     const tangent = curve.derivative(0.1)

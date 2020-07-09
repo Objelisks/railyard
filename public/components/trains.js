@@ -2,10 +2,19 @@ import html from '../libs/nanohtml.mjs'
 import knob from './knob.js'
 import { connect } from '../network.js'
 import flipper from './flipper.js'
+import booper from './booper.js'
+import { getTracks, getTrains, placeTrainOnTrack } from '../railyard.js'
 
 const trains = (app) => {
-    const knob1 = knob(app, 'knob1')
+    const knob1 = knob(app, 'knob1', (data) => {
+        let newSpeed = data * 0.3
+        getTrains()[0].speed = newSpeed
+
+    })
     const flipper1 = flipper(app, 'flipper1', 'edit mode')
+    const booper1 = booper(app, 'booper1', 'reset train', (data) => {
+        placeTrainOnTrack(getTrains()[0], getTracks()[0])
+    })
     
     app.use((state, emitter) => {
         emitter.once('connect', (roomName) => {
@@ -19,6 +28,7 @@ const trains = (app) => {
         return html`<div class="dialog">
             room: ${state.query.room}
             ${knob1(state, emit)}
+            ${booper1(state, emit)}
             ${flipper1(state, emit)}
         </div>`
     }

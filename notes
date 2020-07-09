@@ -11,8 +11,13 @@ https://github.com/mourner/rbush
 https://www.npmjs.com/package/ray-aabb
 
 
+functional use:
+    initial state sharing
+    cube map
+    train linking
 
-milestones
+
+todo: 
 
 sync tracks
 sync positions
@@ -189,3 +194,5 @@ X fix moveBogie
 X refactoring pass
 X throttled log
 X render canvas from choo to use state
+X reset train button
+X send messages to all players

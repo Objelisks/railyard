@@ -72,7 +72,7 @@ body:not(.grabbing) .knob {
     stroke-width: 4;
 }
 
-.flipper .indicator {
+.flipper .indicator, .booper .indicator {
     width: 50px;
     height: 50px;
     border-radius: 25px;
@@ -80,5 +80,9 @@ body:not(.grabbing) .knob {
 }
 
 .flipper.flipped .indicator {
+    background-color: paleturquoise;
+}
+
+.booper:active .indicator {
     background-color: paleturquoise;
 }

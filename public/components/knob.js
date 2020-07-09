@@ -10,16 +10,19 @@ const getCenter = (id) => {
 }
 
 const moveListener = (id, state, emit) => (e) => {
-    // TODO: tune this up
-    const center = getCenter(id)
-    const oldAngle = state.components[id].oldAngle
-    const initialAngle = state.components[id].initialAngle
-    const newAngle = Math.atan2(e.clientY - center[1], e.clientX - center[0]) + Math.PI/2
+    const newValue = state.components[id].startValue + (e.clientX - state.components[id].mouseDown) / 100.0
 
-    emit(state.events.KNOB, { id: id, data: oldAngle + newAngle - initialAngle })
+    const clampedValue = Math.min(Math.max(newValue, -1), 1)
+
+    emit(state.events.KNOB, { id: id, data: clampedValue })
 }
 
 const releaseHandle = (id, state, emit) => (e) => {
+    const newValue = state.components[id].startValue + (e.clientX - state.components[id].mouseDown) / 100.0
+    let clampedValue = Math.min(Math.max(newValue, -1), 1)
+    if(Math.abs(clampedValue) < 0.07) clampedValue = 0
+    emit(state.events.KNOB, { id: id, data: clampedValue })
+
     state.components[id].release()
     document.body.classList.remove('grabbing')
 }
@@ -30,10 +33,8 @@ const grabHandle = (state, emit) => (e) => {
     const onmove = moveListener(id, state, emit)
     const onrelease = releaseHandle(id, state, emit)
 
-    state.components[id].oldAngle = state.components[id].data
-    const center = getCenter(id)
-    const initialAngle = Math.atan2(e.clientY - center[1], e.clientX - center[0]) + Math.PI/2
-    state.components[id].initialAngle = initialAngle
+    state.components[id].startValue = state.components[id].data
+    state.components[id].mouseDown = e.clientX
 
     state.components[id].release = () => {
         window.removeEventListener('mousemove', onmove)
@@ -45,13 +46,16 @@ const grabHandle = (state, emit) => (e) => {
     document.body.classList.add('grabbing')
 }
 
-const knob = (app, id) => {
+const knob = (app, id, callback) => {
     // setup listener for knob adjustments
     app.use((state, emitter) => {
         state.events.KNOB = 'knob'
         state.components[id] = { data: 0 }
-        emitter.on(state.events.KNOB, ({ id, data }) => {
+        emitter.on(state.events.KNOB, ({ id: eventId, data }) => {
             state.components[id].data = data
+            if(id === eventId && callback) {
+                callback(data)
+            }
             emitter.emit('render')
         })
     })
@@ -71,7 +75,7 @@ const knob = (app, id) => {
                     </linearGradient>
                 </defs>
                 <circle class="ticks" cx="50" cy="50" r="50" />
-                <g class="handle-group" style="transform: rotate(${state.components[id].data}rad)" onmousedown=${grabHandle(state, emit)}>
+                <g class="handle-group" style="transform: rotate(${state.components[id].data*0.33}turn)" onmousedown=${grabHandle(state, emit)}>
                     <circle class="handle" cx="50" cy="50" r="40"/>
                     <line class="handle-mark" x1="50" y1="0" x2="50" y2="10"/>
                 </g>
