@@ -49,7 +49,7 @@ export const placeTrainOnTrack = (train, track) => {
     const tangent = curve.derivative(0.1)
     train.position = [point.x, 0, point.y]
     train.rotation = quat.rotationTo([], [1, 0, 0], vec3.normalize([], [tangent.x, 0, tangent.y]))
-    train.speed = 0
+    train.velocity = [0, 0]
 }
 
 

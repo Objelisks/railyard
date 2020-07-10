@@ -1,5 +1,4 @@
 import regl from '../regl.js'
-import { reglArg } from '../utils.js'
 import { drawPbr } from './pbr.js'
 
 export const cubePosition = [
@@ -64,4 +63,4 @@ export const cubeAttributes = regl({
   elements: cubeElements,
 })
 
-export const drawCube = () => cubeAttributes({}, drawPbr)
+export const drawCube = () => cubeAttributes({}, () => drawPbr({ texture: 'dirtypaint' }))

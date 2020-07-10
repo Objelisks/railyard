@@ -1,9 +1,9 @@
-import swarm from './libs/webrtc-swarm.mjs'
+import regl from './regl.js'
 import signalhub from './libs/signalhub.mjs'
-import { addTrack, getTracks, setTracks, getTurnouts, setTurnouts, addTrain, getTrains, setTrains, detectAndFixTurnouts } from './railyard.js'
+import swarm from './libs/webrtc-swarm.mjs'
 import { makeTrack, addToBush, removeFromBush } from './primitives/track.js'
 import { toggleTurnout } from './primitives/turnout.js'
-import regl from './regl.js'
+import { addTrack, getTracks, setTracks, getTurnouts, addTrain, getTrains, setTrains, detectAndFixTurnouts } from './railyard.js'
 
 
 // don't need to sync turnout objects, because those can be inferred from tracks

@@ -1,12 +1,15 @@
 import html from '../libs/nanohtml.mjs'
 
-const flipper = (app, id, label) => {
+const flipper = (app, id, label, callback) => {
     // setup listener for knob adjustments
     app.use((state, emitter) => {
         state.events.FLIPPER = 'flipper'
         state.components[id] = false
-        emitter.on(state.events.FLIPPER, ({ id, data }) => {
-            state.components[id] = data
+        emitter.on(state.events.FLIPPER, ({ id: eventId, data }) => {
+            state.components[eventId] = data
+            if(id === eventId && callback) {
+                callback(data)
+            }
             emitter.emit('render')
         })
     })

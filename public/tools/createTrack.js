@@ -1,11 +1,8 @@
-import { EPSILON } from '../constants.js'
 import { justClickedMouse, justMovedMouse, getMouse3d, getSnappedPoint, getSnappedAxis } from '../mouse.js'
-import { makeTurnout, intersectTurnouts, addTrackToTurnout } from '../primitives/turnout.js'
-import { makeTrack, updateTrack, intersectTracks, addToBush } from '../primitives/track.js'
-import { to_vec2, box2Around, projectOnLine } from '../utils.js'
-import { vec2 } from '../libs/gl-matrix.mjs'
-import { generateDebugArrowsForTurnout, debugArrow } from '../primitives/debug.js'
-import { addTrack, addTurnout, getTracks } from '../railyard.js'
+import { makeTrack, updateTrack, addToBush } from '../primitives/track.js'
+import { projectOnLine } from '../utils.js'
+import { debugArrow } from '../primitives/debug.js'
+import { addTrack, getTracks } from '../railyard.js'
 import Bezier from '../libs/bezier-js.mjs'
 
 const trackCreateSteps = {
@@ -43,45 +40,6 @@ export const createTrackTool = {
                     if(snappedPoint) {
                         trackCreateEndAxis = {point: snappedPoint, tangent: snappedAxis}
                     }
-
-                    // const getEnds = (curve) => [
-                    //     {
-                    //         point: to_vec2(curve.get(0)),
-                    //         facing: to_vec2(curve.derivative(0))
-                    //     },
-                    //     {
-                    //         point: to_vec2(curve.get(1)),
-                    //         facing: vec2.negate([], to_vec2(curve.derivative(1)))
-                    //     }
-                    // ]
-                    // const track = getTracks()[trackCreateTrack]
-                    // const endpoints = getEnds(track.curve)
-                    // endpoints.forEach(endpoint => {
-                    //     const hitbox = box2Around(endpoint.point, 0.1)
-                    //     const turnout = intersectTurnouts(hitbox)
-                    //         .map(entry => entry.turnout)
-                    //         .find(turnout => vec2.distance(turnout.point, endpoint.point) < EPSILON && vec2.dot(turnout.facing, endpoint.facing) > 0)
-                    //     if(turnout) {
-                    //         // we simply add the track
-                    //         addTrackToTurnout(turnout, track)
-                    //     } else {
-                    //         // find some track friends to create a turnout with
-                    //         const tracks = intersectTracks(hitbox)
-                    //             .map(entry => entry.track)
-                    //             .filter(otherTrack => {
-                    //                 const otherEnds = getEnds(otherTrack.curve)
-                    //                 // there is some end on this track that matches our endpoint
-                    //                 return otherEnds.some(otherEnd =>
-                    //                     vec2.distance(otherEnd.point, endpoint.point) < EPSILON &&
-                    //                     vec2.dot(otherEnd.facing, endpoint.facing) > 0)
-                    //             })
-                    //         if(tracks.length > 0) {
-                    //             // create turnout with this endpoint
-                    //             const newTurnout = makeTurnout([...tracks, track], endpoint.point)
-                    //             addTurnout(newTurnout)
-                    //         }
-                    //     }
-                    // })
                     break
                 }
                 case trackCreateSteps.SECOND_PLACED: { // third point clicked, set the control point for the first point

@@ -10,7 +10,7 @@ import { floor } from './primitives/floor.js'
 import { createTrackTool } from './tools/createTrack.js'
 import { playModeTool } from './tools/playMode.js'
 import { tiltShiftEffect } from './shaders/tiltshift.js'
-import { getTracks, getTurnouts, getTrains, placeTrainOnTrack } from './railyard.js'
+import { getTracks, getTurnouts, getTrains } from './railyard.js'
 import { camera, getCameraPos, getCameraDir, cameraControlTool } from './camera.js'
 import { networkedTrainTool } from './network.js'
 import { mouseListenerTool } from './mouse.js'
@@ -98,7 +98,9 @@ setTool(networkedTrainTool, true)
 
 const drawFloor = floor()
 
-const render = (delta=1/60) => {
+const delta = 1/60
+
+const render = () => {
     regl.poll()
 
     /// update time ///
@@ -116,7 +118,7 @@ const render = (delta=1/60) => {
 
             // move all trains
             // TODO: process collision
-            getTrains().forEach(train => moveTrain(train))
+            getTrains().forEach(train => moveTrain(train, delta))
 
             window.dispatchEvent(new CustomEvent('postupdate', {detail: context}))
 
@@ -207,6 +209,6 @@ const setupChoo = () => {
 
 // start
 setupChoo()
-render()
+requestAnimationFrame(render)
 
 console.log('hello world')

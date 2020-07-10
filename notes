@@ -19,6 +19,7 @@ functional use:
 
 todo: 
 
+make use of vectors more efficient
 sync tracks
 sync positions
 sync movement
@@ -101,7 +102,10 @@ The Shader Construction
     get tracks rendering as actual tracks with ties
     make some pbr materials, learn to paint them
 
-
+SOUND EFFECTS????
+    tunnel echo
+    train whistle button
+    background music
 
 gameplay:
     choose a room name

@@ -1,12 +1,9 @@
 import { vec2, vec3, mat4, vec4 } from "./libs/gl-matrix.mjs"
 
 // inline log for returning values and logging them
-export const log = (arg, label) => {
-    if(label)
-        console.log(label, arg)
-    else
-        console.log(arg)
-    return arg
+export const log = (...args) => {
+    console.log(...args)
+    return args[0]
 }
 
 // run a function at most once per delay

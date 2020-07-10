@@ -35,7 +35,7 @@ export const tiltShiftEffect = regl({
         vec2 resolution = vec2(${WIDTH}.0, ${HEIGHT}.0);
         float focusDepth = linearize_depth(texture2D(depth, vec2(0.5, 0.5)).r);
         float coordDepth = linearize_depth(texture2D(depth, gl_FragCoord.xy / resolution).r);
-        float blurAmount = coordDepth > 0.9999 ? 0.0 : pow(abs(focusDepth - coordDepth), 1.0)*10.0;
+        float blurAmount = coordDepth > 0.9999 ? 0.0 : abs(focusDepth - coordDepth) * 10.0;
         gl_FragColor = blur13(color, gl_FragCoord.xy / resolution, resolution, bias*blurAmount);
     }`,
     vert: `

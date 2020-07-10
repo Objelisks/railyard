@@ -1,7 +1,7 @@
 import regl from './regl.js'
 import { vec3, mat4 } from './libs/gl-matrix.mjs'
 import { keysPressed } from './keyboard.js'
-import { WIDTH, HEIGHT } from './constants.js'
+import { getTrains } from './railyard.js'
 
 const editCameraPosition = [10, 10, 10]
 const editCameraLookDirection = [-10, -10, -10]
@@ -29,7 +29,14 @@ export const camera = regl({
         },
 
         eye: regl.prop('eye'),
-        target: regl.prop('target')
+        target: regl.prop('target'),
+        lightPos: (context) => {
+            const train = getTrains()[0]
+            if(!train) return [0, 0, 0]
+            const pos = [...train.position]
+            const facing3d = vec3.transformQuat([], [1, 0, 0], train.rotation)
+            return vec3.add(pos, pos, vec3.scale([], facing3d, 2.5))
+        }
     },
 
     uniforms: {

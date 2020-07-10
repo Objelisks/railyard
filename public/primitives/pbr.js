@@ -1,47 +1,70 @@
 import regl from '../regl.js'
 import resl from '../libs/resl.mjs'
-import { reglArg } from '../utils.js'
-import { model } from './model.js'
+import { reglArg, log1s } from '../utils.js'
 
-const textureSize = 512
-const albedoMap = regl.texture({ shape: [textureSize, textureSize] })
-const normalMap = regl.texture({ shape: [textureSize, textureSize] })
-const metallicMap = regl.texture({ shape: [textureSize, textureSize] })
-const roughnessMap = regl.texture({ shape: [textureSize, textureSize] })
-const aoMap = regl.texture({ shape: [textureSize, textureSize] })
+const maps = {}
 
-resl({
-    manifest: {
-        albedo: {
-            type: 'image',
-            src: '/materials/dirtypaint/dirtypaint_basecolor.png'
-        },
-        normal: {
-            type: 'image',
-            src: '/materials/dirtypaint/dirtypaint_normal.png'
-        },
-        metallic: {
-            type: 'image',
-            src: '/materials/dirtypaint/dirtypaint_metallic.png'
-        },
-        roughness: {
-            type: 'image',
-            src: '/materials/dirtypaint/dirtypaint_roughness.png'
-        },
-        ao: {
-            type: 'image',
-            src: '/materials/dirtypaint/dirtypaint_ambientocclusion.png'
-        }
-    },
-    onDone: (assets) => {
-        albedoMap(assets.albedo)
-        normalMap(assets.normal)
-        metallicMap(assets.metallic)
-        roughnessMap(assets.roughness)
-        aoMap(assets.ao)
+const textures = ['table', 'dirtypaint']
+
+const loadTexture = (name) => {
+    const textureSize = 512
+    const init = { shape: [textureSize, textureSize], wrapS: 'repeat', wrapT: 'repeat' }
+    maps[name] = {
+        albedoMap: regl.texture(init),
+        normalMap: regl.texture(init),
+        metallicMap: regl.texture(init),
+        roughnessMap: regl.texture(init),
+        aoMap: regl.texture(init)
     }
-})
+    resl({
+        manifest: {
+            albedo: {
+                type: 'image',
+                src: `/materials/${name}/${name}_basecolor.png`
+            },
+            normal: {
+                type: 'image',
+                src: `/materials/${name}/${name}_normal.png`
+            },
+            metallic: {
+                type: 'image',
+                src: `/materials/${name}/${name}_metallic.png`
+            },
+            roughness: {
+                type: 'image',
+                src: `/materials/${name}/${name}_roughness.png`
+            },
+            ao: {
+                type: 'image',
+                src: `/materials/${name}/${name}_ambientocclusion.png`
+            }
+        },
+        onDone: (assets) => {
+            maps[name].albedoMap({
+                ...init,
+                data: assets.albedo
+            })
+            maps[name].normalMap({
+                ...init,
+                data: assets.normal
+            })
+            maps[name].metallicMap({
+                ...init,
+                data: assets.metallic
+            })
+            maps[name].roughnessMap({
+                ...init,
+                data: assets.roughness
+            })
+            maps[name].aoMap({
+                ...init,
+                data: assets.ao
+            })
+        }
+    })
+}
 
+textures.forEach((textureName) => loadTexture(textureName))
 
 export const drawPbr = regl({
   frag: `
@@ -183,7 +206,7 @@ export const drawPbr = regl({
       
       // ambient lighting (note that the next IBL tutorial will replace 
       // this ambient lighting with environment lighting).
-      vec3 ambient = vec3(0.03) * albedo * ao;
+      vec3 ambient = vec3(0.13) * albedo * ao;
       
       vec3 outcolor = ambient + Lo;
   
@@ -217,16 +240,16 @@ export const drawPbr = regl({
       gl_Position =  projection * view * vec4(WorldPos, 1.0);
   }`,
   uniforms: {
-    color: (context) => context.color,
-    albedoMap: () => albedoMap,
-    normalMap: () => normalMap,
-    metallicMap: () => metallicMap,
-    roughnessMap: () => roughnessMap,
-    aoMap: () => aoMap,
+    color: (context, props) => reglArg('color', [1.0, 1.0, 1.0], context, props),
+    albedoMap: (context, props) => maps[props.texture].albedoMap,
+    normalMap: (context, props) => maps[props.texture].normalMap,
+    metallicMap: (context, props) => maps[props.texture].metallicMap,
+    roughnessMap: (context, props) => maps[props.texture].roughnessMap,
+    aoMap: (context, props) => maps[props.texture].aoMap,
     camPos: (context) => context.eye,
-    'lightPositions[0]': (context) => [Math.sin(context.time)*10, 3, Math.cos(context.time)*10],
+    'lightPositions[0]': (context) => [-10, 10, 10],
     'lightColors[0]': [255, 255, 255],
-    'lightPositions[1]': [-10, 10, 10],
+    'lightPositions[1]': (context) => [Math.sin(context.time)*10, 3, Math.cos(context.time)*10],
     'lightColors[1]': [255, 255, 255],
     'lightPositions[2]': [-10, 10, -0],
     'lightColors[2]': [255, 255, 255],
@@ -234,16 +257,3 @@ export const drawPbr = regl({
     'lightColors[3]': [255, 255, 255],
   }
 })
-
-// const drawFloor = regl({
-//     context: {
-//         position: [0, -0.51, 0],
-//         rotation: [0, 0, 0, 1],
-//         scale: [50, 50, 50]
-//     }
-// })
-
-// export const floor = () => {
-//     const draw = model(() => drawPlane())
-//     return (props) => drawFloor(props, draw)
-// }
