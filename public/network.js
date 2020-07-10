@@ -1,9 +1,11 @@
 import regl from './regl.js'
 import signalhub from './libs/signalhub.mjs'
 import swarm from './libs/webrtc-swarm.mjs'
-import { makeTrack, addToBush, removeFromBush } from './primitives/track.js'
+import { makeTrack } from './primitives/track.js'
 import { toggleTurnout } from './primitives/turnout.js'
-import { addTrack, getTracks, setTracks, getTurnouts, addTrain, getTrains, setTrains, detectAndFixTurnouts } from './railyard.js'
+import { addTrack, getTracks, setTracks, getTurnouts, addTrain, getTrains, setTrains } from './railyard.js'
+import { addToTrackBush, removeFromTrackBush } from './raycast.js'
+import { detectAndFixTurnouts } from './railyardhelpers.js'
 
 
 // don't need to sync turnout objects, because those can be inferred from tracks
@@ -169,10 +171,10 @@ export const networkedTrainTool = {
         syncNetworkList(getTrains(), 'trains', addTrain, setTrains)
         const [enter, exit] = syncNetworkList(getTracks(), 'tracks', addTrack, setTracks)
         enter.forEach((track) => {
-            addToBush(track)
+            addToTrackBush(track)
         })
         exit.forEach((track) => {
-            removeFromBush(track)
+            removeFromTrackBush(track)
         })
         if(enter.length > 0 || exit.length > 0) {
             detectAndFixTurnouts()

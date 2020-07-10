@@ -1,8 +1,8 @@
-import { intersectGround, getMouseRay, to_vec2, inBox2 } from './utils.js'
-import { SNAP_THRESHOLD } from './constants.js'
-import { intersectTracks } from './primitives/track.js'
 import { vec2 } from './libs/gl-matrix.mjs'
 import { debugPoint } from './primitives/debug.js'
+import { intersectGround, getMouseRay, to_vec2, inBox2 } from './utils.js'
+import { SNAP_THRESHOLD } from './constants.js'
+import { intersectTracks } from './raycast.js'
 
 const mousePosition = [0, 0]
 let justClicked = false

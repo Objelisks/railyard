@@ -1,8 +1,9 @@
 import { justClickedMouse, justMovedMouse, getMouse3d, getSnappedPoint, getSnappedAxis } from '../mouse.js'
-import { makeTrack, updateTrack, addToBush } from '../primitives/track.js'
+import { makeTrack, updateTrack } from '../primitives/track.js'
 import { projectOnLine } from '../utils.js'
 import { debugArrow } from '../primitives/debug.js'
 import { addTrack, getTracks } from '../railyard.js'
+import { addToTrackBush } from '../raycast.js'
 import Bezier from '../libs/bezier-js.mjs'
 
 const trackCreateSteps = {
@@ -52,7 +53,7 @@ export const createTrackTool = {
                     const axisProjected = trackCreateEndAxis ? projectOnLine(point2d, trackCreateEndAxis) : point2d
                     const newTrack = getTracks()[trackCreateTrack]
                     updateTrack(newTrack, {control2: axisProjected})
-                    addToBush(newTrack) // finalized, so it shouldn't change anymore
+                    addToTrackBush(newTrack) // finalized, so it shouldn't change anymore
 
                     window.dispatchEvent(new CustomEvent('trackcreate', { detail: newTrack }))
 

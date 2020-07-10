@@ -2,9 +2,8 @@ import regl from "../regl.js"
 import { vec2, vec3, quat } from '../libs/gl-matrix.mjs'
 import { v4 as uuid } from '../libs/uuid.mjs'
 import { DERAILMENT_FACTOR, BOGIE_SIZE, TURNOUT_DETECTOR_SIZE } from '../constants.js'
-import { to_vec2, box2Around, reglArg, log100ms } from '../utils.js'
-import { intersectTurnouts } from './turnout.js'
-import { intersectTracks } from './track.js'
+import { intersectTracks, intersectTurnouts } from '../raycast.js'
+import { to_vec2, box2Around, reglArg } from '../utils.js'
 import { drawCube } from './cube.js'
 import { model } from './model.js'
 
@@ -23,14 +22,16 @@ const setupTrain = regl({
 const draw = model(() => drawCube())
 export const drawTrain = (props) => setupTrain(props, draw)
 
-export const makeTrain = () => ({
+export const makeTrain = (config) => ({
     id: uuid(),
     position: [0, 0, 0],
     rotation: [0, 0, 0, 1],
-    powered: true,
+    powered: false,
 
     poweredTargetSpeed: 0,
-    velocity: [0, 0]
+    velocity: [0, 0],
+
+    ...config
 })
 
 // have current momentum
@@ -53,12 +54,6 @@ const moveBogie = (bogie, velocity) => {
         .map((track, i) => ({turnoutTrack: track, end: turnout.endpoints[i]}))
         .filter((_, i) => i !== turnout.open)
     )
-
-    // const colliders = raycastCollidables(ray, distance)
-    // if(colliders.length > 0) {
-    //     // if its a train, and its accepting connections, connect to it
-    //     // otherwise, bounce off it and transfer some momentum
-    // }
 
     const isClosedInThisDirection = (track) => {
         const closerEndpoint = vec2.distance(bogie2d, to_vec2(track.curve.get(0))) < vec2.distance(bogie2d, to_vec2(track.curve.get(1)))
@@ -97,6 +92,8 @@ export const moveTrain = (train, delta) => {
     const facing = [facing3d[0], facing3d[2]]
     const direction = vec2.normalize([], train.velocity)
     const speed = vec2.length(train.velocity)
+
+    // accumulate forces
     const force = [0, 0]
     if(train.powered) {
         const powerDirection = train.poweredTargetSpeed > speed ? 1 : train.poweredTargetSpeed < speed ? -1 : 0
@@ -111,9 +108,21 @@ export const moveTrain = (train, delta) => {
     }
     // collision (hit and pull)
 
+    // const colliders = raycastCollidables(ray, distance)
+    // if(colliders.length > 0) {
+    //     // if its a train, and its accepting connections, connect to it
+    //     // otherwise, bounce off it and transfer some momentum
+    // }
+
+    // detect and connect
+
+    // through connections, transfer momentum
+
     // idk abt this
     //vec2.add(force, force, vec2.scale([], direction, Math.max(speed * Math.abs(1-vec2.dot(direction, facing)) * -FRICTION * 100000.0, -1))) // friction from rail using approx of curvature
     vec2.add(force, force, vec2.scale([], direction, speed * -FRICTION)) // friction from air
+
+    // apply force
     vec2.add(train.velocity, train.velocity, vec2.scale([], force, delta))
 
     // transfer momentum

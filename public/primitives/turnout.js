@@ -1,14 +1,10 @@
-import RBush from '../libs/rbush.mjs'
 import { v4 as uuid } from '../libs/uuid.mjs'
 import { vec2 } from '../libs/gl-matrix.mjs'
-import { to_vec2, box2Around } from '../utils.js'
-import { FROG_SIZE } from '../constants.js'
+import { to_vec2 } from '../utils.js'
 import { drawCube } from './cube.js'
 import { setColor } from '../reglhelpers.js'
 import { model } from './model.js'
 import { generateDebugArrowsForTurnout } from './debug.js'
-
-const turnoutBush = new RBush()
 
 // assumptions about turnouts:
 // there will only ever be at most 2 turnouts at a single point
@@ -34,26 +30,7 @@ export const makeTurnout = (tracks, point) => {
         open: 0
     }
 
-    // TODO: consistency around adding to bushes
-    const region = box2Around(point, FROG_SIZE)
-    turnoutBush.insert({
-        ...region,
-        turnout
-    })
     return turnout
-}
-
-export const addTrackToTurnout = (turnout, track) => {
-    turnout.tracks.push(track)
-    turnout.endpoints.push(whichEndpoint(track, turnout.point))
-}
-
-export const intersectTurnouts = (region) => {
-    return turnoutBush.search(region)
-}
-
-export const resetTurnoutBush = () => {
-    turnoutBush.clear()
 }
 
 export const toggleTurnout = (turnout, dispatch=true) => {

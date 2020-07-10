@@ -3,7 +3,8 @@ import knob from './knob.js'
 import { connect } from '../network.js'
 import flipper from './flipper.js'
 import booper from './booper.js'
-import { getTracks, getTrains, placeTrainOnTrack } from '../railyard.js'
+import { getTracks, getTrains } from '../railyard.js'
+import { placeTrainOnTrack } from '../railyardhelpers.js'
 
 const trains = (app) => {
     const knob1 = knob(app, 'knob1', (data) => {
