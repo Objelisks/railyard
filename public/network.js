@@ -24,7 +24,7 @@ const remoteData = { }
 
 let outgoingEvents = []
 let incomingEvents = []
-const OUTGOING_FREQUENCY = 1000
+const OUTGOING_FREQUENCY = 1 // per sec
 let lastUpdate = 0
 let sw = null
 
@@ -86,8 +86,6 @@ export const connect = (room) => {
 
         peer.on('close', () => {
             console.log('a friend has left', id)
-            // stop sending data
-            clearInterval(peerInterval)
             
             // remove any remote data belonging to this player
             delete remoteData[id]
