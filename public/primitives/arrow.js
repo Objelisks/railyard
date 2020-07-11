@@ -7,7 +7,8 @@ const reverse = (array) => array.reduceRight((acc, val) => acc.concat([val]), []
 
 const generatePoints = (curve, towardsEndpoint, height) => {
     const inset = towardsEndpoint === 0 ? 0.1 : 0.9
-    let arrowPoints = [curve.offset(inset, 0.3), curve.offset(inset, -0.3), curve.get(towardsEndpoint)]
+    const curveLength = curve.length()
+    let arrowPoints = [curve.offset(inset, 0.3*curveLength/5), curve.offset(inset, -0.3*curveLength/5), curve.get(towardsEndpoint)]
         .map(p => [p.x, height, p.y])
     arrowPoints = towardsEndpoint === 0 ? reverse(arrowPoints) : arrowPoints
     const railPoints = trackRail(curve, 0, height)

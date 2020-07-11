@@ -24,9 +24,9 @@ import { flags } from './flags.js'
 // debug keyboard listener
 window.addEventListener('keypress', (e) => {
     if(e.key === '1') {
-        getTurnouts().forEach(turnout => {
-            toggleTurnout(turnout)
-        })
+        // getTurnouts().forEach(turnout => {
+        //     toggleTurnout(turnout)
+        // })
     }
     if(e.key === '2') {
         getTracks().forEach((track, i) => {
@@ -93,6 +93,8 @@ const setTool = (tool, active) => {
         })
     }
 }
+
+// TODO: deterministic ordering of tools
 const toggleTool = (tool) => setTool(tool, !toolset.has(tool))
 setTool(mouseListenerTool, true)
 setTool(playModeTool, true)
@@ -247,8 +249,23 @@ addTrack(makeTrack([2.183996395900957,0.7014740697043749],[0.8051060805168604,-0
 
 detectAndFixTurnouts()
 loadToTrackBush(getTracks())
-addTrain(makeTrain({ powered: true }))
-// addTrain(makeTrain())
-// addTrain(makeTrain())
-// addTrain(makeTrain())
+addTrain(makeTrain({ powered: false }))
+addTrain(makeTrain())
+addTrain(makeTrain())
+addTrain(makeTrain())
 getTrains().forEach((train, i) => placeTrainOnTrack(train, getTracks()[i]))
+const alltrains = getTrains()
+// alltrains[0].connectionBack = alltrains[1].id
+// alltrains[1].connectionFront = alltrains[0].id
+// alltrains[1].position = vec3.add([], alltrains[0].position, [-1, 0, 0])
+// alltrains[1].rotation = [0, 0, 0, 1]
+
+// alltrains[1].connectionBack = alltrains[2].id
+// alltrains[2].connectionFront = alltrains[1].id
+// alltrains[2].position = vec3.add([], alltrains[1].position, [-1, 0, 0])
+// alltrains[2].rotation = [0, 0, 0, 1]
+
+// alltrains[2].connectionBack = alltrains[3].id
+// alltrains[3].connectionFront = alltrains[2].id
+// alltrains[3].position = vec3.add([], alltrains[2].position, [-1, 0, 0])
+// alltrains[3].rotation = [0, 0, 0, 1]

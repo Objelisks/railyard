@@ -61,8 +61,6 @@ export const mouseListenerTool = {
                 current : nearest) : null
         snappedPoint = snap && snap.point || null
         snappedAxis = snap && snap.tangent || null
-        
-        debugPoint('ray', snappedPoint ? [snappedPoint[0], 0, snappedPoint[1]] : hit.point, [1, .7, .28])
     },
 
     postrender: () => {

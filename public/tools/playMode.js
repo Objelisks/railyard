@@ -1,15 +1,18 @@
-import { getRay, justClickedMouse } from '../mouse.js'
-import { toggleTurnout } from '../primitives/turnout.js'
-import { getTurnouts } from '../railyard.js'
+import { vec2, vec3 } from '../libs/gl-matrix.mjs'
 import createRay from '../libs/ray-aabb.mjs'
-import { vec3 } from '../libs/gl-matrix.mjs'
+import { toggleTurnout } from '../primitives/turnout.js'
+import { getRay, justClickedMouse } from '../mouse.js'
+import { getTurnouts, getTrains } from '../railyard.js'
+import { CONNECTOR_OFFSET } from '../constants.js'
+import { debugPoint } from '../primitives/debug.js'
 
 export const playModeTool = {
     update: ({detail: context}) => {
         const rayDirection = getRay()
         const ray = createRay(context.eye, rayDirection)
         let nearestHit = null
-        let nearest = Infinity
+        let nearestDistance = Infinity
+        let nearestType = null
         getTurnouts().forEach(turnout => {
             const turnoutPosition = vec3.add([], [turnout.point[0], -1, turnout.point[1]], [turnout.facing[0], 0, turnout.facing[1]])
             const box = [
@@ -19,20 +22,82 @@ export const playModeTool = {
             const normal = [0, 0, 0]
             const hit = ray.intersects(box, normal)
             if(hit !== false) {
-                if(hit < nearest) {
-                    nearest = hit
+                if(hit < nearestDistance) {
+                    nearestDistance = hit
                     nearestHit = turnout
+                    nearestType = 'turnout'
+                }
+            }
+        })
+        const trains = getTrains()
+        trains.forEach(train => {
+            const box = [
+                [train.position[0]-1, train.position[1]-0.5, train.position[2]-0.5],
+                [train.position[0]+1, train.position[1]+0.5, train.position[2]+0.5],
+            ]
+            const normal = [0, 0, 0]
+            const hit = ray.intersects(box, normal)
+            if(hit !== false) {
+                if(hit < nearestDistance) {
+                    nearestDistance = hit
+                    nearestHit = train
+                    nearestType = 'train'
                 }
             }
         })
         if(nearestHit !== null) {
-            nearestHit.visible = true
-            if(justClickedMouse()) {
-                toggleTurnout(nearestHit)
+            const point = vec3.scaleAndAdd([], context.eye, rayDirection, nearestDistance)
+            debugPoint('playClick', point, [1, 0, 0])
+            switch(nearestType) {
+                case 'turnout':
+                    nearestHit.visible = true
+                    if(justClickedMouse()) {
+                        toggleTurnout(nearestHit)
+                    }
+                    break
+                case 'train':
+                    const train = nearestHit
+                    train.visible = true
+
+                    if(justClickedMouse()) {
+                        // disconnect cars artificial intelligence algorithm
+                        // if it only has one connection, disconnect that one, else:
+                        // figure out the point of clicking and disconnect the side nearest to the click
+                        const facing3d = vec3.transformQuat([], [1, 0, 0], train.rotation)
+                        const disconnect = (connection) => {
+                            const other = trains.find(t => t.id === train[connection])
+                            const otherConnection = other.connectionFront === train.id ? 'connectionFront' : 'connectionBack'
+                            const facing3dOther = vec3.transformQuat([], [1, 0, 0], other.rotation)
+                            other[otherConnection] = null
+                            train[connection] = null
+                            const DISCONNECT_FORCE = 0.02
+                            vec2.scaleAndAdd(train.velocity, train.velocity, facing3d, connection === 'connectionFront' ? -DISCONNECT_FORCE : DISCONNECT_FORCE)
+                            vec2.scaleAndAdd(other.velocity, other.velocity, facing3dOther, other.connectionFront === train.id ? -DISCONNECT_FORCE : DISCONNECT_FORCE)
+                        }
+                        if(train.connectionFront && !train.connectionBack) {
+                            disconnect('connectionFront')
+                        } else if(!train.connectionFront && train.connectionBack) {
+                            disconnect('connectionBack')
+                        } else if(train.connectionFront && train.connectionBack) {
+                            const frontConnector = vec3.scaleAndAdd([], train.position, facing3d, CONNECTOR_OFFSET)
+                            const backConnector = vec3.scaleAndAdd([], train.position, facing3d, -CONNECTOR_OFFSET)
+                            if(vec3.distance(point, frontConnector) < vec3.distance(point, backConnector)) {
+                                disconnect('connectionFront')
+                            } else {
+                                disconnect('connectionBack')
+                            }
+                        } else {
+                            // make a cute sound effect
+                        }
+                    }
+                    break
             }
+        } else {
+            debugPoint('playClick', [0, 999, 0], [1, 0, 0])
         }
     },
     postrender: () => {
         getTurnouts().forEach(turnout => turnout.visible = false)
+        getTrains().forEach(train => train.visible = false)
     }
 }

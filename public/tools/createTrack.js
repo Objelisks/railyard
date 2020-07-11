@@ -1,10 +1,10 @@
-import { justClickedMouse, justMovedMouse, getMouse3d, getSnappedPoint, getSnappedAxis } from '../mouse.js'
+import Bezier from '../libs/bezier-js.mjs'
 import { makeTrack, updateTrack } from '../primitives/track.js'
-import { projectOnLine } from '../utils.js'
-import { debugArrow } from '../primitives/debug.js'
+import { debugCurve, debugPoint } from '../primitives/debug.js'
+import { justClickedMouse, justMovedMouse, getMouse3d, getSnappedPoint, getSnappedAxis } from '../mouse.js'
 import { addTrack, getTracks } from '../railyard.js'
 import { addToTrackBush } from '../raycast.js'
-import Bezier from '../libs/bezier-js.mjs'
+import { projectOnLine } from '../utils.js'
 
 const trackCreateSteps = {
     FIRST_PLACED: 'first',
@@ -22,6 +22,13 @@ export const createTrackTool = {
         const point2d = [mouse3d[0], mouse3d[2]]
         const snappedPoint = getSnappedPoint()
         const snappedAxis = getSnappedAxis()
+        
+        if(snappedPoint) {
+            debugPoint('createTrack', [snappedPoint[0], 0, snappedPoint[1]], [1, .7, .28])
+        } else {
+            debugPoint('createTrack', mouse3d, [1, .7, .28])
+        }
+        
         if(justClickedMouse()) {
             switch(trackCreateState) {
                 default: { // first click: create track and make it tiny
@@ -62,7 +69,7 @@ export const createTrackTool = {
                     trackCreateTrack = null
                     trackCreateStartAxis = null
                     trackCreateEndAxis = null
-                    debugArrow('createTrack', null)
+                    debugCurve('createTrack', null)
                 }
             }
         } else if(trackCreateTrack !== null && justMovedMouse()) {
@@ -79,7 +86,7 @@ export const createTrackTool = {
                 case trackCreateSteps.SECOND_PLACED: {
                     const axisProjected = trackCreateStartAxis ? projectOnLine(point2d, trackCreateStartAxis) : point2d
                     const startPoint = getTracks()[trackCreateTrack].curve.points[0]
-                    debugArrow('createTrack', new Bezier(startPoint,
+                    debugCurve('createTrack', new Bezier(startPoint,
                         {x: (startPoint.x + axisProjected[0]) / 2, y: (startPoint.y + axisProjected[1]) / 2},
                         {x: axisProjected[0], y: axisProjected[1]}),
                         1,
@@ -90,7 +97,7 @@ export const createTrackTool = {
                 case trackCreateSteps.THIRD_PLACED: {
                     const axisProjected = trackCreateEndAxis ? projectOnLine(point2d, trackCreateEndAxis) : point2d
                     const startPoint = getTracks()[trackCreateTrack].curve.points[3]
-                    debugArrow('createTrack', new Bezier(startPoint,
+                    debugCurve('createTrack', new Bezier(startPoint,
                         {x: (startPoint.x + axisProjected[0]) / 2, y: (startPoint.y + axisProjected[1]) / 2},
                         {x: axisProjected[0], y: axisProjected[1]}),
                         1,

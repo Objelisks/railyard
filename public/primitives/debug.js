@@ -19,7 +19,7 @@ export const drawDebugPoints = () => setupPoint(Object.values(debugPoints), draw
 
 
 const debugArrows = {}
-export const debugArrow = (key, curve, towardsEndpoint, color) => {
+export const debugCurve = (key, curve, towardsEndpoint, color) => {
     if(curve === null) {
         delete debugArrows[key]
         return
@@ -32,6 +32,12 @@ export const debugArrow = (key, curve, towardsEndpoint, color) => {
         debugArrows[key] = {curve, color, arrow: arrow(curve, towardsEndpoint, 1.0)}
     }
 }
+export const debugVector = (label, point, vector, color=[1, 0, 0], scale=1) =>
+    debugCurve(label, new Bezier({x: point[0], y: point[1]},
+        {x: point[0] + vector[0]*scale/2, y: point[1] + vector[1]*scale/2},
+        {x: point[0] + vector[0]*scale, y: point[1] + vector[1]*scale}),
+        1,
+        color)
 const setupArrow = regl({
     context: {
         color: (context, props) => props.color || [0.5, 0.5, 0.5]
@@ -46,6 +52,6 @@ export const generateDebugArrowsForTurnout = (turnout) => {
     const t1 = turnout.endpoints[turnout.open] === 0 ? 0.01 : 0.6
     const t2 = turnout.endpoints[turnout.open] === 0 ? 0.4 : 0.99
     const direction = turnout.endpoints[turnout.open] === 0 ? 1 : 0
-    debugArrow(`turnout-${turnout.index}`, track.curve.split(t1, t2), direction, [1, .7, .28])
+    debugCurve(`turnout-${turnout.index}`, track.curve.split(t1, t2), direction, [1, .7, .28])
 }
 
