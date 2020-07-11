@@ -44,9 +44,11 @@ const hydrateTrack = (trackData) => {
     return newTrack
 }
 
+const signalUrl = `${window.location.protocol}//${window.location.hostname}:10080`
+
 export const connect = (room) => {
     const roomName = `railyard-${room}`
-    const hub = signalhub(roomName, ['127.0.0.1:8080'])
+    const hub = signalhub(roomName, [signalUrl])
     sw = swarm(hub)
     console.log(`connecting to ${roomName}`)
 

@@ -1,15 +1,15 @@
 // to host files and facilitate discovery
-
 const path = require('path')
 
 const ports = {
-    express: 8081,
-    signalhub: 8080
+    express: 10081,
+    signalhub: 10080
 }
 
 const { spawn } = require('child_process')
 
-const signalChild = spawn(`npm.cmd`, ['run', 'signalhub'])
+const signalChild = spawn(`npm${process.platform === 'win32' ? '.cmd' : ''}`,
+    ['run', 'signalhub', '--', '-p', `${ports.signalhub}`])
 signalChild.stdout.on('data', (data) => {
     console.log(`SIGNAL ${data}`)
 })
