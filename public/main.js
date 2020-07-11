@@ -254,18 +254,3 @@ addTrain(makeTrain())
 addTrain(makeTrain())
 addTrain(makeTrain())
 getTrains().forEach((train, i) => placeTrainOnTrack(train, getTracks()[i]))
-const alltrains = getTrains()
-// alltrains[0].connectionBack = alltrains[1].id
-// alltrains[1].connectionFront = alltrains[0].id
-// alltrains[1].position = vec3.add([], alltrains[0].position, [-1, 0, 0])
-// alltrains[1].rotation = [0, 0, 0, 1]
-
-// alltrains[1].connectionBack = alltrains[2].id
-// alltrains[2].connectionFront = alltrains[1].id
-// alltrains[2].position = vec3.add([], alltrains[1].position, [-1, 0, 0])
-// alltrains[2].rotation = [0, 0, 0, 1]
-
-// alltrains[2].connectionBack = alltrains[3].id
-// alltrains[3].connectionFront = alltrains[2].id
-// alltrains[3].position = vec3.add([], alltrains[2].position, [-1, 0, 0])
-// alltrains[3].rotation = [0, 0, 0, 1]
