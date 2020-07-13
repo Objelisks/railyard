@@ -20,6 +20,8 @@ import { mouseListenerTool } from './mouse.js'
 import { WIDTH, HEIGHT } from './constants.js'
 import { loadToTrackBush } from './raycast.js'
 import { flags } from './flags.js'
+import { fxaaPass } from './shaders/fxaapass.js'
+import { waitingOn } from './reglhelpers.js'
 
 
 // debug keyboard listener
@@ -76,6 +78,7 @@ const frame2 = makeFrameBuffer()
 
 let flip = false
 const getFbo = () => flip ? frame2 : frame1
+const getOtherFbo = () => flip ? frame1 : frame2
 
 
 // setup tools
@@ -164,24 +167,30 @@ const render = () => {
         })
     }
     
-    // render the scene normally offscreen on the first buffer
-    const renderFbo = getFbo()
-    renderFbo.fbo.use(() => {
-        draw()
-    })
-    flip = !flip
-    // switch to the second buffer and render the tiltshift blur one way from the first buffer
-    getFbo().fbo.use(() => tiltShiftEffect({
-        color: renderFbo.color,
-        depth: renderFbo.depth,
-        bias: [1, 0]
-    }))
-    // switch to the screen and render the tiltshift blur the other way from the second buffer
-    tiltShiftEffect({
-        color: getFbo().color,
-        depth: getFbo().depth,
-        bias: [0, 1]
-    })
+    if(waitingOn.count === 0) {
+        // render the scene normally offscreen on the first buffer
+        getFbo().fbo.use(() => {
+            draw()
+        })
+        flip = !flip
+        // switch to the second buffer and render the tiltshift blur one way from the first buffer
+        getFbo().fbo.use(() => tiltShiftEffect({
+            color: getOtherFbo().color,
+            depth: getOtherFbo().depth,
+            bias: [1, 0]
+        }))
+        flip = !flip
+        // switch to the screen and render the tiltshift blur the other way from the second buffer
+        getFbo().fbo.use(() => tiltShiftEffect({
+            color: getOtherFbo().color,
+            depth: getOtherFbo().depth,
+            bias: [0, 1]
+        }))
+
+        fxaaPass({
+            color: getFbo().color
+        })
+    }
 
     if(!flags.stepMode) {
         requestAnimationFrame(render)

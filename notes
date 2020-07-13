@@ -16,12 +16,10 @@ https://www.npmjs.com/package/ray-aabb
 
 functional use:
     initial state sharing
-    cube map
     disconnect on separate
     don't join with remote trains??
     disconnect conditions
 
-    X train linking
 
 
 ON MIPMAPS
@@ -84,11 +82,6 @@ The Networking Integration
 rubberband state on update
 button to toggle train collision
 events:
-    X player join
-    X player leave
-    X data update (all trains state, all turnouts state)
-    X turnout activation
-    X tracks placement
     switch train controlled
     vote request: type
     vote response: accept, revision
@@ -226,3 +219,10 @@ X throttled log
 X render canvas from choo to use state
 X reset train button
 X send messages to all players
+X cube map
+X train linking
+X player join
+X player leave
+X data update (all trains state, all turnouts state)
+X turnout activation
+X tracks placement

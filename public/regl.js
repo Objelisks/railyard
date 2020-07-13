@@ -10,7 +10,8 @@ const regl = createREGL({
         'WEBGL_color_buffer_float'
     ],
     attributes: {
-        preserveDrawingBuffer: false
+        preserveDrawingBuffer: false,
+        antialias: false
     }
 })
 

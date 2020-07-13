@@ -10,16 +10,21 @@ export const setColor = regl({
 
 export const textures = {}
 
+export const waitingOn = {
+    count: 0
+}
+
 export const loadTexture = (name) => {
     const textureSize = 512
     const init = { shape: [textureSize, textureSize], wrapS: 'repeat', wrapT: 'repeat' }
     textures[name] = {
-        albedoMap: regl.texture(init),
-        normalMap: regl.texture(init),
-        metallicMap: regl.texture(init),
-        roughnessMap: regl.texture(init),
-        aoMap: regl.texture(init)
+        albedoMap: regl.texture(),
+        normalMap: regl.texture(),
+        metallicMap: regl.texture(),
+        roughnessMap: regl.texture(),
+        aoMap: regl.texture()
     }
+    waitingOn.count += 1
     resl({
         manifest: {
             albedo: {
@@ -64,6 +69,7 @@ export const loadTexture = (name) => {
                 ...init,
                 data: assets.ao
             })
+            waitingOn.count -= 1
         }
     })
 }
@@ -72,7 +78,8 @@ export const loadCubeMap = (name, file) => {
     if(textures[name][file]) return
     const textureSize = 512
     textures[name] = textures[name] || {}
-    textures[name][file] = regl.cube(textureSize)
+    textures[name][file] = regl.cube()
+    waitingOn.count += 1
     resl({
         manifest: {
             cube: {
@@ -96,6 +103,7 @@ export const loadCubeMap = (name, file) => {
                 faces: cubeFaces
             })
 
+            waitingOn.count -= 1
         }
     })
 }
@@ -105,9 +113,10 @@ export const loadEnvironment = (name) => {
     if(textures[name] && textures[name].irradianceMap) return
     const textureSize = 512
     textures[name] = textures[name] || {}
-    textures[name].irradianceMap = regl.cube(128)
-    textures[name].prefilterMap = regl.cube(256)
-    textures[name].brdfLUT = regl.texture(textureSize)
+    textures[name].irradianceMap = regl.cube()
+    textures[name].prefilterMap = regl.cube()
+    textures[name].brdfLUT = regl.texture()
+    waitingOn.count += 1
     resl({
         manifest: {
             irradianceMap: {
@@ -162,6 +171,7 @@ export const loadEnvironment = (name) => {
             })
 
             textures[name].brdfLUT(assets.brdfLUT)
+            waitingOn.count -= 1
         }
     })
 }
