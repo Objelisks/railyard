@@ -38,23 +38,6 @@ export const cubeElements = [
 ]
 
 export const cubeAttributes = regl({
-  // frag: `
-  // precision mediump float;
-  // varying vec2 vUv;
-  // uniform vec3 color;
-  // void main () {
-  //   gl_FragColor = vec4(color, 1.0);
-  // }`,
-  // vert: `
-  // precision mediump float;
-  // attribute vec3 position;
-  // attribute vec2 uv;
-  // varying vec2 vUv;
-  // uniform mat4 projection, model, view;
-  // void main() {
-  //   vUv = uv;
-  //   gl_Position = projection * view * model * vec4(position, 1.0);
-  // }`,
   attributes: {
     position: cubePosition,
     normal: cubeNormal,

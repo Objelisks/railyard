@@ -11,10 +11,34 @@ https://github.com/mourner/rbush
 https://www.npmjs.com/package/ray-aabb
 
 
+
+
+
 functional use:
     initial state sharing
     cube map
-    train linking
+    disconnect on separate
+    don't join with remote trains??
+    disconnect conditions
+
+    X train linking
+
+
+ON MIPMAPS
+    the prefiltered map needs extra mipmap levels generated
+    regl/webgl1 doesn't support incomplete mipmaps and cmft exports them incomplete by default
+    TODO: detect number of mipmaps by images.length / 6
+
+skybox workflow:
+    find high res hdr environment map
+    open in cmft
+        tonemap skybox, output as rgba32f cubemap dds
+        generate radiance, output same
+        generate irradiance, output same
+    open _pmrem in PVRTexTool
+        generate mipmaps
+        save as rgba32f
+    copy all to materials folder
 
 
 todo: 

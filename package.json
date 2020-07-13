@@ -18,6 +18,7 @@
     "express": "^4.17.1",
     "gl-matrix": "^3.3.0",
     "nanohtml": "^1.9.1",
+    "parse-dds": "^1.2.1",
     "ray-aabb": "^3.0.2",
     "rbush": "^3.0.1",
     "regl": "^1.6.1",

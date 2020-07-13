@@ -15,6 +15,7 @@ module.exports = {
         'rbush': 'rbush',
         'nanohtml': 'nanohtml',
         'ray-aabb': 'ray-aabb',
+        'parse-dds': 'parse-dds',
     },
     output: {
         path: path.resolve(__dirname, "public/libs"),

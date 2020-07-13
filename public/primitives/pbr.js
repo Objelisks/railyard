@@ -1,78 +1,26 @@
 import regl from '../regl.js'
-import resl from '../libs/resl.mjs'
 import { reglArg, log1s } from '../utils.js'
+import { loadTexture, loadEnvironment, textures } from '../reglhelpers.js'
 
-const maps = {}
+const cubeMapNames = ['artist']
+cubeMapNames.forEach((textureName) => loadEnvironment(textureName))
 
-const textures = ['table', 'dirtypaint']
-
-const loadTexture = (name) => {
-    const textureSize = 512
-    const init = { shape: [textureSize, textureSize], wrapS: 'repeat', wrapT: 'repeat' }
-    maps[name] = {
-        albedoMap: regl.texture(init),
-        normalMap: regl.texture(init),
-        metallicMap: regl.texture(init),
-        roughnessMap: regl.texture(init),
-        aoMap: regl.texture(init)
-    }
-    resl({
-        manifest: {
-            albedo: {
-                type: 'image',
-                src: `/materials/${name}/${name}_basecolor.png`
-            },
-            normal: {
-                type: 'image',
-                src: `/materials/${name}/${name}_normal.png`
-            },
-            metallic: {
-                type: 'image',
-                src: `/materials/${name}/${name}_metallic.png`
-            },
-            roughness: {
-                type: 'image',
-                src: `/materials/${name}/${name}_roughness.png`
-            },
-            ao: {
-                type: 'image',
-                src: `/materials/${name}/${name}_ambientocclusion.png`
-            }
-        },
-        onDone: (assets) => {
-            maps[name].albedoMap({
-                ...init,
-                data: assets.albedo
-            })
-            maps[name].normalMap({
-                ...init,
-                data: assets.normal
-            })
-            maps[name].metallicMap({
-                ...init,
-                data: assets.metallic
-            })
-            maps[name].roughnessMap({
-                ...init,
-                data: assets.roughness
-            })
-            maps[name].aoMap({
-                ...init,
-                data: assets.ao
-            })
-        }
-    })
-}
-
-textures.forEach((textureName) => loadTexture(textureName))
+const textureNames = ['table', 'dirtypaint', 'shinything', 'mirror']
+textureNames.forEach((textureName) => loadTexture(textureName))
 
 export const drawPbr = regl({
   frag: `
+  #extension OES_texture_float : enable
+  #extension OES_texture_float_linear : enable
+  #extension WEBGL_color_buffer_float : enable
   #extension GL_OES_standard_derivatives : enable
   precision mediump float;
+
   varying vec2 TexCoords;
   varying vec3 WorldPos;
   varying vec3 Normal;
+
+  uniform vec3 color;
   
   // material parameters
   uniform sampler2D albedoMap;
@@ -81,12 +29,16 @@ export const drawPbr = regl({
   uniform sampler2D roughnessMap;
   uniform sampler2D aoMap;
   
+  // IBL
+  uniform samplerCube irradianceMap;
+  uniform samplerCube prefilterMap;
+  uniform sampler2D brdfLUT;
+  
   // lights
   uniform vec3 lightPositions[4];
   uniform vec3 lightColors[4];
-
+  
   uniform vec3 camPos;
-  uniform vec3 color;
   
   const float PI = 3.14159265359;
   // ----------------------------------------------------------------------------
@@ -151,15 +103,23 @@ export const drawPbr = regl({
       return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
   }
   // ----------------------------------------------------------------------------
+  vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
+  {
+      return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
+  }   
+  // ----------------------------------------------------------------------------
   void main()
   {		
-      vec3 albedo     = pow(texture2D(albedoMap, TexCoords).rgb * color, vec3(2.2));
-      float metallic  = texture2D(metallicMap, TexCoords).r;
-      float roughness = texture2D(roughnessMap, TexCoords).r;
-      float ao        = texture2D(aoMap, TexCoords).r;
-  
+      // material properties
+      vec3 albedo = pow(texture2D(albedoMap, TexCoords).rgb * color, vec3(2.2));
+      float metallic = texture2D(metallicMap, TexCoords).r - 0.1;
+      float roughness = texture2D(roughnessMap, TexCoords).r + 0.1;
+      float ao = texture2D(aoMap, TexCoords).r;
+         
+      // input lighting data
       vec3 N = getNormalFromMap();
       vec3 V = normalize(camPos - WorldPos);
+      vec3 R = reflect(-V, N); 
   
       // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
       // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)    
@@ -168,7 +128,7 @@ export const drawPbr = regl({
   
       // reflectance equation
       vec3 Lo = vec3(0.0);
-      for(int i = 0; i < 4; ++i)
+      for(int i = 0; i < 4; ++i) 
       {
           // calculate per-light radiance
           vec3 L = normalize(lightPositions[i] - WorldPos);
@@ -179,14 +139,14 @@ export const drawPbr = regl({
   
           // Cook-Torrance BRDF
           float NDF = DistributionGGX(N, H, roughness);   
-          float G   = GeometrySmith(N, V, L, roughness);      
-          vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);
-             
-          vec3 nominator    = NDF * G * F; 
+          float G   = GeometrySmith(N, V, L, roughness);    
+          vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);        
+          
+          vec3 nominator    = NDF * G * F;
           float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.001; // 0.001 to prevent divide by zero.
           vec3 specular = nominator / denominator;
           
-          // kS is equal to Fresnel
+           // kS is equal to Fresnel
           vec3 kS = F;
           // for energy conservation, the diffuse and specular light can't
           // be above 1.0 (unless the surface emits light); to preserve this
@@ -195,28 +155,42 @@ export const drawPbr = regl({
           // multiply kD by the inverse metalness such that only non-metals 
           // have diffuse lighting, or a linear blend if partly metal (pure metals
           // have no diffuse light).
-          kD *= 1.0 - metallic;	  
-  
+          kD *= 1.0 - metallic;	                
+              
           // scale light by NdotL
           float NdotL = max(dot(N, L), 0.0);        
   
           // add to outgoing radiance Lo
-          Lo += (kD * albedo / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
-      }
+          Lo += (kD * albedo / PI + specular) * radiance * NdotL; // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+      }   
       
-      // ambient lighting (note that the next IBL tutorial will replace 
-      // this ambient lighting with environment lighting).
-      vec3 ambient = vec3(0.13) * albedo * ao;
+      // ambient lighting (we now use IBL as the ambient term)
+      vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
       
-      vec3 outcolor = ambient + Lo;
+      vec3 kS = F;
+      vec3 kD = 1.0 - kS;
+      kD *= 1.0 - metallic;	  
+      
+      vec3 irradiance = textureCube(irradianceMap, N).rgb;
+      vec3 diffuse      = irradiance * albedo;
+      
+      // sample both the pre-filter map and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
+      const float MAX_REFLECTION_LOD = 4.0;
+      vec3 prefilteredColor = textureCube(prefilterMap, R,  roughness * MAX_REFLECTION_LOD).rgb;    
+      vec2 brdf  = texture2D(brdfLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
+      vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
+  
+      vec3 ambient = (kD * diffuse + specular) * ao;
+      
+      vec3 color = ambient + Lo;
   
       // HDR tonemapping
-      outcolor = outcolor / (outcolor + vec3(1.0));
+      color = color / (color + vec3(1.0));
       // gamma correct
-      outcolor = pow(outcolor, vec3(1.0/2.2)); 
+      color = pow(color, vec3(1.0/2.2)); 
   
-      gl_FragColor = vec4(outcolor, 1.0);
-  }`,
+      gl_FragColor = vec4(color , 1.0);
+    }`,
   vert: `
   precision mediump float;
   attribute vec3 position;
@@ -241,11 +215,14 @@ export const drawPbr = regl({
   }`,
   uniforms: {
     color: (context, props) => reglArg('color', [1.0, 1.0, 1.0], context, props),
-    albedoMap: (context, props) => maps[props.texture].albedoMap,
-    normalMap: (context, props) => maps[props.texture].normalMap,
-    metallicMap: (context, props) => maps[props.texture].metallicMap,
-    roughnessMap: (context, props) => maps[props.texture].roughnessMap,
-    aoMap: (context, props) => maps[props.texture].aoMap,
+    albedoMap: (context, props) => textures[props.texture].albedoMap,
+    normalMap: (context, props) => textures[props.texture].normalMap,
+    metallicMap: (context, props) => textures[props.texture].metallicMap,
+    roughnessMap: (context, props) => textures[props.texture].roughnessMap,
+    aoMap: (context, props) => textures[props.texture].aoMap,
+    irradianceMap: () => textures['artist'].irradianceMap,
+    prefilterMap: () => textures['artist'].prefilterMap,
+    brdfLUT: () => textures['artist'].brdfLUT,
     camPos: (context) => context.eye,
     'lightPositions[0]': (context) => context.lightPos,
     'lightColors[0]': [40, 30, 10],

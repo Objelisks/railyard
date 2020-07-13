@@ -5,7 +5,8 @@ import trains from './components/trains.js'
 import intro from './components/intro.js'
 import { drawDebugPoints, drawDebugArrows } from './primitives/debug.js'
 import { drawTrain, moveTrain, makeTrain } from './primitives/train.js'
-import { toggleTurnout, drawTurnout } from './primitives/turnout.js'
+import { drawTurnout } from './primitives/turnout.js'
+import { drawSkybox } from './primitives/skybox.js'
 import { makeTrack } from './primitives/track.js'
 import { floor } from './primitives/floor.js'
 import { createTrackTool } from './tools/createTrack.js'
@@ -136,6 +137,8 @@ const render = () => {
                 depth: 1,
                 stencil: 1
             })
+
+            drawSkybox()
 
             window.dispatchEvent(new CustomEvent('render', {detail: context}))
             drawFloor()
