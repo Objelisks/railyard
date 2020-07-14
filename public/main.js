@@ -167,28 +167,35 @@ const render = () => {
         })
     }
     
+    // wait for all resources to load
+    // TODO: loading screen
     if(waitingOn.count === 0) {
-        // render the scene normally offscreen on the first buffer
-        getFbo().fbo.use(() => {
-            draw()
-        })
-        flip = !flip
-        // switch to the second buffer and render the tiltshift blur one way from the first buffer
-        getFbo().fbo.use(() => tiltShiftEffect({
-            color: getOtherFbo().color,
-            depth: getOtherFbo().depth,
-            bias: [1, 0]
-        }))
-        flip = !flip
-        // switch to the screen and render the tiltshift blur the other way from the second buffer
-        getFbo().fbo.use(() => tiltShiftEffect({
-            color: getOtherFbo().color,
-            depth: getOtherFbo().depth,
-            bias: [0, 1]
-        }))
+        const passes = [
+            // render the scene normally offscreen on the first buffer
+            () => draw(),
 
-        fxaaPass({
-            color: getFbo().color
+            // post process effects
+            () => tiltShiftEffect({
+                color: getOtherFbo().color,
+                depth: getOtherFbo().depth,
+                bias: [1, 0] // vertical blur
+            }),
+            () => tiltShiftEffect({
+                color: getOtherFbo().color,
+                depth: getOtherFbo().depth,
+                bias: [0, 1] // horizontal blur
+            }),
+            //() => fxaaPass({ color: getOtherFbo().color })
+        ]
+
+        // render (double buffered) with last frame going to the screen
+        passes.forEach((renderPass, i) => {
+            if(i !== passes.length-1) {
+                getFbo().fbo.use(renderPass)
+                flip = !flip
+            } else {
+                renderPass()
+            }
         })
     }
 

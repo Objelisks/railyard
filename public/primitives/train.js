@@ -14,6 +14,7 @@ const UP = [0, 1, 0]
 const BOGIE_OFFSET = 0.5
 const ENGINE_ACCELERATION = 1
 const AIR_FRICTION = 1
+const POINT_BREAK = 1
 
 const getTrainColor = (train) => {
     if(train.remote) {
@@ -124,8 +125,6 @@ export const moveTrain = (train, delta) => {
         vec2.add(train.velocity, train.velocity, vec2.scale([], powerForce, delta))
     }
 
-
-    // TODO: collision (hit and connect)
     const CONNECT_THRESHOLD = 0.1
     const connectors = [
         {
@@ -186,7 +185,8 @@ export const moveTrain = (train, delta) => {
 
 
     // transfer force through connections (simulated spring and dampening)
-    const applyConnectorForce = (connectedId, myConnectorOffset) => {
+    const applyConnectorForce = (connection, myConnectorOffset) => {
+        const connectedId = train[connection]
         const connected = getTrains().find(other => other.id === connectedId)
         const facing3dConn = vec3.transformQuat([], FORWARD, connected.rotation)
         const theirConnectorOffset = connected.connectionFront === train.id ?
@@ -197,8 +197,15 @@ export const moveTrain = (train, delta) => {
         const K = 5 // spring constant
         const C = 10 // damping constant
 
-        // TODO: something about springForce is making it hard for the train to stop fully
         const relativePoint = vec3.sub([], myConnector, theirConnector)
+        if(vec3.length(relativePoint) > POINT_BREAK) {
+            train[connection] = null
+            const theirConnection = connected.connectionFront === train.id ? 'connectionFront' : 'connectionBack'
+            connected[theirConnection] = null
+            return
+        }
+
+        // TODO: something about springForce is making it hard for the train to stop fully
         const springForce = vec3.scale([], relativePoint, -K)
 
         const angularVelocity = vec3.scale([], vec3.cross([], myConnectorOffset, UP), train.angularVelocity)
@@ -214,19 +221,21 @@ export const moveTrain = (train, delta) => {
 
         const totalForce = vec2.add([], [springForce[0], springForce[2]], dampingForce)
         
-        // apply force to this car
+        // TODO: maybe i need to build up a force vector and apply it to the velocity instananeously
+        //   this is currently applying half the correct force, and then another half using already affected velocity
+        // apply force to this car (only half, because other half will be applied by other car)
         vec2.add(train.velocity, train.velocity, vec2.scale([], totalForce, delta/2))
 
-        // only do half the spring
         // apply opposite force to connected car
         vec2.add(connected.velocity, connected.velocity, vec2.scale([], totalForce, -delta/2))
     }
 
+    // apply forces in both directions
     if(train.connectionFront) {
-        applyConnectorForce(train.connectionFront, frontConnectorOffset)
+        applyConnectorForce('connectionFront', frontConnectorOffset)
     }
     if(train.connectionBack) {
-        applyConnectorForce(train.connectionBack, backConnectorOffset)
+        applyConnectorForce('connectionBack', backConnectorOffset)
     }
 
     const pos2d = [train.position[0], train.position[2]]
