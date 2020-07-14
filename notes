@@ -15,8 +15,7 @@ https://www.npmjs.com/package/ray-aabb
 
 
 functional use:
-    X initial state sharing
-    don't join with remote trains??
+    fix spring forces
     sync turnouts?
     what to do about cars that go off track, fully or partially
 
@@ -96,6 +95,11 @@ don't need yet probably:
     sync turnout state harder
     blend avg of player updates but rewind and extrapolate, window of 10 updates (60 frames)
     sync networking on regl tick
+
+Create Your Train Line
+    customize train color
+    logo procedurally generated from random shapes
+    four letters: JNCO line
 
 
 The Train Car Conjuction
@@ -226,3 +230,5 @@ X data update (all trains state, all turnouts state)
 X turnout activation
 X tracks placement
 X disconnect conditions
+X initial state sharing
+X don't join with remote trains??

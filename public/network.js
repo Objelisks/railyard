@@ -58,7 +58,8 @@ const markAsNetworked = (obj, id) => {
     return {
         ...obj,
         remote: true,
-        owner: id
+        owner: id,
+        ghost: true
     }
 }
 

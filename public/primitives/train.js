@@ -146,6 +146,7 @@ export const moveTrain = (train, delta) => {
         // TODO: early exit when found within distance
         getTrains().forEach(other => {
             if(other.id === train.id) return
+            if((train.ghost || other.ghost) && other.owner !== train.owner) return
 
             const box = [
                 [other.position[0]-1, other.position[1]-0.5, other.position[2]-0.5],
