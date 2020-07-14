@@ -13,12 +13,13 @@ https://www.npmjs.com/package/ray-aabb
 
 
 
-
-functional use:
+todo:
     fix spring forces
     sync turnouts?
     what to do about cars that go off track, fully or partially
-
+    figure out a clever way to hide z-fighting
+    rubberband state on update
+    non-connection collision
 
 ON MIPMAPS
     the prefiltered map needs extra mipmap levels generated
@@ -77,7 +78,7 @@ The Networking Integration
     X sync train positions, rotations, speed
     X sync tracks
 
-rubberband state on update
+
 button to toggle train collision
 events:
     switch train controlled
@@ -96,10 +97,12 @@ don't need yet probably:
     blend avg of player updates but rewind and extrapolate, window of 10 updates (60 frames)
     sync networking on regl tick
 
-Create Your Train Line
+
+Create Your Own Train Line
     customize train color
     logo procedurally generated from random shapes
     four letters: JNCO line
+        i definitely need to make up a bunch of fake train companies / generate them
 
 
 The Train Car Conjuction
@@ -122,10 +125,12 @@ The Shader Construction
     get tracks rendering as actual tracks with ties
     make some pbr materials, learn to paint them
 
+
 SOUND EFFECTS????
     tunnel echo
     train whistle button
     background music
+
 
 gameplay:
     choose a room name
@@ -159,7 +164,6 @@ make trains tilt when they turn
 
 
 models:
-single color via vertex colors
 start off with everything being a colored box
 uvs on palette texture
 engine, several cars, tracks, trees, rocks, water, station, station equipment, signals, terrain

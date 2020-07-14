@@ -4,7 +4,7 @@ import { v4 as uuid } from '../libs/uuid.mjs'
 import { DERAILMENT_FACTOR, BOGIE_SIZE, TURNOUT_DETECTOR_SIZE, CONNECTOR_OFFSET } from '../constants.js'
 import { intersectTracks, intersectTurnouts } from '../raycast.js'
 import { getTrains } from '../railyard.js'
-import { to_vec2, box2Around, reglArg, clamp, sign } from '../utils.js'
+import { to_vec2, box2Around, project2, clamp, sign } from '../utils.js'
 import { drawCube } from './cube.js'
 import { model } from './model.js'
 import createRay from '../libs/ray-aabb.mjs'
@@ -45,6 +45,7 @@ export const makeTrain = (config) => ({
 
     poweredTargetSpeed: 0,
     velocity: [0, 0],
+    force: [0, 0],
     angularVelocity: 0,
 
     ...config
@@ -101,7 +102,7 @@ const moveBogie = (bogie, velocity) => {
 
 const raycaster = createRay([0, 0, 0], [1, 0, 0])
 
-export const moveTrain = (train, delta) => {
+export const gatherForces = (train, delta) => {
     const facing3d = vec3.transformQuat([], [1, 0, 0], train.rotation)
     const facing = [facing3d[0], facing3d[2]]
     const frontConnectorOffset = vec3.scale([], facing3d, CONNECTOR_OFFSET)
@@ -122,7 +123,7 @@ export const moveTrain = (train, delta) => {
         }
         
         // apply force
-        vec2.add(train.velocity, train.velocity, vec2.scale([], powerForce, delta))
+        vec2.add(train.force, train.force, powerForce)
     }
 
     const CONNECT_THRESHOLD = 0.1
@@ -182,7 +183,7 @@ export const moveTrain = (train, delta) => {
     
 
     const airResistanceForce = vec2.scale([], train.velocity, -AIR_FRICTION)
-    vec2.add(train.velocity, train.velocity, vec2.scale([], airResistanceForce, delta))
+    vec2.add(train.force, train.force, airResistanceForce)
 
 
     // transfer force through connections (simulated spring and dampening)
@@ -196,7 +197,7 @@ export const moveTrain = (train, delta) => {
         const myConnector = vec3.add([], train.position, myConnectorOffset)
         const theirConnector = vec3.add([], connected.position, theirConnectorOffset)
         const K = 5 // spring constant
-        const C = 10 // damping constant
+        const C = 15 // damping constant
 
         const relativePoint = vec3.sub([], myConnector, theirConnector)
         if(vec3.length(relativePoint) > POINT_BREAK) {
@@ -207,6 +208,7 @@ export const moveTrain = (train, delta) => {
         }
 
         // TODO: something about springForce is making it hard for the train to stop fully
+        // calculate based on difference of connection points and apply force along train axis
         const springForce = vec3.scale([], relativePoint, -K)
 
         const angularVelocity = vec3.scale([], vec3.cross([], myConnectorOffset, UP), train.angularVelocity)
@@ -225,10 +227,10 @@ export const moveTrain = (train, delta) => {
         // TODO: maybe i need to build up a force vector and apply it to the velocity instananeously
         //   this is currently applying half the correct force, and then another half using already affected velocity
         // apply force to this car (only half, because other half will be applied by other car)
-        vec2.add(train.velocity, train.velocity, vec2.scale([], totalForce, delta/2))
+        vec2.add(train.force, train.force, vec2.scale([], project2(totalForce, facing), 0.5))
 
         // apply opposite force to connected car
-        vec2.add(connected.velocity, connected.velocity, vec2.scale([], totalForce, -delta/2))
+        vec2.add(connected.force, connected.force, vec2.scale([], project2(totalForce, [facing3dConn[0], facing3dConn[2]]), -0.5))
     }
 
     // apply forces in both directions
@@ -238,8 +240,16 @@ export const moveTrain = (train, delta) => {
     if(train.connectionBack) {
         applyConnectorForce('connectionBack', backConnectorOffset)
     }
+}
+
+// apply forces and move train
+export const applyForces = (train, delta) => {
+    // apply forces
+    vec2.add(train.velocity, train.velocity, vec2.scale([], train.force, delta))
 
     const pos2d = [train.position[0], train.position[2]]
+    const facing3d = vec3.transformQuat([], [1, 0, 0], train.rotation)
+    const facing = [facing3d[0], facing3d[2]]
 
     const front = vec2.add([], pos2d, vec2.scale([], facing, BOGIE_OFFSET))
     const back = vec2.add([], pos2d, vec2.scale([], facing, -BOGIE_OFFSET))
