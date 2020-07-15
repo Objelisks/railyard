@@ -1,5 +1,6 @@
 // to host files and facilitate discovery
 const path = require('path')
+const { createProxyMiddleware } = require('http-proxy-middleware')
 
 const ports = {
     express: 10081,
@@ -17,6 +18,12 @@ signalChild.stdout.on('data', (data) => {
 
 const express = require('express')
 const app = express()
+
+app.use('/signal/*', createProxyMiddleware({
+    target: `http://127.0.0.1:${ports.signalhub}`,
+    changeOrigin: false,
+    pathRewrite: (path) => path.replace('/signal', '')
+}));
 
 app.use(express.static('public'))
 app.use('*', (req, res) => res.sendFile(path.join(__dirname, '/public/index.html')))

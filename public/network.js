@@ -124,7 +124,7 @@ const dedupeAgainstLocalTracks = (remoteTracks) => {
     })
 }
 
-const signalUrl = `${window.location.protocol}//${window.location.hostname}:10080`
+const signalUrl = `${window.location.origin}/signal`
 
 export const connect = (room) => {
     const roomName = `railyard-${room}`
