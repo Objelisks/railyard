@@ -16,6 +16,8 @@ module.exports = {
         'nanohtml': 'nanohtml',
         'ray-aabb': 'ray-aabb',
         'parse-dds': 'parse-dds',
+        'loaders.gl-core': '@loaders.gl/core',
+        'loaders.gl-gltf': '@loaders.gl/gltf',
     },
     output: {
         path: path.resolve(__dirname, "public/libs"),

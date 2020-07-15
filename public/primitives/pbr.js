@@ -5,7 +5,7 @@ import { loadTexture, loadEnvironment, textures } from '../reglhelpers.js'
 const cubeMapNames = ['artist']
 cubeMapNames.forEach((textureName) => loadEnvironment(textureName))
 
-const textureNames = ['table', 'dirtypaint', 'shinything', 'mirror']
+const textureNames = ['table', 'dirtypaint', 'shinything', 'mirror', 'rockcliff']
 textureNames.forEach((textureName) => loadTexture(textureName))
 
 export const drawPbr = regl({

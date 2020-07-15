@@ -24,6 +24,22 @@ import { fxaaPass } from './shaders/fxaapass.js'
 import { waitingOn } from './reglhelpers.js'
 
 
+import { parse } from './libs/loaders.gl-core.mjs'
+import { GLTFLoader } from './libs/loaders.gl-gltf.mjs'
+import { drawMesh, buildMesh } from './primitives/mesh.js'
+
+let drawCliff = () => {}
+parse(fetch('./models/cliff.gltf'), GLTFLoader).then(data => {
+    const meshData = data.meshes[0].primitives[0]
+    const mesh = buildMesh({
+        position: meshData.attributes.POSITION.value,
+        normal: meshData.attributes.NORMAL.value,
+        uv: meshData.attributes.TEXCOORD_0.value,
+        elements: meshData.indices.value
+    })
+    drawCliff = drawMesh(mesh)
+})
+
 // debug keyboard listener
 window.addEventListener('keypress', (e) => {
     if(e.key === '1') {
@@ -161,6 +177,11 @@ const render = () => {
                 scale: [2, 1, 2],
                 color: turnout.visible ? [0.99, 0.99, 0.58] : [0.58, 0.58, 0.58]
             }))
+
+            drawCliff({
+                position: [-10, -1, 0],
+                rotation: [0, 0, 0, 1]
+            })
 
             // render debug
             drawDebugPoints()

@@ -1,6 +1,6 @@
 regl for three d rendering
 choo because trains and also for ui
-peerjs for networking
+webrtc-swarm for networking
 
 documentation:
 https://github.com/choojs/choo#api
@@ -41,9 +41,6 @@ skybox workflow:
 todo: 
 
 make use of vectors more efficient
-sync tracks
-sync positions
-sync movement
 ? selecting trains
 ? move a train from x to yz
 render a geometry track
@@ -109,7 +106,7 @@ The Train Car Conjuction
     train to train collision
     X raycast boxes
     spawn cars
-    connect / disconnect cars
+    X connect / disconnect cars
     stations
 
 
@@ -236,3 +233,6 @@ X tracks placement
 X disconnect conditions
 X initial state sharing
 X don't join with remote trains??
+X sync tracks
+X sync positions
+X sync movement

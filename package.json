@@ -13,6 +13,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@loaders.gl/core": "^2.2.7",
+    "@loaders.gl/gltf": "^2.2.7",
     "bezier-js": "^2.6.1",
     "choo": "^7.1.0",
     "express": "^4.17.1",
