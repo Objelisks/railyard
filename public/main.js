@@ -4,7 +4,7 @@ import { vec3 } from './libs/gl-matrix.mjs'
 import trains from './components/trains.js'
 import intro from './components/intro.js'
 import { drawDebugPoints, drawDebugArrows } from './primitives/debug.js'
-import { drawTrain, gatherForces, applyForces, makeTrain } from './primitives/train.js'
+import { drawTrain, attemptConnections, gatherForces, applyForces, makeTrain } from './primitives/train.js'
 import { drawTurnout } from './primitives/turnout.js'
 import { drawSkybox } from './primitives/skybox.js'
 import { makeTrack } from './primitives/track.js'
@@ -127,9 +127,14 @@ const render = () => {
 
             // move all trains
             // TODO: process collision
-            getTrains().forEach(train => train.force = [0, 0])
-            getTrains().forEach(train => gatherForces(train, delta))
-            getTrains().forEach(train => applyForces(train, delta))
+            getTrains().forEach(train => {
+                train.force = [0, 0]
+                gatherForces(train, delta)
+            })
+            getTrains().forEach(train => {
+                applyForces(train, delta)
+                attemptConnections(train)
+            })
 
             window.dispatchEvent(new CustomEvent('postupdate', {detail: context}))
 
@@ -138,15 +143,11 @@ const render = () => {
             window.dispatchEvent(new CustomEvent('prerender', {detail: context}))
 
             regl.clear({
-                color: [.46, .62, .79, 1],
                 depth: 1,
                 stencil: 1
             })
 
-            drawSkybox()
-
             window.dispatchEvent(new CustomEvent('render', {detail: context}))
-            drawFloor()
 
             // render trains
             drawTrain(getTrains())
@@ -164,6 +165,10 @@ const render = () => {
             // render debug
             drawDebugPoints()
             drawDebugArrows()
+
+            drawFloor()
+
+            drawSkybox()
 
             window.dispatchEvent(new CustomEvent('postrender', {detail: context}))
         })

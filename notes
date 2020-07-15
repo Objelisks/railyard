@@ -14,11 +14,11 @@ https://www.npmjs.com/package/ray-aabb
 
 
 todo:
-    fix spring forces
+    ~ fix spring forces
     sync turnouts?
     what to do about cars that go off track, fully or partially
     figure out a clever way to hide z-fighting
-    rubberband state on update
+    ~ rubberband state on update
     non-connection collision
 
 ON MIPMAPS

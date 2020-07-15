@@ -102,30 +102,10 @@ const moveBogie = (bogie, velocity) => {
 
 const raycaster = createRay([0, 0, 0], [1, 0, 0])
 
-export const gatherForces = (train, delta) => {
+export const attemptConnections = (train) => {
     const facing3d = vec3.transformQuat([], [1, 0, 0], train.rotation)
-    const facing = [facing3d[0], facing3d[2]]
     const frontConnectorOffset = vec3.scale([], facing3d, CONNECTOR_OFFSET)
     const backConnectorOffset = vec3.scale([], facing3d, -CONNECTOR_OFFSET)
-
-    if(train.powered) {
-        const direction = vec2.normalize([], train.velocity)
-        const directionalSpeed = vec2.length(train.velocity) * sign(vec2.dot(direction, facing))
-        const powerDirection = train.poweredTargetSpeed > directionalSpeed ? 1 : train.poweredTargetSpeed < directionalSpeed ? -1 : 0
-        const magnitude = clamp(Math.abs(train.poweredTargetSpeed - directionalSpeed), 0, 1)
-        const isBraking = Math.abs(directionalSpeed) > Math.abs(train.poweredTargetSpeed)
-        
-        const powerForce = [0, 0]
-        if(isBraking) {
-            vec2.add(powerForce, powerForce, vec2.scale([], direction, -ENGINE_ACCELERATION * magnitude)) // brakes
-        } else {
-            vec2.add(powerForce, powerForce, vec2.scale([], facing, powerDirection * ENGINE_ACCELERATION)) // engine
-        }
-        
-        // apply force
-        vec2.add(train.force, train.force, powerForce)
-    }
-
     const CONNECT_THRESHOLD = 0.1
     const connectors = [
         {
@@ -139,6 +119,7 @@ export const gatherForces = (train, delta) => {
             dir: vec3.normalize([], backConnectorOffset)
         }
     ]
+
     connectors.forEach(({side, pos, dir}) => {
         raycaster.update(pos, dir)
         let nearestCar = null
@@ -176,15 +157,38 @@ export const gatherForces = (train, delta) => {
             train[side] = nearestCar.id
         }
     })
+}
+
+export const gatherForces = (train, delta) => {
+    const facing3d = vec3.transformQuat([], [1, 0, 0], train.rotation)
+    const facing = [facing3d[0], facing3d[2]]
+    const frontConnectorOffset = vec3.scale([], facing3d, CONNECTOR_OFFSET)
+    const backConnectorOffset = vec3.scale([], facing3d, -CONNECTOR_OFFSET)
+
+    if(train.powered) {
+        const direction = vec2.normalize([], train.velocity)
+        const directionalSpeed = vec2.length(train.velocity) * sign(vec2.dot(direction, facing))
+        const powerDirection = train.poweredTargetSpeed > directionalSpeed ? 1 : train.poweredTargetSpeed < directionalSpeed ? -1 : 0
+        const magnitude = clamp(Math.abs(train.poweredTargetSpeed - directionalSpeed), 0, 1)
+        const isBraking = Math.abs(directionalSpeed) > Math.abs(train.poweredTargetSpeed)
+        
+        const powerForce = [0, 0]
+        if(isBraking) {
+            vec2.add(powerForce, powerForce, vec2.scale([], direction, -ENGINE_ACCELERATION * magnitude)) // brakes
+        } else {
+            vec2.add(powerForce, powerForce, vec2.scale([], facing, powerDirection * ENGINE_ACCELERATION)) // engine
+        }
+        
+        // apply force
+        vec2.add(train.force, train.force, powerForce)
+    }
 
     // idk abt this
     // friction from rail using approx of curvature
     //vec2.add(force, force, vec2.scale([], direction, Math.max(speed * Math.abs(1-vec2.dot(direction, facing)) * -AIR_FRICTION * 100000.0, -1)))
-    
 
     const airResistanceForce = vec2.scale([], train.velocity, -AIR_FRICTION)
     vec2.add(train.force, train.force, airResistanceForce)
-
 
     // transfer force through connections (simulated spring and dampening)
     const applyConnectorForce = (connection, myConnectorOffset) => {
