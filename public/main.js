@@ -17,7 +17,6 @@ import { addTrack, getTracks, getTurnouts, addTrain, getTrains } from './railyar
 import { placeTrainOnTrack, detectAndFixTurnouts } from './railyardhelpers.js'
 import { networkedTrainTool } from './network.js'
 import { mouseListenerTool } from './mouse.js'
-import { WIDTH, HEIGHT } from './constants.js'
 import { loadToTrackBush } from './raycast.js'
 import { flags } from './flags.js'
 import { fxaaPass } from './shaders/fxaapass.js'
@@ -65,21 +64,21 @@ window.addEventListener('keypress', (e) => {
 
 
 // set up frame buffers
-const makeFrameBuffer = () => {
+const makeFrameBuffer = (width, height) => {
     const color = regl.texture({
-        width: WIDTH,
-        height: HEIGHT,
+        width: width,
+        height: height,
     })
     const depth = regl.texture({
-        width: WIDTH,
-        height: HEIGHT,
+        width: width,
+        height: height,
         format: 'depth', 
         type: 'uint32'
     })
     return {
         fbo: regl.framebuffer({
-            width: WIDTH,
-            height: HEIGHT,
+            width: width,
+            height: height,
             color: color,
             depth: depth,
             depthTexture: true
@@ -89,13 +88,20 @@ const makeFrameBuffer = () => {
     }
 }
 
-const frame1 = makeFrameBuffer()
-const frame2 = makeFrameBuffer()
+let frame1 = makeFrameBuffer(window.innerWidth, window.innerHeight)
+let frame2 = makeFrameBuffer(window.innerWidth, window.innerHeight)
 
 let flip = false
 const getFbo = () => flip ? frame2 : frame1
 const getOtherFbo = () => flip ? frame1 : frame2
 
+
+const resizer = () => {
+    frame1 = makeFrameBuffer(window.innerWidth, window.innerHeight)
+    frame2 = makeFrameBuffer(window.innerWidth, window.innerHeight)
+}
+
+window.addEventListener('resize', resizer)
 
 // setup tools
 let toolset = new Set()
@@ -240,8 +246,12 @@ const setupChoo = () => {
     })
 
     // initialize
-    app.route('/trains', trains(app))
+    app.route('/trains', trains(app, 'trains'))
     app.route('*', intro(app))
+
+    const chooMount = document.createElement('div')
+    chooMount.id = 'choo'
+    document.body.appendChild(chooMount)
     app.mount('#choo')
 
     // setup event handlers for controls

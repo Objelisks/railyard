@@ -1,7 +1,7 @@
 import createREGL from './libs/regl.mjs'
 
 const regl = createREGL({
-    canvas: document.body.querySelector('#canvas'),
+    container: document.body.querySelector('#render'),
     extensions: [
         'OES_standard_derivatives',
         'WEBGL_depth_texture',

@@ -1,5 +1,4 @@
 import { vec2 } from './libs/gl-matrix.mjs'
-import { debugPoint } from './primitives/debug.js'
 import { intersectGround, getMouseRay, to_vec2, inBox2 } from './utils.js'
 import { SNAP_THRESHOLD } from './constants.js'
 import { intersectTracks } from './raycast.js'
@@ -18,7 +17,7 @@ window.addEventListener('mousemove', (e) => {
     justMoved = true
 })
 window.addEventListener('mousedown', (e) => {
-    if(e.target.closest('#canvas')) {
+    if(e.target.closest('canvas')) {
         justClicked = true
     }
 })

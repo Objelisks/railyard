@@ -16,12 +16,15 @@ const flipper = (app, id, label, callback) => {
 
     const click = (state, emit) => (e) => {
         emit(state.events.FLIPPER, { id, data: !e.target.closest('.flipper').classList.contains('flipped')})
+        console.log(id, e)
+        e.stopPropagation()
+        e.preventDefault()
     }
 
     // render knob with rotation based on state
     return (state, emit) => {
         return html`<div class="flipper${state.components[id] ? ' flipped' : ''}" id="${id}">
-            <div class="indicator" onclick=${click(state, emit)}></div>
+            <div class="indicator" onmousedown=${click(state, emit)}></div>
             <div class="label">${label}</div>
         </div>`
     }

@@ -7,6 +7,10 @@ body {
 }
 
 .dialog {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    transform: translate(8px, 8px);
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(3, 1fr);
@@ -16,9 +20,12 @@ body {
     min-height: 100px;
     padding: 20px;
 
-    background-color: white;
-    border: 1px solid block;
-    box-shadow: 6px 6px 12px grey;
+    background-color: #ffd1dc;
+    border: 20px ridge #d1dcff;
+    box-shadow: 6px 6px 12px black;
+
+    user-select: none;
+    transition: transform 100ms;
 }
 
 .dialog .title {
@@ -35,10 +42,6 @@ body {
 .dialog button {
     grid-column: 3;
     grid-row: 3;
-}
-
-#canvas {
-    border: 1px solid black;
 }
 
 .knob {

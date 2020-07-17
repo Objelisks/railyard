@@ -11,8 +11,9 @@ const booper = (app, id, label, callback) => {
         })
     })
 
-    const click = (state, emit) => () => {
+    const click = (state, emit) => (e) => {
         emit(state.events.BOOPER, { id })
+        e.stopPropagation()
     }
 
     // render booper

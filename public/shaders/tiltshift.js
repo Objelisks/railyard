@@ -1,5 +1,4 @@
 import regl from '../regl.js'
-import { WIDTH, HEIGHT } from '../constants.js'
 
 // blur from https://github.com/Jam3/glsl-fast-gaussian-blur
 export const tiltShiftEffect = regl({
@@ -8,6 +7,7 @@ export const tiltShiftEffect = regl({
     uniform sampler2D color;
     uniform sampler2D depth;
     uniform vec2 bias;
+    uniform vec2 resolution;
 
     float PI = 3.1415;
     vec4 blur13(sampler2D image, vec2 uv, vec2 resolution, vec2 direction) {
@@ -32,7 +32,6 @@ export const tiltShiftEffect = regl({
     }
 
     void main () {
-        vec2 resolution = vec2(${WIDTH}.0, ${HEIGHT}.0);
         float focusDepth = linearize_depth(texture2D(depth, vec2(0.5, 0.5)).r);
         float coordDepth = linearize_depth(texture2D(depth, gl_FragCoord.xy / resolution).r);
         float blurAmount = coordDepth > 0.9999 ? 0.0 : abs(focusDepth - coordDepth) * 10.0;
@@ -50,7 +49,8 @@ export const tiltShiftEffect = regl({
     uniforms: {
         color: (context, props) => props.color,
         depth: (context, props) => props.depth,
-        bias: (context, props) => props.bias
+        bias: (context, props) => props.bias,
+        resolution: (context, props) => [context.viewportWidth, context.viewportHeight]
     },
     elements: [[0, 1, 2],  [2, 1, 3]],
     depth: {

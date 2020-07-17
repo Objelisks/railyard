@@ -1,5 +1,4 @@
 import regl from '../regl.js'
-import { WIDTH, HEIGHT } from '../constants.js'
 
 // code from https://github.com/mattdesl/glsl-fxaa
 // TODO: set up glslify
@@ -7,6 +6,7 @@ export const fxaaPass = regl({
     frag: `
     precision mediump float;
     uniform sampler2D color;
+    uniform vec2 resolution;
 
     #ifndef FXAA_REDUCE_MIN
         #define FXAA_REDUCE_MIN   (1.0/ 128.0)
@@ -95,7 +95,6 @@ export const fxaaPass = regl({
     }
 
     void main () {
-        vec2 resolution = vec2(${WIDTH}.0, ${HEIGHT}.0);
         gl_FragColor = apply(color, gl_FragCoord.xy, resolution);
     }`,
     vert: `
@@ -109,6 +108,7 @@ export const fxaaPass = regl({
     },
     uniforms: {
         color: (context, props) => props.color,
+        resolution: (context) => [context.viewportWidth, context.viewportHeight]
     },
     elements: [[0, 1, 2],  [2, 1, 3]],
     depth: {

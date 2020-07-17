@@ -11,15 +11,30 @@ https://github.com/mourner/rbush
 https://www.npmjs.com/package/ray-aabb
 https://github.com/chimurai/http-proxy-middleware
 
+final v1 feature set
+
+
+trainsga.me
+default train setup
+
+object picker!
+    visual icons of objects to place in the world
+    make it 3d why not
+    soon as i make it 3d tho, its probably not choo anymore?
+
 
 
 todo:
     ~ fix spring forces
     sync turnouts?
-    what to do about cars that go off track, fully or partially
+    what to do about cars that go off track, fully or partially ->> mario lakitu mode on em
     figure out a clever way to hide z-fighting
     ~ rubberband state on update
     non-connection collision
+    touch-position package for supporting touch events
+    gif generator?
+
+
 
 ON MIPMAPS
     the prefiltered map needs extra mipmap levels generated
@@ -38,7 +53,12 @@ skybox workflow:
     copy all to materials folder
 
 
-todo: 
+
+libraries to look into
+    touch-position
+    gl-gif
+    gl-render-cubemap
+    gl-sprite-text
 
 make use of vectors more efficient
 ? selecting trains

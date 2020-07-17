@@ -6,7 +6,21 @@ export const log = (...args) => {
     return args[0]
 }
 
-// run a function at most once per delay
+// run a function once at the end of delay after the last time it is called
+export const debounce = (func, delay) => {
+    let timeoutId = null
+    return (...args) => {
+        if(timeoutId) {
+            clearTimeout(timeoutId)
+        }
+        timeoutId = setTimeout(() => { 
+            func(...args)
+            timeoutId = null
+        }, delay)
+    }
+}
+
+// run a function at most once per delay (return cached value otherwise)
 export const throttle = (func, delay) => {
     let timeoutId = null
     let cache = undefined

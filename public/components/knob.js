@@ -1,13 +1,4 @@
 import html from '../libs/nanohtml.mjs'
-import { vec2 } from '../libs/gl-matrix.mjs'
-
-const getCenter = (id) => {
-    const knob = document.querySelector(`#${id}`)
-    const rect = knob.getBoundingClientRect()
-    const centerX = rect.x + rect.width / 2
-    const centerY = rect.y + rect.height / 2
-    return [centerX, centerY]
-}
 
 const moveListener = (id, state, emit) => (e) => {
     const newValue = state.components[id].startValue + (e.clientX - state.components[id].mouseDown) / 100.0
@@ -15,6 +6,7 @@ const moveListener = (id, state, emit) => (e) => {
     const clampedValue = Math.min(Math.max(newValue, -1), 1)
 
     emit(state.events.KNOB, { id: id, data: clampedValue })
+    e.stopPropagation()
 }
 
 const releaseHandle = (id, state, emit) => (e) => {
@@ -25,6 +17,7 @@ const releaseHandle = (id, state, emit) => (e) => {
 
     state.components[id].release()
     document.body.classList.remove('grabbing')
+    e.stopPropagation()
 }
 
 const grabHandle = (state, emit) => (e) => {
@@ -44,6 +37,7 @@ const grabHandle = (state, emit) => (e) => {
     window.addEventListener('mousemove', onmove)
     window.addEventListener('mouseup', onrelease)
     document.body.classList.add('grabbing')
+    e.stopPropagation()
 }
 
 const knob = (app, id, callback) => {
