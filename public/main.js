@@ -259,7 +259,7 @@ const setupChoo = () => {
 
     // initialize
     app.route('/trains', trains(app, 'trains'))
-    app.route('*', intro(app))
+    app.route('*', intro(app, 'intro'))
 
     const chooMount = document.createElement('div')
     chooMount.id = 'choo'
