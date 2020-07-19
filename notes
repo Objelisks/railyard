@@ -34,6 +34,12 @@ put room in title
 |
 \------------------------------------------/
 
+pages:
+    operate trains
+    edit mode
+        add/remove tracks
+        add/remove objects
+
 
 object picker!
     visual icons of objects to place in the world

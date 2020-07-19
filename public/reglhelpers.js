@@ -14,9 +14,8 @@ export const waitingOn = {
     count: 0
 }
 
-export const loadTexture = (name, size=512) => {
-    const textureSize = size
-    const init = { shape: [textureSize, textureSize], wrapS: 'repeat', wrapT: 'repeat' }
+export const loadTexture = (name) => {
+    const init = { wrapS: 'repeat', wrapT: 'repeat' }
     textures[name] = {
         albedoMap: regl.texture(),
         normalMap: regl.texture(),
@@ -126,7 +125,6 @@ export const loadCubeMap = (name, file) => {
 
 export const loadEnvironment = (name) => {
     if(textures[name] && textures[name].irradianceMap) return
-    const textureSize = 512
     textures[name] = textures[name] || {}
     textures[name].irradianceMap = regl.cube()
     textures[name].prefilterMap = regl.cube()

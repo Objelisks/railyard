@@ -4,7 +4,7 @@ import { debugCurve, debugPoint } from '../primitives/debug.js'
 import { justClickedMouse, justMovedMouse, getMouse3d, getSnappedPoint, getSnappedAxis } from '../mouse.js'
 import { addTrack, getTracks } from '../railyard.js'
 import { addToTrackBush } from '../raycast.js'
-import { projectOnLine } from '../utils.js'
+import { projectOnLine } from '../math.js'
 
 const trackCreateSteps = {
     FIRST_PLACED: 'first',

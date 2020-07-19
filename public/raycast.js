@@ -22,7 +22,7 @@ export const resetTurnoutBush = () => {
 }
 
 
-const bush = new RBush()
+const trackBush = new RBush()
 
 export const addToTrackBush = (track) => {
     const box = track.curve.bbox()
@@ -33,7 +33,7 @@ export const addToTrackBush = (track) => {
         maxY: box.y.max + track.position[2],
         track: track
     }
-    bush.insert(region)
+    trackBush.insert(region)
 }
 
 export const loadToTrackBush = (tracks) => {
@@ -48,17 +48,17 @@ export const loadToTrackBush = (tracks) => {
                 track: track
             }
         })
-    bush.load(regions)
+        trackBush.load(regions)
 }
 
 export const removeFromTrackBush = (track) => {
-    bush.remove(track, (a, b) => a.id === b.id)
+    trackBush.remove(track, (a, b) => a.id === b.id)
 }
 
 export const resetTrackBush = () => {
-    bush.clear()
+    trackBush.clear()
 }
 
 export const intersectTracks = (region) => {
-    return bush.search(region)
+    return trackBush.search(region)
 }

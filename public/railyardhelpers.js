@@ -2,7 +2,7 @@ import { quat, vec2, vec3 } from './libs/gl-matrix.mjs'
 import { makeTurnout } from './primitives/turnout.js'
 import { addTurnout, setTurnouts, getTracks } from './railyard.js'
 import { resetTurnoutBush } from './raycast.js'
-import { to_vec2 } from './utils.js'
+import { to_vec2 } from './math.js'
 
 const precise = (x) => x.toPrecision(4)
 const getKey = (endpoint) => `${precise(endpoint.end[0])},${precise(endpoint.end[1])}:${precise(endpoint.facing[0])},${precise(endpoint.facing[1])}`

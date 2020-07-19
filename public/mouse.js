@@ -1,5 +1,6 @@
 import { vec2 } from './libs/gl-matrix.mjs'
-import { intersectGround, getMouseRay, to_vec2, inBox2 } from './utils.js'
+import { intersectGround, getMouseRay } from './utils.js'
+import { to_vec2, inBox2 } from './math.js'
 import { SNAP_THRESHOLD } from './constants.js'
 import { intersectTracks } from './raycast.js'
 

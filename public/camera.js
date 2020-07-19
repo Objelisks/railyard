@@ -2,7 +2,7 @@ import regl from './regl.js'
 import { vec3, mat4 } from './libs/gl-matrix.mjs'
 import { keysPressed } from './keyboard.js'
 import { getTrains } from './railyard.js'
-import { clamp } from './utils.js'
+import { clamp } from './math.js'
 
 const editCameraPosition = [10, 10, 10]
 const editCameraLookDirection = [-10, -10, -10]

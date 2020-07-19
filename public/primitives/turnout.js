@@ -1,6 +1,6 @@
 import { v4 as uuid } from '../libs/uuid.mjs'
 import { vec2 } from '../libs/gl-matrix.mjs'
-import { to_vec2 } from '../utils.js'
+import { to_vec2 } from '../math.js'
 import { drawCube } from './cube.js'
 import { setColor } from '../reglhelpers.js'
 import { model } from './model.js'

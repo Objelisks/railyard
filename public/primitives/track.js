@@ -4,7 +4,7 @@ import { v4 as uuid } from '../libs/uuid.mjs'
 import { model } from './model.js'
 import { drawLines } from './lines.js'
 import { LINE_POINTS, TRACK_GAUGE } from '../constants.js'
-import { to_vec2 } from '../utils.js'
+import { to_vec2 } from '../math.js'
 
 export const trackRail = (curve, offset, height=-0.5) => {
     // guarantee we always generate the same number of points, no matter how many 'simple' segments are created from offset
