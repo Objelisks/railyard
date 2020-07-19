@@ -5,8 +5,11 @@ import { loadTexture, loadEnvironment, textures } from '../reglhelpers.js'
 const cubeMapNames = ['artist']
 cubeMapNames.forEach((textureName) => loadEnvironment(textureName))
 
-const textureNames = ['table', 'dirtypaint', 'shinything', 'mirror', 'rockcliff']
+const textureNames = ['table', 'dirtypaint', 'shinything', 'grass', 'mirror', 'rockcliff']
 textureNames.forEach((textureName) => loadTexture(textureName))
+
+const zeroTexture = regl.texture([[0]])
+const oneTexture = regl.texture([[255]])
 
 export const drawPbr = regl({
   frag: `
@@ -28,6 +31,7 @@ export const drawPbr = regl({
   uniform sampler2D metallicMap;
   uniform sampler2D roughnessMap;
   uniform sampler2D aoMap;
+  uniform sampler2D heightMap;
   
   // IBL
   uniform samplerCube irradianceMap;
@@ -189,7 +193,7 @@ export const drawPbr = regl({
       // gamma correct
       color = pow(color, vec3(1.0/2.2)); 
   
-      gl_FragColor = vec4(color , 1.0);
+      gl_FragColor = vec4(color, 1.0);
     }`,
   vert: `
   precision mediump float;
@@ -204,12 +208,15 @@ export const drawPbr = regl({
   uniform mat4 projection;
   uniform mat4 view;
   uniform mat4 model;
+  uniform sampler2D heightMap;
   
   void main()
   {
       TexCoords = uv;
-      WorldPos = vec3(model * vec4(position, 1.0));
-      Normal = mat3(model) * normal;   
+      vec3 height = vec3(0, texture2D(heightMap, uv).r, 0);
+      vec3 mappedPos = position + height * vec3(0, position.y, 0);
+      WorldPos = vec3(model * vec4(mappedPos, 1.0));
+      Normal = mat3(model) * normal;
   
       gl_Position =  projection * view * vec4(WorldPos, 1.0);
   }`,
@@ -220,13 +227,14 @@ export const drawPbr = regl({
     metallicMap: (context, props) => textures[props.texture].metallicMap,
     roughnessMap: (context, props) => textures[props.texture].roughnessMap,
     aoMap: (context, props) => textures[props.texture].aoMap,
+    heightMap: (context, props) => textures[props.texture].heightMap || zeroTexture,
     irradianceMap: () => textures['artist'].irradianceMap,
     prefilterMap: () => textures['artist'].prefilterMap,
     brdfLUT: () => textures['artist'].brdfLUT,
     camPos: (context) => context.eye,
     'lightPositions[0]': (context) => context.lightPos,
     'lightColors[0]': [40, 30, 10],
-    'lightPositions[1]': (context) => [Math.sin(context.time)*10, 3, Math.cos(context.time)*10],
+    'lightPositions[1]': (context) => [Math.sin(context.time*0)*10, 5, Math.cos(context.time)*10],
     'lightColors[1]': [255, 255, 255],
     'lightPositions[2]': [-10, 10, -0],
     'lightColors[2]': [255, 255, 255],

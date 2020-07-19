@@ -7,8 +7,6 @@ import { getTracks, getTrains } from '../railyard.js'
 import { placeTrainOnTrack } from '../railyardhelpers.js'
 
 const moveListener = (id, state, emit) => (e) => {
-    console.log('move dialog')
-
     state.components[id].offset.x += e.movementX
     state.components[id].offset.y += e.movementY
     emit('render')
@@ -67,7 +65,6 @@ const trains = (app, id) => {
         const x = state.components[id].offset.x
         const y = state.components[id].offset.y
         return html`<div id="${id}" class="dialog" onmousedown=${grabDialog(state, emit, id)} style="transform: translate(${x}px, ${y}px)">
-            room: ${state.query.room}
             ${knob1(state, emit)}
             ${booper1(state, emit)}
             ${flipper1(state, emit)}

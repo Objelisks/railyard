@@ -2,13 +2,21 @@ import regl from './regl.js'
 import { vec3, mat4 } from './libs/gl-matrix.mjs'
 import { keysPressed } from './keyboard.js'
 import { getTrains } from './railyard.js'
+import { clamp } from './utils.js'
 
 const editCameraPosition = [10, 10, 10]
 const editCameraLookDirection = [-10, -10, -10]
 const cameraMoveSpeed = 0.01
+let editCameraDistance = 10
+let scrollVelocity = 0
+
+window.addEventListener('wheel', (e) => {
+    scrollVelocity += e.deltaY * 0.2
+})
 
 export const getCameraPos = () => editCameraPosition
 export const getCameraDir = () => editCameraLookDirection
+export const getCameraDistance = () => editCameraDistance
 
 // This scoped command sets up the camera parameters
 export const camera = regl({
@@ -18,7 +26,7 @@ export const camera = regl({
                 Math.PI / 4,
                 context.viewportWidth / context.viewportHeight,
                 0.1,
-                100.0)
+                200.0)
         },
 
         view: (context, props) => {
@@ -48,6 +56,9 @@ export const camera = regl({
 })
 
 export const cameraControlTool = {
+    activate: () => {
+        scrollVelocity = 0
+    },
     preupdate: () => {
         const cameraRight = vec3.cross([], editCameraLookDirection, [0, 1, 0])
         const cameraForward = vec3.cross([], [0, 1, 0], cameraRight)
@@ -63,5 +74,9 @@ export const cameraControlTool = {
         if(keysPressed()['s']) {
             vec3.add(editCameraPosition, editCameraPosition, vec3.scale([], cameraForward, -cameraMoveSpeed))
         }
+
+        editCameraDistance += scrollVelocity
+        editCameraDistance = clamp(editCameraDistance, 10, 100)
+        scrollVelocity *= 0.9
     }
 }

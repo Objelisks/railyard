@@ -14,17 +14,33 @@ export const waitingOn = {
     count: 0
 }
 
-export const loadTexture = (name) => {
-    const textureSize = 512
+export const loadTexture = (name, size=512) => {
+    const textureSize = size
     const init = { shape: [textureSize, textureSize], wrapS: 'repeat', wrapT: 'repeat' }
     textures[name] = {
         albedoMap: regl.texture(),
         normalMap: regl.texture(),
         metallicMap: regl.texture(),
         roughnessMap: regl.texture(),
-        aoMap: regl.texture()
+        aoMap: regl.texture(),
+        heightMap: regl.texture()
     }
     waitingOn.count += 1
+    resl({
+        manifest: {
+            height: {
+                type: 'image',
+                src: `/materials/${name}/${name}_height.png`
+            }
+        },
+        onDone: (assets) => {
+            textures[name].heightMap({
+                ...init,
+                data: assets.height
+            })
+        },
+        onError: () => {}
+    })
     resl({
         manifest: {
             albedo: {
@@ -107,7 +123,6 @@ export const loadCubeMap = (name, file) => {
         }
     })
 }
-// WebGL warning: tex(Sub)Image[23]D: ArrayBufferView type Uint8 not compatible with `type` FLOAT.
 
 export const loadEnvironment = (name) => {
     if(textures[name] && textures[name].irradianceMap) return

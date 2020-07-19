@@ -16,9 +16,7 @@ const flipper = (app, id, label, callback) => {
 
     const click = (state, emit) => (e) => {
         emit(state.events.FLIPPER, { id, data: !e.target.closest('.flipper').classList.contains('flipped')})
-        console.log(id, e)
         e.stopPropagation()
-        e.preventDefault()
     }
 
     // render knob with rotation based on state

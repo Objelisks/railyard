@@ -12,15 +12,15 @@ import { floor } from './primitives/floor.js'
 import { createTrackTool } from './tools/createTrack.js'
 import { playModeTool } from './tools/playMode.js'
 import { tiltShiftEffect } from './shaders/tiltshift.js'
-import { camera, getCameraPos, getCameraDir, cameraControlTool } from './camera.js'
+import { camera, getCameraPos, getCameraDir, getCameraDistance, cameraControlTool } from './camera.js'
 import { addTrack, getTracks, getTurnouts, addTrain, getTrains } from './railyard.js'
 import { placeTrainOnTrack, detectAndFixTurnouts } from './railyardhelpers.js'
 import { networkedTrainTool } from './network.js'
 import { mouseListenerTool } from './mouse.js'
 import { loadToTrackBush } from './raycast.js'
 import { flags } from './flags.js'
-import { fxaaPass } from './shaders/fxaapass.js'
 import { waitingOn } from './reglhelpers.js'
+import { drawTile } from './primitives/tile.js'
 
 
 import { parse } from './libs/loaders.gl-core.mjs'
@@ -36,7 +36,7 @@ parse(fetch('./models/cliff.gltf'), GLTFLoader).then(data => {
         uv: meshData.attributes.TEXCOORD_0.value,
         elements: meshData.indices.value
     })
-    drawCliff = drawMesh(mesh)
+    drawCliff = drawMesh(mesh, 'rockcliff')
 })
 
 // debug keyboard listener
@@ -109,11 +109,13 @@ let toolset = new Set()
 const setTool = (tool, active) => {
     if(active) {
         toolset.add(tool)
+        if(tool.activate) tool.activate()
         Object.entries(tool).forEach(([key, callback]) => {
             window.addEventListener(key, callback)
         })
     } else {
         toolset.delete(tool)
+        if(tool.deactivate) tool.deactivate()
         Object.entries(tool).forEach(([key, callback]) => {
             window.removeEventListener(key, callback)
         })
@@ -140,9 +142,11 @@ const render = () => {
 
     // set up camera
     const draw = () => {
+        const cameraTarget = toolset.has(createTrackTool) ? vec3.add([], getCameraPos(), getCameraDir()) : getTrains()[0].position
+        const cameraPos = toolset.has(createTrackTool) ? vec3.add([], cameraTarget, vec3.scale([], vec3.normalize([], vec3.sub([], getCameraPos(), cameraTarget)), getCameraDistance())) : getCameraPos()
         camera({
-            eye: getCameraPos(),
-            target: toolset.has(createTrackTool) ? vec3.add([], getCameraPos(), getCameraDir()) : getTrains()[0].position
+            eye: cameraPos,
+            target: cameraTarget
         }, (context) => {
 
             window.dispatchEvent(new CustomEvent('update', {detail: context}))
@@ -194,6 +198,14 @@ const render = () => {
             drawDebugArrows()
 
             drawFloor()
+
+            drawTile({
+                scale: [10, 1, 10]
+            })
+            drawTile({
+                position: [20, 0, 0],
+                scale: [10, 1, 10]
+            })
 
             drawSkybox()
 

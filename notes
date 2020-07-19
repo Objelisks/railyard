@@ -16,12 +16,34 @@ final v1 feature set
 
 trainsga.me
 default train setup
+graphics settings (minimalist, next next generation)
+better camera controls
+better ui controls
+tiles
+
+put room in title
+
+/------------------------------------------\
+| 
+|
+|  O
+|
+|
+|
+|
+|
+\------------------------------------------/
+
 
 object picker!
     visual icons of objects to place in the world
     make it 3d why not
     soon as i make it 3d tho, its probably not choo anymore?
 
+
+ground tiles:
+    heightmap displaced highres plane
+    rails through tile replace material on tile with rail material
 
 
 todo:

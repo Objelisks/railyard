@@ -131,6 +131,7 @@ export const connect = (room) => {
     const hub = signalhub(roomName, [signalUrl])
     sw = swarm(hub)
     console.log(`connecting to ${roomName}`)
+    document.title = `trains game (room: ${room})`
 
     // cleanup on page unload
     window.addEventListener('beforeunload', () => {
