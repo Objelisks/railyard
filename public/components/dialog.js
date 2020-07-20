@@ -3,11 +3,18 @@ import html from '../libs/nanohtml.mjs'
 const moveListener = (id, state, emit) => (e) => {
     state.components[id].offset.x += e.movementX
     state.components[id].offset.y += e.movementY
-    emit('render')
+
+    const x = state.components[id].offset.x
+    const y = state.components[id].offset.y
+    //emit('render')
+    const target = state.components[id].element
+    if(!target) return
+    target.style = `transform: translate(${x}px, ${y}px)`
 }
 
 const releaseDialog = (id, state, emit) => (e) => {
     state.components[id].mouseDown = null
+    state.components[id].element = null
     state.components[id].release()
     document.body.classList.remove('grabbing')
 }
@@ -20,6 +27,7 @@ const grabDialog = (state, emit, id) => (e) => {
     const onrelease = releaseDialog(id, state, emit)
 
     state.components[id].mouseDown = { x: e.clientX, y: e.clientY }
+    state.components[id].element = e.target.closest(`#${id}`)
 
     state.components[id].release = () => {
         window.removeEventListener('mousemove', onmove)
@@ -44,6 +52,7 @@ export default (app, id) => {
             onmousedown=${grabDialog(state, emit, id)}
             style="transform: translate(${x}px, ${y}px)">
                 ${content}
+            </div>
         `
     }
 }

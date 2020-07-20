@@ -10,7 +10,7 @@ const regl = createREGL({
         'OES_texture_float_linear',
     ],
     attributes: {
-        preserveDrawingBuffer: false,
+        preserveDrawingBuffer: true,
         antialias: false
     }
 })

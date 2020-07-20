@@ -1,4 +1,4 @@
-import { vec2, vec3, mat4, vec4 } from "./libs/gl-matrix.mjs"
+import { vec3, mat4, vec4 } from "./libs/gl-matrix.mjs"
 
 // inline log for returning values and logging them
 export const log = (...args) => {

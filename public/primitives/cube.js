@@ -46,4 +46,4 @@ export const cubeAttributes = regl({
   elements: cubeElements,
 })
 
-export const drawCube = () => cubeAttributes({}, () => drawPbr({ texture: 'dirtypaint' }))
+export const drawCube = () => cubeAttributes(() => drawPbr({ texture: 'dirtypaint' }))

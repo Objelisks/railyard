@@ -12,10 +12,6 @@ body {
     top: 0px;
     left: 0px;
     transform: translate(8px, 8px);
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(3, 1fr);
-    grid-gap: 8px;
 
     min-width: 300px;
     min-height: 100px;
@@ -92,4 +88,41 @@ body:not(.grabbing) .knob {
 
 .booper:active .indicator {
     background-color: paleturquoise;
+}
+
+
+.buttonCorral {
+    display: grid;
+    grid-template-columns: repeat(4, 64px);
+    grid-auto-rows: 64px;
+    grid-gap: 16px;
+}
+
+
+button.thumbnail {
+    border: 1px solid red;
+    border-radius: 8px;;
+    width: 64px;
+    height: 64px;
+    margin: 8px;
+}
+
+
+.offscreen {
+    width: 1px;
+    height: 1px;
+    opacity: 0.01;
+    position: absolute;
+    top: -1px;
+    left: -1px;
+}
+
+
+[data-tooltip]:before {
+    position: absolute;
+    content: attr(data-tooltip);
+    opacity: 0;
+}
+[data-tooltip]:hover:before {
+    opacity: 1;
 }

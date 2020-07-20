@@ -11,8 +11,8 @@ https://github.com/mourner/rbush
 https://www.npmjs.com/package/ray-aabb
 https://github.com/chimurai/http-proxy-middleware
 
-final v1 feature set
 
+https://model-railroad-hobbyist.com/node/25866
 
 trainsga.me
 default train setup
@@ -23,22 +23,34 @@ tiles
 
 put room in title
 
-/------------------------------------------\
-| 
-|
-|  O
-|
-|
-|
-|
-|
-\------------------------------------------/
+
+
+side tabs switch pages
+    /------------------------------------------\
+ [==| 
+   [|
+   [|  O
+   [|
+    |
+    |
+    |
+    |
+    \------------------------------------------/
 
 pages:
     operate trains
-    edit mode
-        add/remove tracks
-        add/remove objects
+        the knob
+        forward, reverse
+        brake
+        horn, lights
+    edit world
+        add tracks, objects, trains, tiles
+    edit trains
+        name, logo, colors (primary, secondary)
+    multiplayer
+        connect to room
+        save load
+        
 
 
 object picker!

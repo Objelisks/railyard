@@ -1,3 +1,5 @@
+import { vec2, vec3 } from "./libs/gl-matrix.mjs"
+
 export const rand = (max) => Math.random() * max*2 - max
 
 export const to_vec2 = (pt) => [pt.x, pt.y]

@@ -1,7 +1,7 @@
 import regl from './regl.js'
 import choo from './libs/choo.mjs'
 import { vec3 } from './libs/gl-matrix.mjs'
-import trains from './components/trains.js'
+import controller from './components/controller.js'
 import intro from './components/intro.js'
 import { drawDebugPoints, drawDebugArrows } from './primitives/debug.js'
 import { drawTrain, attemptConnections, gatherForces, applyForces, makeTrain } from './primitives/train.js'
@@ -21,6 +21,8 @@ import { loadToTrackBush } from './raycast.js'
 import { flags } from './flags.js'
 import { waitingOn } from './reglhelpers.js'
 import { drawTile } from './primitives/tile.js'
+import { setUniforms } from './primitives/model.js'
+import { drawCube } from './primitives/cube.js'
 
 
 import { parse } from './libs/loaders.gl-core.mjs'
@@ -188,10 +190,10 @@ const render = () => {
                 color: turnout.visible ? [0.99, 0.99, 0.58] : [0.58, 0.58, 0.58]
             }))
 
-            drawCliff({
-                position: [-10, -1, 0],
-                rotation: [0, 0, 0, 1]
-            })
+            // drawCliff({
+            //     position: [-10, -1, 0],
+            //     rotation: [0, 0, 0, 1]
+            // })
 
             // render debug
             drawDebugPoints()
@@ -199,13 +201,13 @@ const render = () => {
 
             drawFloor()
 
-            drawTile({
-                scale: [10, 1, 10]
-            })
-            drawTile({
-                position: [20, 0, 0],
-                scale: [10, 1, 10]
-            })
+            // drawTile({
+            //     scale: [10, 1, 10]
+            // })
+            // drawTile({
+            //     position: [20, 0, 0],
+            //     scale: [10, 1, 10]
+            // })
 
             drawSkybox()
 
@@ -258,7 +260,7 @@ const setupChoo = () => {
     })
 
     // initialize
-    app.route('/trains', trains(app, 'trains'))
+    app.route('/trains', controller(app, 'controller'))
     app.route('*', intro(app, 'intro'))
 
     const chooMount = document.createElement('div')
@@ -271,7 +273,7 @@ const setupChoo = () => {
         // initialize state here?
 
         // listen to the button event
-        emitter.on(state.events.FLIPPER, ({id, data}) => {
+        emitter.on('flipper', ({id, data}) => {
             if(id === 'flipper1') {
                 setTool(createTrackTool, data)
                 setTool(cameraControlTool, data)
