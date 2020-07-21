@@ -11,6 +11,7 @@ let mouse3d = [0, 0, 0]
 let mouseRay = [0, 0, 0]
 let snappedPoint = null
 let snappedAxis = null
+let dragItem = null
 
 window.addEventListener('mousemove', (e) => {
     mousePosition[0] = e.clientX
@@ -29,6 +30,9 @@ export const getSnappedPoint = () => snappedPoint
 export const getSnappedAxis = () => snappedAxis
 export const justClickedMouse = () => justClicked
 export const justMovedMouse = () => justMoved
+
+export const getDragItem = () => dragItem
+export const setDragItem = (item) => dragItem = item
 
 export const mouseListenerTool = {
     prerender: ({detail: context}) => {

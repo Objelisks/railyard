@@ -3,6 +3,7 @@ import regl from '../regl.js'
 import { setUniforms } from '../primitives/model.js'
 import { drawCube } from '../primitives/cube.js'
 import { camera } from '../camera.js'
+import { setDragItem } from '../mouse.js'
 
 import { mat4, quat } from '../libs/gl-matrix.mjs'
 
@@ -30,20 +31,52 @@ const fbo = regl.framebuffer({
     colorType: 'uint8'
 })
 
-const thumbnailButton = (name, model) => {
+const moveListener = (id, state, emit) => (e) => {
+}
+
+const releaseDialog = (id, state, emit) => (e) => {
+    const isOverDialog = e.target && e.target.closest('.dialog')
+    if(!isOverDialog) {
+        emit('dropDragged')
+    } else {
+        emit('setDragItem', null)
+    }
+
+    state.components[id].release()
+    document.body.classList.remove('grabbing')
+}
+
+const grabButton = (state, emit, id, item) => (e) => {
+    const targetId = e.target.closest('div[id]').id
+    if(targetId !== id) return
+
+    const onmove = moveListener(id, state, emit)
+    const onrelease = releaseDialog(id, state, emit)
+
+    setDragItem(item)
+    emit('setDragItem', item)
+
+    state.components[id].release = () => {
+        window.removeEventListener('mousemove', onmove)
+        window.removeEventListener('mouseup', onrelease)
+    }
+    
+    window.addEventListener('mousemove', onmove)
+    window.addEventListener('mouseup', onrelease)
+    document.body.classList.add('grabbing')
+    e.stopPropagation()
+}
+
+const thumbnailButton = (id, item) => {
+    const {name, model} = item
     let hoverRequest = null
 
     const buttonCanvas = document.createElement('canvas')
     buttonCanvas.setAttribute('width', BUTTON_SIZE)
     buttonCanvas.setAttribute('height', BUTTON_SIZE)
+    const buf = new Uint8Array(64*64*4)
 
     const updateThumbnail = () => {
-        // const offscreenCanvas = offscreenContext.canvas
-        // offscreenContext.finish()
-        // offscreenContext.flush()
-
-        const buf = new Uint8Array(64*64*4)
-    
         fbo.use(() => {
             regl.clear({
                 color: [1, 1, 0.5, 1],
@@ -57,7 +90,7 @@ const thumbnailButton = (name, model) => {
                 camera({
                     eye: [3, -3, 3],
                     target: [0, 0, 0]
-                }, (context) => setUniforms({
+                }, () => setUniforms({
                     position: [0, Math.sin(regl.now()*10.0)/5.0, 0],
                     rotation: quat.fromEuler([], 0, regl.now()*100.0, 0)
                 }, model))
@@ -72,7 +105,6 @@ const thumbnailButton = (name, model) => {
             })
         })
         const pixelData = new ImageData(Uint8ClampedArray.from(buf), 64, 64)
-
         const context = buttonCanvas.getContext('2d')
         context.putImageData(pixelData, 0, 0, 0, 0, BUTTON_SIZE, BUTTON_SIZE)
     }
@@ -91,15 +123,16 @@ const thumbnailButton = (name, model) => {
     }
 
     return (state, emit) => {
-        console.log('button render')
-
         cancelAnimationFrame(hoverRequest)
         hoverRequest = null
 
         updateThumbnail()
 
+        state.components[id] = {}
+
         return html`
-            <div class="thumbnail" data-tooltip="${name}" onmouseenter=${onHover} onmouseleave=${onLeave}>
+            <div id=${id} class="thumbnail" data-tooltip="${name}"
+                onmousedown=${grabButton(state, emit, id, item)} onmouseenter=${onHover} onmouseleave=${onLeave}>
                 ${buttonCanvas}
             </div>
         `
@@ -109,27 +142,27 @@ const thumbnailButton = (name, model) => {
 const edit = (app, id) => {
     const objects = [
         {
-            name: 'cliff rock', // tooltip
+            name: 'red candy', // tooltip
             model: () => setColor({ color: [1, 0, 0] }, () => drawCube()), // thumbnail
         },
         {
-            name: 'cliff rock 2',
+            name: 'green candy',
             model: () => setColor({ color: [0, 1, 0] }, () => drawCube()),
         },
         {
-            name: 'cliff rock 3',
+            name: 'blue candy',
             model: () => setColor({ color: [0, 0, 1] }, () => drawCube()),
         },
         {
-            name: 'cliff rock 4',
+            name: 'yellow candy',
             model: () => setColor({ color: [1, 1, 0] }, () => drawCube()),
         },
         {
-            name: 'cliff rock 5',
+            name: 'pink candy',
             model: () => setColor({ color: [1, 0, 1] }, () => drawCube()),
         }
     ]
-    const buttons = objects.map(obj => thumbnailButton(obj.name, obj.model))
+    const buttons = objects.map((obj, i) => thumbnailButton(`thumb-${i}`, obj))
 
     return (state, emit) => {
         return html`

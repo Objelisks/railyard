@@ -16,13 +16,12 @@ import { camera, getCameraPos, getCameraDir, getCameraDistance, cameraControlToo
 import { addTrack, getTracks, getTurnouts, addTrain, getTrains } from './railyard.js'
 import { placeTrainOnTrack, detectAndFixTurnouts } from './railyardhelpers.js'
 import { networkedTrainTool } from './network.js'
-import { mouseListenerTool } from './mouse.js'
+import { mouseListenerTool, getMouse3d, getDragItem } from './mouse.js'
 import { loadToTrackBush } from './raycast.js'
 import { flags } from './flags.js'
 import { waitingOn } from './reglhelpers.js'
 import { drawTile } from './primitives/tile.js'
-import { setUniforms } from './primitives/model.js'
-import { drawCube } from './primitives/cube.js'
+import { setUniforms, model } from './primitives/model.js'
 
 
 import { parse } from './libs/loaders.gl-core.mjs'
@@ -40,6 +39,9 @@ parse(fetch('./models/cliff.gltf'), GLTFLoader).then(data => {
     })
     drawCliff = drawMesh(mesh, 'rockcliff')
 })
+
+let dragItem = null
+let addedObjects = []
 
 // debug keyboard listener
 window.addEventListener('keypress', (e) => {
@@ -195,6 +197,21 @@ const render = () => {
             //     rotation: [0, 0, 0, 1]
             // })
 
+            if(dragItem) {
+                const mouse3d = getMouse3d()
+                
+                setUniforms({
+                    position: mouse3d
+                }, () =>
+                    dragItem.model())
+            }
+
+            addedObjects.forEach(obj => 
+                setUniforms({
+                    position: obj.position
+                }, () => obj.model())
+            )
+
             // render debug
             drawDebugPoints()
             drawDebugArrows()
@@ -278,6 +295,17 @@ const setupChoo = () => {
                 setTool(createTrackTool, data)
                 setTool(cameraControlTool, data)
             }
+        })
+
+        emitter.on('setDragItem', (item) => {
+            dragItem = item
+        })
+
+        emitter.on('dropDragged', () => {
+            const mouse3d = getMouse3d()
+            
+            addedObjects.push({...dragItem, position: mouse3d})
+            emitter.emit('setDragItem', null)
         })
     })
 }

@@ -6,7 +6,6 @@ const moveListener = (id, state, emit) => (e) => {
 
     const x = state.components[id].offset.x
     const y = state.components[id].offset.y
-    //emit('render')
     const target = state.components[id].element
     if(!target) return
     target.style = `transform: translate(${x}px, ${y}px)`

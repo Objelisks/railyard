@@ -99,12 +99,20 @@ body:not(.grabbing) .knob {
 }
 
 
-button.thumbnail {
-    border: 1px solid red;
-    border-radius: 8px;;
+div.thumbnail {
+    border: 0px solid yellow;
     width: 64px;
     height: 64px;
     margin: 8px;
+    transform: translate(0, 0);
+    box-shadow: 0px 0px 0px grey;
+    transition: transform 200ms cubic-bezier(0.1, 0.75, .5, 2.0), box-shadow 200ms, border 200ms;
+}
+
+div.thumbnail:hover {
+    border: 2px solid white;
+    transform: translate(-2px, -2px);
+    box-shadow: 3px 3px 9px grey;
 }
 
 
