@@ -52,7 +52,7 @@ let outgoingEvents = []
 let incomingEvents = []
 const OUTGOING_FREQUENCY = 1 // per sec
 let lastUpdate = 0
-let sw = null
+let sw = null, hub = null
 
 const markAsNetworked = (obj, id) => {
     return {
@@ -126,9 +126,28 @@ const dedupeAgainstLocalTracks = (remoteTracks) => {
 
 const signalUrl = `${window.location.origin}/signal`
 
+export const getPlayers = () => {
+    const allPlayers = Object.keys(remoteData)
+    return allPlayers.map(playerId => ({ name: playerId }))
+}
+
+export const disconnect = () => {
+    console.log(`disconnecting`)
+    document.title = `trains game`
+    if(sw) {
+        sw.close()
+    }
+    if(hub) {
+        hub.close()
+    }
+}
+
 export const connect = (room) => {
+    if(sw || hub) {
+        disconnect()
+    }
     const roomName = `railyard-${room}`
-    const hub = signalhub(roomName, [signalUrl])
+    hub = signalhub(roomName, [signalUrl])
     sw = swarm(hub)
     console.log(`connecting to ${roomName}`)
     document.title = `trains game (room: ${room})`

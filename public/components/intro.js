@@ -7,7 +7,7 @@ const intro = (app, id) => {
     return (state, emit) => {
         const click = () => {
             const roomName = document.body.querySelector('#input').value
-            state.roomName = roomName
+            //state.roomName = roomName
             emit('pushState', `/trains?room=${roomName}`)
         }
 

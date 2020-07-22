@@ -19,7 +19,7 @@ const releaseDialog = (id, state, emit) => (e) => {
 }
 
 const grabDialog = (state, emit, id) => (e) => {
-    const targetId = e.target.closest('div[id]').id
+    const targetId = e.target.closest('.dialog').id
     if(targetId !== id) return
 
     const onmove = moveListener(id, state, emit)

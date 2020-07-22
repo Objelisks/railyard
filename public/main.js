@@ -15,7 +15,7 @@ import { tiltShiftEffect } from './shaders/tiltshift.js'
 import { camera, getCameraPos, getCameraDir, getCameraDistance, cameraControlTool } from './camera.js'
 import { addTrack, getTracks, getTurnouts, addTrain, getTrains } from './railyard.js'
 import { placeTrainOnTrack, detectAndFixTurnouts } from './railyardhelpers.js'
-import { networkedTrainTool } from './network.js'
+import { networkedTrainTool, connect, disconnect } from './network.js'
 import { mouseListenerTool, getMouse3d, getDragItem } from './mouse.js'
 import { loadToTrackBush } from './raycast.js'
 import { flags } from './flags.js'
@@ -277,8 +277,7 @@ const setupChoo = () => {
     })
 
     // initialize
-    app.route('/trains', controller(app, 'controller'))
-    app.route('*', intro(app, 'intro'))
+    app.route('*', controller(app, 'controller'))
 
     const chooMount = document.createElement('div')
     chooMount.id = 'choo'
@@ -288,6 +287,10 @@ const setupChoo = () => {
     // setup event handlers for controls
     app.use((state, emitter) => {
         // initialize state here?
+
+        if(state.query.room) {
+            connect(state.query.room)
+        }
 
         // listen to the button event
         emitter.on('flipper', ({id, data}) => {
@@ -312,6 +315,7 @@ const setupChoo = () => {
 
 
 // start
+
 setupChoo()
 requestAnimationFrame(render)
 
