@@ -160,6 +160,54 @@ const edit = (app, id) => {
         {
             name: 'pink candy',
             model: () => setColor({ color: [1, 0, 1] }, () => drawCube()),
+        },
+        {
+            name: 'green candy',
+            model: () => setColor({ color: [0, 1, 0] }, () => drawCube()),
+        },
+        {
+            name: 'blue candy',
+            model: () => setColor({ color: [0, 0, 1] }, () => drawCube()),
+        },
+        {
+            name: 'yellow candy',
+            model: () => setColor({ color: [1, 1, 0] }, () => drawCube()),
+        },
+        {
+            name: 'pink candy',
+            model: () => setColor({ color: [1, 0, 1] }, () => drawCube()),
+        },
+        {
+            name: 'green candy',
+            model: () => setColor({ color: [0, 1, 0] }, () => drawCube()),
+        },
+        {
+            name: 'blue candy',
+            model: () => setColor({ color: [0, 0, 1] }, () => drawCube()),
+        },
+        {
+            name: 'yellow candy',
+            model: () => setColor({ color: [1, 1, 0] }, () => drawCube()),
+        },
+        {
+            name: 'pink candy',
+            model: () => setColor({ color: [1, 0, 1] }, () => drawCube()),
+        },
+        {
+            name: 'green candy',
+            model: () => setColor({ color: [0, 1, 0] }, () => drawCube()),
+        },
+        {
+            name: 'blue candy',
+            model: () => setColor({ color: [0, 0, 1] }, () => drawCube()),
+        },
+        {
+            name: 'yellow candy',
+            model: () => setColor({ color: [1, 1, 0] }, () => drawCube()),
+        },
+        {
+            name: 'pink candy',
+            model: () => setColor({ color: [1, 0, 1] }, () => drawCube()),
         }
     ]
     const buttons = objects.map((obj, i) => thumbnailButton(`thumb-${i}`, obj))

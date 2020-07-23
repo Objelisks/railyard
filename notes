@@ -14,6 +14,45 @@ https://github.com/chimurai/http-proxy-middleware
 
 https://model-railroad-hobbyist.com/node/25866
 
+
+mandatory:
+
+tiles (place/delete/materials)
+trains (place/delete/models/materials)
+tracks (delete/models/materials)
+scenery (delete/models/materials)
+camera controls
+graphics settings (good/less good)
+train customization
+sync turnouts
+mobile friendliness (hopefully)
+make use of vectors more efficient
+network data compression
+optimize images
+sound / musics (feat. li+d)
+save / load
+ui polish pass
+try to fix spring forces again
+lakitu mode on abandoned cars
+skybox options??
+fade in shader
+track create snap to arbitrary point on other track
+
+
+expansion packs:
+
+Stations and Industries
+    automatically load / unload resources
+    stations with requests
+
+City Livin'
+    building models
+    simulated traffic + pedestrians
+    roads
+
+
+
+
 trainsga.me
 default train setup
 graphics settings (minimalist, next next generation)

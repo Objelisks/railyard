@@ -1,8 +1,8 @@
 import html from '../libs/nanohtml.mjs'
 
-const moveListener = (id, state, emit) => (e) => {
-    state.components[id].offset.x += e.movementX
-    state.components[id].offset.y += e.movementY
+const moveListener = (state, emit, id) => (e) => {
+    state.components[id].offset.x = e.pageX - state.components[id].mouseDown.x
+    state.components[id].offset.y = e.pageY - state.components[id].mouseDown.y
 
     const x = state.components[id].offset.x
     const y = state.components[id].offset.y
@@ -11,7 +11,7 @@ const moveListener = (id, state, emit) => (e) => {
     target.style = `transform: translate(${x}px, ${y}px)`
 }
 
-const releaseDialog = (id, state, emit) => (e) => {
+const releaseDialog = (state, emit, id) => (e) => {
     state.components[id].mouseDown = null
     state.components[id].element = null
     state.components[id].release()
@@ -22,10 +22,13 @@ const grabDialog = (state, emit, id) => (e) => {
     const targetId = e.target.closest('.dialog').id
     if(targetId !== id) return
 
-    const onmove = moveListener(id, state, emit)
-    const onrelease = releaseDialog(id, state, emit)
+    const onmove = moveListener(state, emit, id)
+    const onrelease = releaseDialog(state, emit, id)
 
-    state.components[id].mouseDown = { x: e.clientX, y: e.clientY }
+    state.components[id].mouseDown = {
+        x: e.clientX - state.components[id].offset.x,
+        y: e.clientY - state.components[id].offset.y
+    }
     state.components[id].element = e.target.closest(`#${id}`)
 
     state.components[id].release = () => {
@@ -47,6 +50,7 @@ export default (app, id) => {
     return (state, emit, content) => {
         const x = state.components[id].offset.x
         const y = state.components[id].offset.y
+        console.log(x, y)
         return html`<div id="${id}" class="dialog"
             onmousedown=${grabDialog(state, emit, id)}
             style="transform: translate(${x}px, ${y}px)">

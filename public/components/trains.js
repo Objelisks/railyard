@@ -1,6 +1,5 @@
 import html from '../libs/nanohtml.mjs'
 import knob from './knob.js'
-import { connect } from '../network.js'
 import flipper from './flipper.js'
 import booper from './booper.js'
 import { getTracks, getTrains } from '../railyard.js'

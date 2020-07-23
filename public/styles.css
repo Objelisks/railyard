@@ -2,6 +2,10 @@
     box-sizing: border-box;
 }
 
+body {
+    overflow: hidden;
+}
+
 .grabbing {
     cursor: grabbing;
 }
@@ -24,7 +28,6 @@
     box-shadow: 3px 3px 16px black;
 
     user-select: none;
-    transition: transform 100ms;
 
     display: grid;
     grid-template-columns: 40px 1fr 40px;
@@ -82,7 +85,10 @@
 
 .dialog .content {
     position: relative;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    width: auto;
+    height: 230px;
     grid-column: 2 / 3;
 }
 
