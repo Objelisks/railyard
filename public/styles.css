@@ -85,9 +85,7 @@ body {
 
 .dialog .content {
     position: relative;
-    overflow-x: hidden;
-    overflow-y: scroll;
-    width: auto;
+    width: 330px;
     height: 230px;
     grid-column: 2 / 3;
 }
@@ -101,7 +99,27 @@ body {
     transform: translate(6px, 6px);
 }
 
-.dialog .content::before {
+.scrollable {
+    overflow-x: hidden;
+    overflow-y: auto;
+    width: 100%;
+    height: 100%;
+    scrollbar-width: thin;
+    scrollbar-color: #D1FFF4 #DDD1FF;
+}
+
+.scrollable::-webkit-scrollbar {
+    width: 12px;
+}
+.scrollable::-webkit-scrollbar-track {
+    background: #DDD1FF;
+}
+.scrollable::-webkit-scrollbar-thumb {
+    background-color: #D1FFF4;
+    border: 3px solid #DDD1FF;
+}
+
+.dialog .content::after {
     content: '';
     display: block;
     position: absolute;
@@ -112,7 +130,7 @@ body {
     box-shadow: inset 0px 0px 3px -2px black;
     transition: box-shadow 400ms;
     pointer-events: none;
-    z-index: 1;
+    z-index: 100;
 }
 
 .dialog .content.inset::before {

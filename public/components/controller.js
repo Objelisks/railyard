@@ -53,7 +53,9 @@ const controller = (app, id) => {
                     data-tooltip="${tab.label}" onmousedown=${setPage(tab)}></div>`)}
             </div>
             <div class="content">
-                ${activePage.page(state, emit)}
+                <div class="scrollable">
+                    ${activePage.page(state, emit)}
+                </div>
             </div>
             <div class="button-column right">
                 ${cameraTabs.map((tab, i) => html`<div class="side-button" 
