@@ -2,7 +2,6 @@ import regl from './regl.js'
 import choo from './libs/choo.mjs'
 import { vec3 } from './libs/gl-matrix.mjs'
 import controller from './components/controller.js'
-import intro from './components/intro.js'
 import { drawDebugPoints, drawDebugArrows } from './primitives/debug.js'
 import { drawTrain, attemptConnections, gatherForces, applyForces, makeTrain } from './primitives/train.js'
 import { drawTurnout } from './primitives/turnout.js'
@@ -12,7 +11,7 @@ import { floor } from './primitives/floor.js'
 import { createTrackTool } from './tools/createTrack.js'
 import { playModeTool } from './tools/playMode.js'
 import { tiltShiftEffect } from './shaders/tiltshift.js'
-import { camera, getCameraPos, getCameraDir, getCameraDistance, cameraControlTool } from './camera.js'
+import { camera, getCameraPos, getCameraTarget, cameraControlTool } from './camera.js'
 import { addTrack, getTracks, getTurnouts, addTrain, getTrains } from './railyard.js'
 import { placeTrainOnTrack, detectAndFixTurnouts } from './railyardhelpers.js'
 import { networkedTrainTool, connect, disconnect } from './network.js'
@@ -130,7 +129,7 @@ const setTool = (tool, active) => {
 const toggleTool = (tool) => setTool(tool, !toolset.has(tool))
 setTool(mouseListenerTool, true)
 setTool(playModeTool, true)
-setTool(cameraControlTool, false)
+setTool(cameraControlTool, true)
 setTool(networkedTrainTool, true)
 
 const drawFloor = floor()
@@ -146,11 +145,11 @@ const render = () => {
 
     // set up camera
     const draw = () => {
-        const cameraTarget = toolset.has(createTrackTool) ? vec3.add([], getCameraPos(), getCameraDir()) : getTrains()[0].position
-        const cameraPos = toolset.has(createTrackTool) ? vec3.add([], cameraTarget, vec3.scale([], vec3.normalize([], vec3.sub([], getCameraPos(), cameraTarget)), getCameraDistance())) : getCameraPos()
+        // const cameraTarget = toolset.has(createTrackTool) ? vec3.add([], getCameraPos(), getCameraDir()) : getTrains()[0].position
+        // const cameraPos = toolset.has(createTrackTool) ? vec3.add([], cameraTarget, vec3.scale([], vec3.normalize([], vec3.sub([], getCameraPos(), cameraTarget)), getCameraDistance())) : getCameraPos()
         camera({
-            eye: cameraPos,
-            target: cameraTarget
+            eye: getCameraPos(),
+            target: getCameraTarget()
         }, (context) => {
 
             window.dispatchEvent(new CustomEvent('update', {detail: context}))
@@ -238,20 +237,23 @@ const render = () => {
         const passes = [
             // render the scene normally offscreen on the first buffer
             () => draw(),
-
-            // post process effects
-            () => tiltShiftEffect({
-                color: getOtherFbo().color,
-                depth: getOtherFbo().depth,
-                bias: [1, 0] // vertical blur
-            }),
-            () => tiltShiftEffect({
-                color: getOtherFbo().color,
-                depth: getOtherFbo().depth,
-                bias: [0, 1] // horizontal blur
-            }),
-            //() => fxaaPass({ color: getOtherFbo().color })
         ]
+        if(flags.tiltShiftEnabled) {
+            passes.push(
+                // post process effects
+                () => tiltShiftEffect({
+                    color: getOtherFbo().color,
+                    depth: getOtherFbo().depth,
+                    bias: [1, 0] // vertical blur
+                }),
+                () => tiltShiftEffect({
+                    color: getOtherFbo().color,
+                    depth: getOtherFbo().depth,
+                    bias: [0, 1] // horizontal blur
+                }),
+                //() => fxaaPass({ color: getOtherFbo().color })
+            )
+        }
 
         // render (double buffered) with last frame going to the screen
         passes.forEach((renderPass, i) => {
@@ -291,14 +293,6 @@ const setupChoo = () => {
         if(state.query.room) {
             connect(state.query.room)
         }
-
-        // listen to the button event
-        emitter.on('flipper', ({id, data}) => {
-            if(id === 'flipper1') {
-                setTool(createTrackTool, data)
-                setTool(cameraControlTool, data)
-            }
-        })
 
         emitter.on('setDragItem', (item) => {
             dragItem = item

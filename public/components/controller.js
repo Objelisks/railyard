@@ -4,28 +4,29 @@ import trains from './trains.js'
 import edit from './edit.js'
 import multiplayer from './multiplayer.js'
 import trainline from './trainline.js'
-// import { kite, conductor, bird, tower } from './camera.js'
+import { CAMERA_MODE, setCameraMode } from '../camera.js'
 
 const controller = (app, id) => {
     const dialog1 = dialog(app, id)
     const trainPage = trains(app, 'trains')
     const editPage = edit(app, 'edit')
     const multiplayerPage = multiplayer(app, 'multiplayer')
-    // const trainlinePage = trainline(app, 'trainline')
+    const trainlinePage = trainline(app, 'trainline')
 
     const pageTabs = [
         { label: 'operate', page: trainPage },
         { label: 'edit', page: editPage },
         { label: 'multiplayer', page: multiplayerPage },
-        // trainlinePage
+        { label: 'train line', page: trainlinePage },
     ]
     let activePage = pageTabs[0]
     const cameraTabs = [
-        //{label: 'kite', camera: kite },
-        //{label: 'conductor', camera: conductor },
-        //{label: 'bird', camera: bird },
-        //{label: 'tower', camera: tower },
+        {label: 'kite', camera: CAMERA_MODE.KITE },
+        {label: 'conductor', camera: CAMERA_MODE.CONDUCTOR },
+        {label: 'bird', camera: CAMERA_MODE.BIRD },
+        {label: 'tower', camera: CAMERA_MODE.TOWER },
     ]
+    let activeCamera = cameraTabs[2]
 
     //let contentQueue = [pageTabs[activePage]]
     
@@ -43,13 +44,15 @@ const controller = (app, id) => {
         }
 
         const setCamera = (tab) => (e) => {
+            activeCamera = tab
+            setCameraMode(tab.camera)
             e.stopPropagation()
             emit('render')
         }
 
         return dialog1(state, emit, html`
             <div class="button-column left">
-                ${pageTabs.map((tab, i) => html`<div class="side-button" 
+                ${pageTabs.map((tab, i) => html`<div class="side-button${tab === activePage ? ' active' : ''}" 
                     data-tooltip="${tab.label}" onmousedown=${setPage(tab)}></div>`)}
             </div>
             <div class="content">
@@ -58,7 +61,7 @@ const controller = (app, id) => {
                 </div>
             </div>
             <div class="button-column right">
-                ${cameraTabs.map((tab, i) => html`<div class="side-button" 
+                ${cameraTabs.map((tab, i) => html`<div class="side-button${tab === activeCamera ? ' active' : ''}" 
                     data-tooltip="${tab.label}" onmousedown=${setCamera(tab)}></div>`)}
             </div>
         `)

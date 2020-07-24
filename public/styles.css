@@ -19,7 +19,7 @@ body {
 
     min-width: 400px;
     min-height: 300px;
-    padding: 20px;
+    padding: 20px 8px;
     box-sizing: border-box;
 
     background-color: #ffd1dc;
@@ -30,7 +30,7 @@ body {
     user-select: none;
 
     display: grid;
-    grid-template-columns: 40px 1fr 40px;
+    grid-template-columns: 60px 1fr 60px;
     grid-template-rows: auto;
 }
 
@@ -74,13 +74,23 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: space-evenly;
+    align-items: center;
 }
 
 .dialog .side-button {
     width: 30px;
     height: 30px;
     border-radius: 2px;
-    border: 1px solid red;
+    border: 2px solid #641000;
+    background-image: radial-gradient(#f87201, #f87201);
+    box-shadow: 1px 1px 6px -3px #641000;
+}
+.dialog .side-button:active {
+    transform: translate(1px, 1px);
+    box-shadow: none;
+}
+.dialog .side-button.active {
+    background-image: radial-gradient(#fdca01, #f87201);
 }
 
 .dialog .content {

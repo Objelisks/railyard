@@ -50,7 +50,6 @@ export default (app, id) => {
     return (state, emit, content) => {
         const x = state.components[id].offset.x
         const y = state.components[id].offset.y
-        console.log(x, y)
         return html`<div id="${id}" class="dialog"
             onmousedown=${grabDialog(state, emit, id)}
             style="transform: translate(${x}px, ${y}px)">
