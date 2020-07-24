@@ -23,7 +23,7 @@ export const CAMERA_MODE = {
     BIRD: 'bird'
 }
 
-let cameraMode = CAMERA_MODE.BIRD
+let cameraMode = CAMERA_MODE.TOWER
 export const setCameraMode = (mode) => {
     cameraMode = mode
     if(cameraMode === CAMERA_MODE.CONDUCTOR) {
@@ -34,11 +34,13 @@ export const setCameraMode = (mode) => {
 }
 export const getCameraMode = () => cameraMode
 
+const kitePosition = [0, 10, 0]
+
 export const getCameraPos = () => {
     const train = getTrains()[0]
     switch(cameraMode) {
         case CAMERA_MODE.KITE:
-            return train.position
+            return kitePosition
         case CAMERA_MODE.CONDUCTOR:
             return vec3.add([], vec3.add([], train.position, [0, 1, 0]), vec3.transformQuat([], [-1, 0, 0], train.rotation))
         case CAMERA_MODE.TOWER:
@@ -124,5 +126,9 @@ export const cameraControlTool = {
         editCameraDistance += scrollVelocity
         editCameraDistance = clamp(editCameraDistance, 10, 100)
         scrollVelocity *= 0.9
+
+        const train = getTrains()[0]
+        const distance = vec3.distance(train.position, kitePosition)
+        vec3.lerp(kitePosition, kitePosition, vec3.add([], train.position, [0, 10, 0]), 0.001 * distance)
     }
 }

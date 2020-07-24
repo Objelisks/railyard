@@ -23,8 +23,8 @@ const controller = (app, id) => {
     const cameraTabs = [
         {label: 'kite', camera: CAMERA_MODE.KITE },
         {label: 'conductor', camera: CAMERA_MODE.CONDUCTOR },
-        {label: 'bird', camera: CAMERA_MODE.BIRD },
         {label: 'tower', camera: CAMERA_MODE.TOWER },
+        {label: 'bird', camera: CAMERA_MODE.BIRD },
     ]
     let activeCamera = cameraTabs[2]
 

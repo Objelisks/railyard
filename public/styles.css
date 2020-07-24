@@ -255,6 +255,8 @@ body:not(.grabbing) .knob {
 [data-tooltip]:before {
     position: absolute;
     content: attr(data-tooltip);
+    display: block;
+    
     opacity: 0;
 }
 [data-tooltip]:hover:before {
