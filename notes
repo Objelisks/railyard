@@ -14,36 +14,84 @@ https://github.com/chimurai/http-proxy-middleware
 
 https://model-railroad-hobbyist.com/node/25866
 http://eu.idec.com/en/g/gLB2L-M1T14A/
+http://webglstats.com/
 
 mandatory:
 
+mobile friendliness (hopefully) 
+    portrait mode
+    swipe between tabs
 tiles (place/delete/materials)
 trains (place/delete/models/materials)
 tracks (delete/models/materials)
 scenery (delete/models/materials)
 X camera controls
-graphics settings (good/less good)
 train customization
 sync turnouts
-mobile friendliness (hopefully)
-make use of vectors more efficient
 network data compression
 optimize images
+make use of vectors more efficient
 sound / musics (feat. li+d)
-save / load
+    3 bg tracks
+    engine sounds
+    wheels over track ties
+    train whistle
+    train connect sound
+    ui boop
 ui polish pass
+    operate controls / layout
 try to fix spring forces again
 lakitu mode on abandoned cars
 skybox options??
 fade in shader
 track create snap to arbitrary point on other track
+options page
+    graphics setting
+    bg music setting
+    save to localstorage current room, clear on new room, also save local game
+X save / load
 
+train models
+    engines
+        berkshire https://www.modeltrainstuff.com/bachmann-n-50952-2-8-4-berkshire-steam-locomotive-with-tender-nickel-plate-road-railfan-version-with-mars-light-759-equipped-with-dcc-and-sound/
+        switcher https://www.modeltrainstuff.com/broadway-limited-imports-n-3868-p3-nw2-diesel-locomotive-southern-pacific-1423-equipped-with-paragon3-sound-dc-dcc-with-rolling-thunder/
+        freight GE https://www.modeltrainstuff.com/kato-n-1768930-ge-es44ac-gevo-burlington-northern-santa-fe-5873/
+        f-unit passenger https://www.modeltrainstuff.com/kato-n-1060422-f7a-b-locomotive-set-northern-pacific-6012a-6012b/
+    cars
+        older passenger
+        newer passenger
+        boxcar
+        hopper
+        tank car
+        flatbed
+        caboose
+    buildings
+        train house https://modeltrainstuff.com/walthers-n-933-3266-two-stall-130-brick-diesel-house-kit/
+        barn https://modeltrainstuff.com/woodland-scenics-n-br4932-built-and-ready-old-weathered-barn/
+        house https://modeltrainstuff.com/walthers-n-933-3839-cape-cod-house-kit/
+        donut store https://modeltrainstuff.com/walthers-n-933-3835-hole-in-one-donut-shop-kit/
+        factory https://modeltrainstuff.com/walthers-n-933-3211-allied-rail-rebuilders-kit/
+    scenery
+        small rock
+        large rock
+        cliff
+        tunnel straight
+        tunnel curved
+        trees
+            pine
+            birch
+            oak
+    tiles
+        grass
+        dirt
+        road?
 
 expansion packs:
 
 Stations and Industries
     automatically load / unload resources
     stations with requests
+    rivers?
 
 City Livin'
     building models

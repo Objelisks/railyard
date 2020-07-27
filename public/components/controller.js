@@ -4,6 +4,7 @@ import trains from './trains.js'
 import edit from './edit.js'
 import multiplayer from './multiplayer.js'
 import trainline from './trainline.js'
+import options from './options.js'
 import { CAMERA_MODE, setCameraMode } from '../camera.js'
 
 const controller = (app, id) => {
@@ -12,12 +13,14 @@ const controller = (app, id) => {
     const editPage = edit(app, 'edit')
     const multiplayerPage = multiplayer(app, 'multiplayer')
     const trainlinePage = trainline(app, 'trainline')
+    const optionsPage = options(app, 'options')
 
     const pageTabs = [
         { label: 'operate', page: trainPage },
         { label: 'edit', page: editPage },
         { label: 'multiplayer', page: multiplayerPage },
         { label: 'train line', page: trainlinePage },
+        { label: 'options', page: optionsPage },
     ]
     let activePage = pageTabs[0]
     const cameraTabs = [

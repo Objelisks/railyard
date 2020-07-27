@@ -14,4 +14,12 @@ export const setUniforms = regl({
     }
 })
 
+export const setContext = regl({
+    context: {
+        rotation: (context, props) => reglArg('rotation', [0, 0, 0, 1], context, props),
+        position: (context, props) => reglArg('position', [0, 0, 0], context, props),
+        scale: (context, props) => reglArg('scale', [1, 1, 1], context, props)
+    }
+})
+
 export const model = (draw) => (props) => setUniforms(props, draw)

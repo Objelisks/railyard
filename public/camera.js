@@ -4,17 +4,17 @@ import { keysPressed } from './keyboard.js'
 import { getTrains } from './railyard.js'
 import { clamp } from './math.js'
 import { flags } from './flags.js'
+import { scrollStack } from './mouse.js'
+
 
 const editCameraTarget = [10, 0, 10]
 const editCameraLookDirection = vec3.normalize([], [-1, -1, -1])
 const baseCameraMoveSpeed = 0.2
 let editCameraDistance = 50
 const getCameraMoveSpeed = () => baseCameraMoveSpeed * editCameraDistance/20
-let scrollVelocity = 0
 
-window.addEventListener('wheel', (e) => {
-    scrollVelocity += e.deltaY * 0.2
-})
+let scrollVelocity = 0
+scrollStack.push((e) => scrollVelocity += e.deltaY * 0.2)
 
 export const CAMERA_MODE = {
     KITE: 'kite',
@@ -36,17 +36,18 @@ export const getCameraMode = () => cameraMode
 
 const kitePosition = [0, 10, 0]
 
+const v1 = [], v2 = [], v3 = []
 export const getCameraPos = () => {
     const train = getTrains()[0]
     switch(cameraMode) {
         case CAMERA_MODE.KITE:
             return kitePosition
         case CAMERA_MODE.CONDUCTOR:
-            return vec3.add([], vec3.add([], train.position, [0, 1, 0]), vec3.transformQuat([], [-1, 0, 0], train.rotation))
+            return vec3.add(v1, vec3.add(v1, train.position, [0, 1, 0]), vec3.transformQuat(v2, [-1, 0, 0], train.rotation))
         case CAMERA_MODE.TOWER:
             return [10, 10, 10]
         case CAMERA_MODE.BIRD:
-            return vec3.scaleAndAdd([], editCameraTarget, editCameraLookDirection, -editCameraDistance)
+            return vec3.scaleAndAdd(v3, editCameraTarget, editCameraLookDirection, -editCameraDistance)
     }
 }
 

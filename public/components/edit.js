@@ -1,11 +1,12 @@
 import html from '../libs/nanohtml.mjs'
 import regl from '../regl.js'
-import { setUniforms } from '../primitives/model.js'
+import { setContext, setUniforms } from '../primitives/model.js'
 import { drawCube } from '../primitives/cube.js'
 import { camera } from '../camera.js'
-import { setDragItem } from '../mouse.js'
+import { meshes } from '../primitives/meshes.js'
+import { getMouse3d, scrollStack } from '../mouse.js'
 
-import { mat4, quat } from '../libs/gl-matrix.mjs'
+import { vec3, quat } from '../libs/gl-matrix.mjs'
 
 const BUTTON_SIZE = 64
 
@@ -31,7 +32,9 @@ const fbo = regl.framebuffer({
     colorType: 'uint8'
 })
 
-const moveListener = (id, state, emit) => (e) => {
+const moveListener = (id, state, emit, item) => (e) => {
+    const mouse3d = getMouse3d()
+    vec3.copy(item.position, mouse3d)
 }
 
 const releaseDialog = (id, state, emit) => (e) => {
@@ -46,29 +49,41 @@ const releaseDialog = (id, state, emit) => (e) => {
     document.body.classList.remove('grabbing')
 }
 
+const rotateObject = (id, state, emit, item) => (e) => {
+    item.rotation += e.deltaY / 10.0
+}
+
 const grabButton = (state, emit, id, item) => (e) => {
     const targetId = e.target.closest('div[id]').id
     if(targetId !== id) return
 
-    const onmove = moveListener(id, state, emit)
-    const onrelease = releaseDialog(id, state, emit)
+    const dragItem = {
+        ...item,
+        position: [0, 0, 0],
+        rotation: 0
+    }
 
-    setDragItem(item)
-    emit('setDragItem', item)
+    const onmove = moveListener(id, state, emit, dragItem)
+    const onrelease = releaseDialog(id, state, emit, dragItem)
+    scrollStack.push(rotateObject(id, state, emit, dragItem))
+
+    emit('setDragItem', dragItem)
 
     state.components[id].release = () => {
         window.removeEventListener('mousemove', onmove)
         window.removeEventListener('mouseup', onrelease)
+        scrollStack.pop()
     }
     
     window.addEventListener('mousemove', onmove)
     window.addEventListener('mouseup', onrelease)
+    window.addEventListener('wheel', onscroll)
     document.body.classList.add('grabbing')
     e.stopPropagation()
 }
 
 const thumbnailButton = (id, item) => {
-    const {name, model} = item
+    const { name, model } = item
     let hoverRequest = null
 
     const buttonCanvas = document.createElement('canvas')
@@ -88,12 +103,12 @@ const thumbnailButton = (id, item) => {
                     y: 0,
                 }, () => 
                 camera({
-                    eye: [3, -3, 3],
+                    eye: [3, 3, 3],
                     target: [0, 0, 0]
-                }, () => setUniforms({
+                }, () => setContext({
                     position: [0, Math.sin(regl.now()*10.0)/5.0, 0],
-                    rotation: quat.fromEuler([], 0, regl.now()*100.0, 0)
-                }, model))
+                    rotation: quat.setAxisAngle([], [0, 1, 0], regl.now())
+                }, () => model()))
             )
 
             regl.read({
@@ -106,7 +121,7 @@ const thumbnailButton = (id, item) => {
         })
         const pixelData = new ImageData(Uint8ClampedArray.from(buf), 64, 64)
         const context = buttonCanvas.getContext('2d')
-        context.putImageData(pixelData, 0, 0, 0, 0, BUTTON_SIZE, BUTTON_SIZE)
+        context.putImageData(pixelData, 0, 0)
     }
 
     const onHover = (e) => {
@@ -142,12 +157,13 @@ const thumbnailButton = (id, item) => {
 const edit = (app, id) => {
     const objects = [
         {
-            name: 'red candy', // tooltip
-            model: () => setColor({ color: [1, 0, 0] }, () => drawCube()), // thumbnail
+            name: 'smallrock', // tooltip
+            model: () => meshes['smallrock'](), // thumbnail,
+            zoom: 1
         },
         {
             name: 'green candy',
-            model: () => setColor({ color: [0, 1, 0] }, () => drawCube()),
+            model: () => setUniforms(() => setColor({ color: [0, 1, 0] }, () => drawCube())),
         },
         {
             name: 'blue candy',

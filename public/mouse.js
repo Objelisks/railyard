@@ -13,6 +13,8 @@ let snappedPoint = null
 let snappedAxis = null
 let dragItem = null
 
+export const scrollStack = []
+
 window.addEventListener('mousemove', (e) => {
     mousePosition[0] = e.clientX
     mousePosition[1] = e.clientY
@@ -21,6 +23,11 @@ window.addEventListener('mousemove', (e) => {
 window.addEventListener('mousedown', (e) => {
     if(e.target.closest('canvas')) {
         justClicked = true
+    }
+})
+window.addEventListener('wheel', (e) => {
+    if(scrollStack.length > 0) {
+        scrollStack[scrollStack.length-1](e)
     }
 })
 

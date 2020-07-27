@@ -11,10 +11,9 @@ export const buildMesh = ({position, normal, uv, elements}) => regl({
   elements
 })
 
-export const drawMesh = (mesh, texture) => (props) => {
-    return setUniforms(props, () => {
-        mesh(() => {
-            drawPbr({ texture })
-        })
-    })
-}
+export const drawMesh = (mesh, texture) => (props) =>
+    setUniforms(props, () => 
+      mesh(() => 
+        drawPbr({ texture })
+      )
+    )

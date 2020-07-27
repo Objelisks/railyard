@@ -1,6 +1,6 @@
 import regl from './regl.js'
 import choo from './libs/choo.mjs'
-import { vec3 } from './libs/gl-matrix.mjs'
+import { vec3, quat } from './libs/gl-matrix.mjs'
 import controller from './components/controller.js'
 import { drawDebugPoints, drawDebugArrows } from './primitives/debug.js'
 import { drawTrain, attemptConnections, gatherForces, applyForces, makeTrain } from './primitives/train.js'
@@ -20,24 +20,9 @@ import { loadToTrackBush } from './raycast.js'
 import { flags } from './flags.js'
 import { waitingOn } from './reglhelpers.js'
 import { drawTile } from './primitives/tile.js'
-import { setUniforms, model } from './primitives/model.js'
+import { setUniforms, model, setContext } from './primitives/model.js'
+import { meshes } from './primitives/meshes.js'
 
-
-import { parse } from './libs/loaders.gl-core.mjs'
-import { GLTFLoader } from './libs/loaders.gl-gltf.mjs'
-import { drawMesh, buildMesh } from './primitives/mesh.js'
-
-let drawCliff = () => {}
-parse(fetch('./models/cliff.gltf'), GLTFLoader).then(data => {
-    const meshData = data.meshes[0].primitives[0]
-    const mesh = buildMesh({
-        position: meshData.attributes.POSITION.value,
-        normal: meshData.attributes.NORMAL.value,
-        uv: meshData.attributes.TEXCOORD_0.value,
-        elements: meshData.indices.value
-    })
-    drawCliff = drawMesh(mesh, 'rockcliff')
-})
 
 let dragItem = null
 let addedObjects = []
@@ -191,25 +176,21 @@ const render = () => {
                 color: turnout.visible ? [0.99, 0.99, 0.58] : [0.58, 0.58, 0.58]
             }))
 
-            // drawCliff({
-            //     position: [-10, -1, 0],
-            //     rotation: [0, 0, 0, 1]
-            // })
-
             if(dragItem) {
                 const mouse3d = getMouse3d()
                 
-                setUniforms({
-                    position: mouse3d
-                }, () =>
-                    dragItem.model())
+                setContext({
+                    position: vec3.add([], [0, -0.5, 0], mouse3d),
+                    rotation: quat.setAxisAngle([], [0, 1, 0], dragItem.rotation)
+                }, () => dragItem.model())
             }
 
-            addedObjects.forEach(obj => 
-                setUniforms({
-                    position: obj.position
+            addedObjects.forEach(obj => {
+                setContext({
+                    position: vec3.add([], [0, -0.5, 0], obj.position),
+                    rotation: quat.setAxisAngle([], [0, 1, 0], obj.rotation)
                 }, () => obj.model())
-            )
+            })
 
             // render debug
             drawDebugPoints()

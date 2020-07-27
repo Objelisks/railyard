@@ -15,4 +15,7 @@ const regl = createREGL({
     }
 })
 
+// todo: if extensions don't load, assume mobile version, default to lower graphics
+// wait to load any textures until we know we can use them
+
 export default regl
