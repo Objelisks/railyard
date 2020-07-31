@@ -5,6 +5,7 @@ import { drawCube } from '../primitives/cube.js'
 import { camera } from '../camera.js'
 import { meshes } from '../primitives/meshes.js'
 import { getMouse3d, scrollStack } from '../mouse.js'
+import { drawTile } from '../primitives/tile.js'
 
 import { vec3, quat } from '../libs/gl-matrix.mjs'
 
@@ -154,84 +155,85 @@ const thumbnailButton = (id, item) => {
     }
 }
 
+const TILE_SCALE = 10
+
 const edit = (app, id) => {
     const objects = [
         {
-            name: 'smallrock', // tooltip
-            model: () => meshes['smallrock'](), // thumbnail,
-            zoom: 1
+            name: 'track',
+            items: [
+                {
+                    name: 'track',
+                    model: () => setUniforms(() => setColor({ color: [0, 1, 0] }, () => drawCube())),
+                },
+            ]
         },
         {
-            name: 'green candy',
-            model: () => setUniforms(() => setColor({ color: [0, 1, 0] }, () => drawCube())),
+            name: 'tiles',
+            items: [
+                {
+                    name: 'grass',
+                    model: (() => {const grass = drawTile('grass'); return () => grass()})(),
+                    placer: (position) => [
+                        Math.round(position[0]/TILE_SCALE)*TILE_SCALE,
+                        position[1],
+                        Math.round(position[2]/TILE_SCALE)*TILE_SCALE]
+                },
+                {
+                    name: 'dirt',
+                    model: () => setUniforms(() => setColor({ color: [0, 1, 0] }, () => drawCube())),
+                },
+                {
+                    name: 'rock',
+                    model: () => setUniforms(() => setColor({ color: [0, 1, 0] }, () => drawCube())),
+                },
+            ]
         },
         {
-            name: 'blue candy',
-            model: () => setColor({ color: [0, 0, 1] }, () => drawCube()),
-        },
-        {
-            name: 'yellow candy',
-            model: () => setColor({ color: [1, 1, 0] }, () => drawCube()),
-        },
-        {
-            name: 'pink candy',
-            model: () => setColor({ color: [1, 0, 1] }, () => drawCube()),
-        },
-        {
-            name: 'green candy',
-            model: () => setColor({ color: [0, 1, 0] }, () => drawCube()),
-        },
-        {
-            name: 'blue candy',
-            model: () => setColor({ color: [0, 0, 1] }, () => drawCube()),
-        },
-        {
-            name: 'yellow candy',
-            model: () => setColor({ color: [1, 1, 0] }, () => drawCube()),
-        },
-        {
-            name: 'pink candy',
-            model: () => setColor({ color: [1, 0, 1] }, () => drawCube()),
-        },
-        {
-            name: 'green candy',
-            model: () => setColor({ color: [0, 1, 0] }, () => drawCube()),
-        },
-        {
-            name: 'blue candy',
-            model: () => setColor({ color: [0, 0, 1] }, () => drawCube()),
-        },
-        {
-            name: 'yellow candy',
-            model: () => setColor({ color: [1, 1, 0] }, () => drawCube()),
-        },
-        {
-            name: 'pink candy',
-            model: () => setColor({ color: [1, 0, 1] }, () => drawCube()),
-        },
-        {
-            name: 'green candy',
-            model: () => setColor({ color: [0, 1, 0] }, () => drawCube()),
-        },
-        {
-            name: 'blue candy',
-            model: () => setColor({ color: [0, 0, 1] }, () => drawCube()),
-        },
-        {
-            name: 'yellow candy',
-            model: () => setColor({ color: [1, 1, 0] }, () => drawCube()),
-        },
-        {
-            name: 'pink candy',
-            model: () => setColor({ color: [1, 0, 1] }, () => drawCube()),
+            name: 'scenery',
+            items: [
+                {
+                    name: 'small rock',
+                    model: () => meshes['smallrock'](),
+                    zoom: 1
+                },
+                {
+                    name: 'large rock',
+                    model: () => meshes['smallrock'](),
+                    zoom: 1
+                },
+                {
+                    name: 'birch tree',
+                    model: () => meshes['smallrock'](),
+                    zoom: 1
+                },
+                {
+                    name: 'pine tree',
+                    model: () => meshes['smallrock'](),
+                    zoom: 1
+                },
+                {
+                    name: 'oak tree',
+                    model: () => meshes['smallrock'](),
+                    zoom: 1
+                },
+            ]
         }
     ]
-    const buttons = objects.map((obj, i) => thumbnailButton(`thumb-${i}`, obj))
 
+    const sections = objects.map((section, j) => ({
+        name: section.name,
+        items: section.items.map((item, i) => thumbnailButton(`thumb-${i}-${j}`, item))
+    }))
+        
     return (state, emit) => {
         return html`
             <div class="buttonCorral">
-                ${buttons.map(button => button(state, emit))}
+                ${sections.map(section => html`
+                <span class="sectionTitle">${section.name}</span>
+                <div class="buttonSection">
+                    ${section.items.map((item, i) => item(state, emit))}
+                </div>`)}
             </div>
         `
     }

@@ -1,5 +1,5 @@
 import regl from '../regl.js'
-import { model } from './model.js'
+import { setUniforms } from './model.js'
 import { drawPbr } from './pbr.js'
 
 export const cubePosition = [
@@ -28,15 +28,16 @@ const drawPlane = regl({
   elements: cubeElements
 })
 
-const drawFloor = regl({
+const setFloorContext = regl({
     context: {
-        position: [0, -0.51, 0],
+        position: [0, -1.01, 0],
         rotation: [0, 0, 0, 1],
         scale: [50, 50, 50]
     },
 })
 
-export const floor = () => {
-    const draw = model(() => drawPbr({ texture: 'table' }, drawPlane))
-    return (props) => drawFloor(props, draw)
-}
+export const drawFloor = () =>
+  setFloorContext(() =>
+  setUniforms(() =>
+  drawPbr({ texture: 'table' }, () =>
+  drawPlane())))

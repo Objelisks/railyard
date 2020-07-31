@@ -18,19 +18,33 @@ http://webglstats.com/
 
 mandatory:
 
-mobile friendliness (hopefully) 
-    portrait mode
-    swipe between tabs
 tiles (place/delete/materials)
 trains (place/delete/models/materials)
 tracks (delete/models/materials)
 scenery (delete/models/materials)
-X camera controls
+
 train customization
+lakitu mode on abandoned cars
+track create snap to arbitrary point on other track
+
 sync turnouts
 network data compression
 optimize images
+try to fix spring forces again
 make use of vectors more efficient
+
+ui polish pass
+    operate controls / layout
+options page
+    graphics setting
+    bg music setting
+    save to localstorage current room, clear on new room, also save local game
+info popups
+    q/e to rotate, etc
+mobile friendliness (hopefully) 
+    portrait mode
+    swipe between tabs
+
 sound / musics (feat. li+d)
     3 bg tracks
     engine sounds
@@ -38,17 +52,11 @@ sound / musics (feat. li+d)
     train whistle
     train connect sound
     ui boop
-ui polish pass
-    operate controls / layout
-try to fix spring forces again
-lakitu mode on abandoned cars
+
 skybox options??
-fade in shader
-track create snap to arbitrary point on other track
-options page
-    graphics setting
-    bg music setting
-    save to localstorage current room, clear on new room, also save local game
+fade in shader??
+
+X camera controls
 X save / load
 
 train models

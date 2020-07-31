@@ -125,8 +125,8 @@ export const cameraControlTool = {
         }
 
         editCameraDistance += scrollVelocity
-        editCameraDistance = clamp(editCameraDistance, 10, 100)
-        scrollVelocity *= 0.9
+        editCameraDistance = clamp(editCameraDistance, 1, 100)
+        scrollVelocity *= 0.8
 
         const train = getTrains()[0]
         const distance = vec3.distance(train.position, kitePosition)
