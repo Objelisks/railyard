@@ -1,12 +1,14 @@
 import regl from '../regl.js'
 import Bezier from '../libs/bezier-js.mjs'
 import { v4 as uuid } from '../libs/uuid.mjs'
+import { vec2 } from '../libs/gl-matrix.mjs'
 import { model } from './model.js'
 import { drawLines } from './lines.js'
 import { buildMesh } from './mesh.js'
 import { LINE_POINTS, TRACK_GAUGE } from '../constants.js'
 import { to_vec2 } from '../math.js'
 import { drawMesh } from './mesh.js'
+import { debugPoint } from './debug.js'
 
 export const trackRail = (curve, offset, height=-0.5) => {
 
@@ -39,9 +41,10 @@ export const trackRail = (curve, offset, height=-0.5) => {
     /// END RECORD OF HUBRIS
 
     const curvePoints = []
-    for(let i=0; i<LINE_POINTS; i++) {
-        curvePoints.push(curve.offset(i/LINE_POINTS, offset))
+    for(let i=0; i<LINE_POINTS-1; i++) {
+        curvePoints.push(curve.offset(i/(LINE_POINTS-1), offset))
     }
+    curvePoints.push(curve.offset(1, offset))
     const points = curvePoints
         .map(p => [p.x, height, p.y])
     return points
@@ -81,13 +84,66 @@ n+0 A|__\|C n+LINEPOINTS+0
 
 */
 
-const gravel = (x) => x * 0.7
-const rail = (x) => x * 0.3 + 0.7
+const gravelOffsets = [
+    [-0.75,-0.25],[-0.25,-0.145],
+    [0, -0.150],
+    [0.25,-0.145],[0.75,-0.25]]
 
-const offsets = [[-1,-0.25],[-0.5,-0.125],[-0.375,-0.125],[-0.375,-0.125],[-0.375,0],[-0.25,0],[-0.25,-0.125],[0.25,-0.125],[0.25,0],[0.375,0],[0.375,-0.125],[0.5,-0.125],[1,-0.25]]
-const mats = [gravel, gravel, gravel, rail, rail, gravel, gravel, gravel, rail, rail, gravel, gravel, gravel]
+const railOffsets = [
+    [-0.45,-0.3],
+    [-0.355,-0.2],[-0.335,-.105], [-0.3125,-0.1], [-0.25,-0.105],  [-0.25,-0.125],
+    [0, -0.3],
+    [0.25,-0.2],  [0.25,-0.105],   [0.3125,-0.1],  [0.335,-0.105],  [0.355,-0.2], 
+    [0.45,-0.3]
+]
 
-export const track3dRail = (curve) => {
+const railUvs = (points, curve, offsets) => {
+    const uvs = []
+    let u = 0, v = 0
+    for(let i = 0; i < offsets.length; i++) {
+        const distance = i === offsets.length-1 ? 0 : vec2.distance(offsets[i], offsets[i+1])
+        v = 0
+        for(let j = 0; j < LINE_POINTS; j++) {
+            uvs.push([v, u])
+            const a = j/LINE_POINTS
+            const b = (j+1)/LINE_POINTS
+            // const arcLength = (b-a) * totalLength
+            const arcLength = vec2.distance(
+                to_vec2(curve.get(a)),
+                to_vec2(curve.get(b)),
+            )
+            v += arcLength
+        }
+        u += distance
+    }
+    return uvs
+}
+
+const gravelUvs = (points, curve, offsets) => {
+    const uvs = []
+    let u = 0, v = 0
+    for(let i = 0; i < offsets.length; i++) {
+        const distance = i === offsets.length-1 ? 0 : vec2.distance(offsets[i], offsets[i+1])
+        v = 0
+        for(let j = 0; j < LINE_POINTS; j++) {
+            const point = points[i*LINE_POINTS+j]
+            uvs.push([point[0], point[2]])
+            //uvs.push([u, v])
+            const a = j/LINE_POINTS
+            const b = (j+1)/LINE_POINTS
+            // const arcLength = (b-a) * totalLength
+            const arcLength = vec2.distance(
+                to_vec2(curve.get(a)),
+                to_vec2(curve.get(b)),
+            )
+            v += arcLength
+        }
+        u += distance
+    }
+    return uvs
+}
+
+export const track3dRail = (curve, offsets, uvsFunc) => {
     const points = offsets
         .flatMap(([x, y]) => trackRail(curve, x, y))
     const elements = []
@@ -97,37 +153,30 @@ export const track3dRail = (curve) => {
             elements.push([idx, idx+1, idx+LINE_POINTS], [idx+1, idx+LINE_POINTS+1, idx+LINE_POINTS])
         }
     }
-    
-    const totalLength = curve.length()/3 // magic: tiling factor
-    const uvs = []
-    for(let i = 0; i < offsets.length; i++) {
-        for(let j = 0; j < LINE_POINTS; j++) {
-            const innerLength = curve.split(j/LINE_POINTS).left.length()
-            // const stripMat = mats[i]aa
-            const elPoint = offsets[i]
-            uvs.push([(elPoint[0]+1)/2, innerLength/totalLength])
-        }
-    }
+
     const normals = points.map(point => [0, 1, 0])
     const trackMesh = buildMesh({
         position: points,
         normal: normals,
-        uv: uvs,
+        uv: uvsFunc(points, curve, offsets),
         elements: elements,
     })
     return trackMesh
 }
 
-
 export const make3dTrack = ([x0, y0], [x1, y1], [x2, y2], [x3, y3]) => {
     const curve = new Bezier(x0, y0, x1, y1, x2, y2, x3, y3)
-    const mesh = track3dRail(curve)
+    const gravelMesh = drawMesh(track3dRail(curve, gravelOffsets, gravelUvs), 'gravel')
+    const railMesh = drawMesh(track3dRail(curve, railOffsets, railUvs), 'rail')
     return {
         id: uuid(),
         position: [0, 0, 0],
         rotation: [0, 0, 0, 1],
         curve: curve,
-        draw: drawMesh(mesh, 'shinything'),
+        draw: (props) => {
+            gravelMesh(props)
+            railMesh(props)
+        },
         points: [[x0, y0], [x1, y1], [x2, y2], [x3, y3]]
     }
 }

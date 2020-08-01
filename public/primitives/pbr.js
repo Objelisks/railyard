@@ -5,7 +5,7 @@ import { loadTexture, loadEnvironment, textures } from '../reglhelpers.js'
 const cubeMapNames = ['artist']
 cubeMapNames.forEach((textureName) => loadEnvironment(textureName))
 
-const textureNames = ['table', 'dirtypaint', 'shinything', 'grass', 'mirror', 'rockcliff']
+const textureNames = ['table', 'dirtypaint', 'shinything', 'grass', 'gravel', 'rail', 'rockcliff']
 textureNames.forEach((textureName) => loadTexture(textureName))
 
 const zeroTexture = regl.texture([[0]])
@@ -194,6 +194,7 @@ export const drawPbr = regl({
       color = pow(color, vec3(1.0/2.2)); 
   
       gl_FragColor = vec4(color, 1.0);
+    //   gl_FragColor = vec4(fract(TexCoords), 0.0, 1.0); // uvs
     }`,
   vert: `
   precision mediump float;
