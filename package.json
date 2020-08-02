@@ -21,6 +21,7 @@
     "gl-matrix": "^3.3.0",
     "http-proxy-middleware": "^1.0.5",
     "nanohtml": "^1.9.1",
+    "normals": "^1.1.0",
     "parse-dds": "^1.2.1",
     "ray-aabb": "^3.0.2",
     "rbush": "^3.0.1",
