@@ -3,7 +3,7 @@ import Bezier from '../libs/bezier-js.mjs'
 import { v4 as uuid } from '../libs/uuid.mjs'
 import calcNormals from '../libs/normals.mjs'
 import { vec2 } from '../libs/gl-matrix.mjs'
-import { model } from './model.js'
+import { setUniforms } from './model.js'
 import { drawLines } from './lines.js'
 import { buildMesh } from './mesh.js'
 import { LINE_POINTS, TRACK_GAUGE } from '../constants.js'
@@ -11,6 +11,7 @@ import { to_vec2 } from '../math.js'
 import { drawMesh } from './mesh.js'
 import { debugPoint } from './debug.js'
 import { drawNormals } from './normals.js'
+import { setColor } from '../reglhelpers.js'
 
 export const trackRail = (curve, offset, height=-0.5) => {
 
@@ -55,7 +56,7 @@ export const trackRail = (curve, offset, height=-0.5) => {
 const track = (trackL, trackR, length) => {
     const drawTrackL = drawLines(trackL, length)
     const drawTrackR = drawLines(trackR, length)
-    return model(() => {
+    return (props) => setUniforms(props, () => {
         drawTrackL()
         drawTrackR()
     })
@@ -122,10 +123,6 @@ const railUvs = (points, curve, offsets) => {
             const a = j/LINE_POINTS
             const b = (j+1)/LINE_POINTS
             const arcLength = (b-a) * totalLength * 0.5
-            // const arcLength = vec2.distance(
-            //     to_vec2(curve.get(a)),
-            //     to_vec2(curve.get(b)),
-            // )
             v += arcLength
         }
         u += distance
@@ -177,8 +174,8 @@ export const make3dTrack = ([x0, y0], [x1, y1], [x2, y2], [x3, y3]) => {
         rotation: [0, 0, 0, 1],
         curve: curve,
         draw: (props) => {
-            gravelMesh(props)
-            railMesh(props)
+            setColor({ color: [.81, .81, .77]}, () => gravelMesh(props))
+            setColor({ color: [.95, .95, .94]}, () => railMesh(props))
         },
         points: [[x0, y0], [x1, y1], [x2, y2], [x3, y3]]
     }

@@ -1,13 +1,13 @@
 import regl from '../regl.js'
 import { arrow, updateArrow } from './arrow.js'
 import { drawCube } from './cube.js'
-import { model } from './model.js'
+import { setUniforms } from './model.js'
 
 const debugPoints = {}
 export const debugPoint = (key, position, color) => {
     debugPoints[key] = {position, color}
 }
-const drawPoint = model(() => drawCube())
+const drawPoint = (props) => setUniforms(props, () => drawCube())
 const setupPoint = regl({
     context: {
         position: (context, props) => props.position,

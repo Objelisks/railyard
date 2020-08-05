@@ -4,6 +4,8 @@ import { drawMesh, buildMesh } from './mesh.js'
 
 const meshNames = [
     { name: 'smallrock', material: 'rockcliff' },
+    { name: 'train', material: 'rail' },
+    { name: 'train2', material: 'baltimore' },
 ]
 
 export const meshes = Object.fromEntries(meshNames.map(name => [name.name, () => {}]))

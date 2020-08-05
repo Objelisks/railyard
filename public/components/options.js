@@ -1,18 +1,24 @@
 import html from '../libs/nanohtml.mjs'
+import { flags } from '../flags.js'
 
 const options = (app, id) => {
     app.use((state, emitter) => {
 
     })
+
+    const graphicsChange = (e) => {
+        flags.graphics = e.target.value === "true"
+    }
+
     // TODO persist option selection to localstorage
     return (state, emit) => {
         return html`
             <div>
                 <div>
                     <label for="graphics">graphics: </label>
-                    <select id="graphics">
-                        <option>lowkey minimalist aesthetic</option>
-                        <option>i have a nice graphics card</option>
+                    <select id="graphics" onchange=${graphicsChange}>
+                        <option value="false">lowkey minimalist aesthetic</option>
+                        <option value="true">i have a nice graphics card</option>
                     </select>
                 </div>
                 <div>

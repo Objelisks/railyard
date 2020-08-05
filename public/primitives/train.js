@@ -7,8 +7,10 @@ import { getTrains } from '../railyard.js'
 import { to_vec2, project2, clamp, sign } from '../math.js'
 import { box2Around } from '../utils.js'
 import { drawCube } from './cube.js'
-import { model } from './model.js'
+import { setUniforms, setContext } from './model.js'
 import createRay from '../libs/ray-aabb.mjs'
+import { meshes } from './meshes.js'
+import { flags } from '../flags.js'
 
 const FORWARD = [1, 0, 0]
 const UP = [0, 1, 0]
@@ -24,18 +26,23 @@ const getTrainColor = (train) => {
     if(train.visible) {
         return [.9, .7, .9]
     }
-    return [1.0, .412, .38]
+    return [1.0, 1.0, 1.0]
 }
 
 const setupTrain = regl({
     context: {
         position: regl.prop('position'),
         rotation: regl.prop('rotation'),
-        scale: [2, 1, 1],
+        scale: [1, 1, 1],
         color: (context, props) => getTrainColor(props)
     }
 })
-const draw = model(() => drawCube())
+
+const draw = (props) => 
+    flags.graphics ? 
+        setUniforms(props, () => meshes['train2']()) :
+        setContext({ scale: [2, 1, 1] }, () => setUniforms(props, () => drawCube()))
+        
 export const drawTrain = (props) => setupTrain(props, draw)
 
 export const makeTrain = (config) => ({

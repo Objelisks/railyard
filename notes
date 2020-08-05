@@ -24,7 +24,6 @@ tracks (delete/models/materials)
 scenery (delete/models/materials)
 
 train customization
-lakitu mode on abandoned cars
 track create snap to arbitrary point on other track
 
 sync turnouts
@@ -36,7 +35,7 @@ make use of vectors more efficient
 ui polish pass
     operate controls / layout
 options page
-    graphics setting
+    [ ] graphics setting
     bg music setting
     save to localstorage current room, clear on new room, also save local game
 info popups
@@ -56,13 +55,19 @@ sound / musics (feat. li+d)
 skybox options??
 fade in shader??
 
+descoped: 
 X camera controls
 X save / load
+X lakitu mode on abandoned cars
+
+
 
 train models
     engines
         berkshire https://www.modeltrainstuff.com/bachmann-n-50952-2-8-4-berkshire-steam-locomotive-with-tender-nickel-plate-road-railfan-version-with-mars-light-759-equipped-with-dcc-and-sound/
         switcher https://www.modeltrainstuff.com/broadway-limited-imports-n-3868-p3-nw2-diesel-locomotive-southern-pacific-1423-equipped-with-paragon3-sound-dc-dcc-with-rolling-thunder/
+            http://prr.railfan.net/diagrams/PRRdiagrams.html?diag=ES-6_5911-E412138.gif&sel=die&sz=sm&fr=
+            https://www.youtube.com/watch?v=PBKUWA-6EIo
         freight GE https://www.modeltrainstuff.com/kato-n-1768930-ge-es44ac-gevo-burlington-northern-santa-fe-5873/
         f-unit passenger https://www.modeltrainstuff.com/kato-n-1060422-f7a-b-locomotive-set-northern-pacific-6012a-6012b/
     cars

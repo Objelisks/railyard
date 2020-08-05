@@ -1,5 +1,5 @@
 import regl from '../regl.js'
-import { drawPbr } from './pbr.js'
+import { drawFlat } from './flat.js'
 
 export const cubePosition = [
   [-0.5, +0.5, +0.5], [+0.5, +0.5, +0.5], [+0.5, -0.5, +0.5], [-0.5, -0.5, +0.5], // positive z face.
@@ -46,4 +46,4 @@ export const cubeAttributes = regl({
   elements: cubeElements,
 })
 
-export const drawCube = () => cubeAttributes(() => drawPbr({ texture: 'dirtypaint' }))
+export const drawCube = () => cubeAttributes(() => drawFlat())

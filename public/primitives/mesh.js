@@ -1,6 +1,8 @@
 import regl from '../regl.js'
 import { drawPbr } from './pbr.js'
 import { setUniforms } from './model.js'
+import { drawFlat } from './flat.js'
+import { flags } from '../flags.js'
 
 export const buildMesh = ({position, normal, uv, elements}) => regl({
   attributes: {
@@ -14,6 +16,6 @@ export const buildMesh = ({position, normal, uv, elements}) => regl({
 export const drawMesh = (mesh, texture) => (props) =>
     setUniforms(props, () => 
       mesh(() => 
-        drawPbr({ texture })
+      (flags.graphics ? drawPbr : drawFlat)({ texture })
       )
     )

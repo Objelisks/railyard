@@ -5,8 +5,16 @@ import { loadTexture, loadEnvironment, textures } from '../reglhelpers.js'
 const cubeMapNames = ['artist']
 cubeMapNames.forEach((textureName) => loadEnvironment(textureName))
 
-const textureNames = ['table', 'dirtypaint', 'grass', 'gravel', 'rail', 'rockcliff']
-textureNames.forEach((textureName) => loadTexture(textureName))
+const textureNames = [
+    {name: 'table'},
+    {name: 'dirtypaint'},
+    {name: 'grass'},
+    {name: 'gravel'},
+    {name: 'rail'},
+    {name: 'rockcliff'},
+    {name: 'baltimore', painter: true}
+]
+textureNames.forEach(({name, painter}) => loadTexture(name, painter))
 
 const zeroTexture = regl.texture([[0]])
 const oneTexture = regl.texture([[255]])
@@ -241,5 +249,9 @@ export const drawPbr = regl({
     'lightColors[2]': [255, 255, 255],
     'lightPositions[3]': [-10, 10, -10],
     'lightColors[3]': [255, 255, 255],
+  },
+  cull: {
+      enable: true,
+      face: 'back'
   }
 })

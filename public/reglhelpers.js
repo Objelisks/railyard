@@ -14,7 +14,20 @@ export const waitingOn = {
     count: 0
 }
 
-export const loadTexture = (name) => {
+const suffixes = {
+    'albedo': ['basecolor', 'Base_Color'],
+    'normal': ['normal', 'Normal_OpenGL'],
+    'metallic': ['metallic', 'Metallic'],
+    'roughness': ['roughness', 'Roughness'],
+    'ao': ['ambientocclusion', 'Mixed_AO'],
+    'height': ['height', 'Height']
+}
+
+const texName = (name, type, painter=false) => {
+    return `/materials/${name}/${name}_${suffixes[type][painter? 1 : 0]}.png`
+}
+
+export const loadTexture = (name, painter=false) => {
     const init = { wrapS: 'repeat', wrapT: 'repeat' }
     textures[name] = {
         albedoMap: regl.texture(),
@@ -29,7 +42,7 @@ export const loadTexture = (name) => {
         manifest: {
             height: {
                 type: 'image',
-                src: `/materials/${name}/${name}_height.png`
+                src: texName(name, 'height', painter)
             }
         },
         onDone: (assets) => {
@@ -44,23 +57,23 @@ export const loadTexture = (name) => {
         manifest: {
             albedo: {
                 type: 'image',
-                src: `/materials/${name}/${name}_basecolor.png`
+                src: texName(name, 'albedo', painter)
             },
             normal: {
                 type: 'image',
-                src: `/materials/${name}/${name}_normal.png`
+                src: texName(name, 'normal', painter)
             },
             metallic: {
                 type: 'image',
-                src: `/materials/${name}/${name}_metallic.png`
+                src: texName(name, 'metallic', painter)
             },
             roughness: {
                 type: 'image',
-                src: `/materials/${name}/${name}_roughness.png`
+                src: texName(name, 'roughness', painter)
             },
             ao: {
                 type: 'image',
-                src: `/materials/${name}/${name}_ambientocclusion.png`
+                src: texName(name, 'ao', painter)
             }
         },
         onDone: (assets) => {

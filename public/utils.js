@@ -38,7 +38,11 @@ export const throttle = (func, delay) => {
 export const log1s = throttle(log, 1000)
 export const log100ms = throttle(log, 100)
 
-const findArg = (context, props, name, base) => (props && props[name]) || (context && context[name]) || base
+const findArg = (context, props, name, base) => 
+    props?.[name] ??
+    context?.[name] ??
+    base
+
 export const reglArg = (name, base, context, props) => {
     if(context || props) {
         return findArg(context, props, name, base)

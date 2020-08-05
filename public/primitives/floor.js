@@ -1,6 +1,8 @@
 import regl from '../regl.js'
 import { setUniforms } from './model.js'
 import { drawPbr } from './pbr.js'
+import { drawFlat } from './flat.js'
+import { flags } from '../flags.js'
 
 export const cubePosition = [
   [-0.5, 0, -0.5], [+0.5, 0, -0.5], [+0.5, 0, +0.5], [-0.5, 0, +0.5], // top face
@@ -32,12 +34,13 @@ const setFloorContext = regl({
     context: {
         position: [0, -1.01, 0],
         rotation: [0, 0, 0, 1],
-        scale: [50, 50, 50]
+        scale: [50, 50, 50],
+        color: [.51, .41, .32]
     },
 })
 
 export const drawFloor = () =>
   setFloorContext(() =>
   setUniforms(() =>
-  drawPbr({ texture: 'table' }, () =>
+  (flags.graphics ? drawPbr : drawFlat)({ texture: 'table' }, () =>
   drawPlane())))

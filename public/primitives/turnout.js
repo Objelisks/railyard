@@ -3,7 +3,7 @@ import { vec2 } from '../libs/gl-matrix.mjs'
 import { to_vec2 } from '../math.js'
 import { drawCube } from './cube.js'
 import { setColor } from '../reglhelpers.js'
-import { model } from './model.js'
+import { setUniforms } from './model.js'
 import { generateDebugArrowsForTurnout } from './debug.js'
 
 // assumptions about turnouts:
@@ -42,5 +42,5 @@ export const toggleTurnout = (turnout, dispatch=true) => {
     return turnout.open
 }
 
-const box = model(() => drawCube())
+const box = (props) => setUniforms(props, () => drawCube())
 export const drawTurnout = (props) => setColor(props, () => box(props))

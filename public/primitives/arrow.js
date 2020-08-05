@@ -1,5 +1,5 @@
 import regl from '../regl.js'
-import { model } from './model.js'
+import { setUniforms } from './model.js'
 import { drawLines } from './lines.js'
 import { trackRail } from './track.js'
 
@@ -28,9 +28,7 @@ export const arrow = (curve, towardsEndpoint, height) => {
         buffer,
         height,
         towardsEndpoint,
-        draw: model(() => {
-            drawArrow()
-        })
+        draw: (props) => setUniforms(props, () => drawArrow())
     }
 }
 

@@ -7,16 +7,14 @@ import { drawTrain, attemptConnections, gatherForces, applyForces, makeTrain } f
 import { drawTurnout } from './primitives/turnout.js'
 import { drawSkybox } from './primitives/skybox.js'
 import { makeTrack, make3dTrack } from './primitives/track.js'
-import { drawMesh } from './primitives/mesh.js'
 import { drawFloor } from './primitives/floor.js'
-import { createTrackTool } from './tools/createTrack.js'
 import { playModeTool } from './tools/playMode.js'
 import { tiltShiftEffect } from './shaders/tiltshift.js'
 import { camera, getCameraPos, getCameraTarget, cameraControlTool } from './camera.js'
 import { addTrack, getTracks, getTurnouts, addTrain, getTrains } from './railyard.js'
 import { placeTrainOnTrack, detectAndFixTurnouts } from './railyardhelpers.js'
-import { networkedTrainTool, connect, disconnect } from './network.js'
-import { mouseListenerTool, getMouse3d, getDragItem } from './mouse.js'
+import { networkedTrainTool, connect } from './network.js'
+import { mouseListenerTool, getMouse3d } from './mouse.js'
 import { loadToTrackBush } from './raycast.js'
 import { flags } from './flags.js'
 import { waitingOn } from './reglhelpers.js'
@@ -25,9 +23,6 @@ import { setContext } from './primitives/model.js'
 
 let dragItem = null
 let addedObjects = []
-
-// let testTrack = make3dTrack([-1.5212394986608633,6.52423288025723],[2.893530308020223,6.583755827756361],[4.072092403155035,5.70237689801801],[6.269056365087525,2.499212173005982])
-// let drawTestTrack = drawMesh(testTrack, 'shinything')
 
 // debug keyboard listener
 window.addEventListener('keypress', (e) => {
@@ -294,6 +289,8 @@ const setupChoo = () => {
 
 
 // start
+
+// TODO: do some heuristics to figure out whether to turn on high graphics mode
 
 setupChoo()
 requestAnimationFrame(render)
