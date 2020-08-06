@@ -24,6 +24,7 @@ tracks (delete/models/materials)
 scenery (delete/models/materials)
 
 train customization
+    decal projection?
 track create snap to arbitrary point on other track
 
 sync turnouts
@@ -35,7 +36,7 @@ make use of vectors more efficient
 ui polish pass
     operate controls / layout
 options page
-    [ ] graphics setting
+    X graphics setting
     bg music setting
     save to localstorage current room, clear on new room, also save local game
 info popups

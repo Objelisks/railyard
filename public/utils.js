@@ -51,6 +51,20 @@ export const reglArg = (name, base, context, props) => {
     }
 }
 
+export const rgbToHex = (rgb) => {
+    const toHex = (x) => Math.round(x*255).toString(16)
+    return `#${toHex(rgb[0])}${toHex(rgb[1])}${toHex(rgb[2])}`
+}
+
+export const hexToRgb = (hex) => {
+    hex = hex.replace(/^#/, '')
+    const num = parseInt(hex, 16)
+	const red = num >> 16
+	const green = (num >> 8) & 255
+    const blue = num & 255
+    return [red/255, green/255, blue/255]
+}
+
 
 //TODO: refactor
 export const box2Around = (pt, size=1) => ({

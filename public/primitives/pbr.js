@@ -31,7 +31,8 @@ export const drawPbr = regl({
   varying vec3 WorldPos;
   varying vec3 Normal;
 
-  uniform vec3 color;
+  uniform vec3 color1;
+  uniform vec3 color2;
   
   // material parameters
   uniform sampler2D albedoMap;
@@ -51,7 +52,8 @@ export const drawPbr = regl({
   uniform vec3 lightColors[4];
   
   uniform vec3 camPos;
-  
+  uniform float colorSwap;
+
   const float PI = 3.14159265359;
   // ----------------------------------------------------------------------------
   // Easy trick to get tangent-normals to world-space to keep PBR code simplified.
@@ -120,10 +122,24 @@ export const drawPbr = regl({
       return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
   }   
   // ----------------------------------------------------------------------------
+
+  // from unity's replace color shader node
+  vec3 replaceColor(vec3 col, vec3 from, vec3 to, float range, float fuzziness)
+  {
+      float d = distance(from, col);
+      return mix(to, col, clamp((d - range) / max(fuzziness, 0.0001), 0.0, 1.0));
+  }
+
+
   void main()
   {		
       // material properties
-      vec3 albedo = pow(texture2D(albedoMap, TexCoords).rgb * color, vec3(2.2));
+      vec3 baseColor = texture2D(albedoMap, TexCoords).rgb;
+      if(colorSwap > 0.0) {
+        baseColor = replaceColor(baseColor, vec3(0.062, 0.090, 0.168), color1, 0.2, 0.5);
+        baseColor = replaceColor(baseColor, vec3(0.784, 0.584, 0.204), color2, 0.2, 0.5);
+      }
+      vec3 albedo = pow(baseColor, vec3(2.2));
       float metallic = texture2D(metallicMap, TexCoords).r - 0.1;
       float roughness = texture2D(roughnessMap, TexCoords).r + 0.1;
       float ao = texture2D(aoMap, TexCoords).r;
@@ -230,7 +246,8 @@ export const drawPbr = regl({
       gl_Position =  projection * view * vec4(WorldPos, 1.0);
   }`,
   uniforms: {
-    color: (context, props) => reglArg('color', [1.0, 1.0, 1.0], context, props),
+    color1: (context, props) => reglArg('color1', reglArg('color', [1.0, 1.0, 1.0], context, props), context, props),
+    color2: (context, props) => reglArg('color2', reglArg('color', [1.0, 1.0, 1.0], context, props), context, props),
     albedoMap: (context, props) => textures[props.texture].albedoMap,
     normalMap: (context, props) => textures[props.texture].normalMap,
     metallicMap: (context, props) => textures[props.texture].metallicMap,
@@ -241,6 +258,7 @@ export const drawPbr = regl({
     prefilterMap: () => textures['artist'].prefilterMap,
     brdfLUT: () => textures['artist'].brdfLUT,
     camPos: (context) => context.eye,
+    colorSwap: 1.0,
     'lightPositions[0]': (context) => context.lightPos,
     'lightColors[0]': [40, 30, 10],
     'lightPositions[1]': (context) => [Math.sin(context.time*0)*10, 5, Math.cos(context.time)*10],

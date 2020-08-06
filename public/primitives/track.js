@@ -9,9 +9,8 @@ import { buildMesh } from './mesh.js'
 import { LINE_POINTS, TRACK_GAUGE } from '../constants.js'
 import { to_vec2 } from '../math.js'
 import { drawMesh } from './mesh.js'
-import { debugPoint } from './debug.js'
-import { drawNormals } from './normals.js'
 import { setColor } from '../reglhelpers.js'
+import { flags } from '../flags.js'
 
 export const trackRail = (curve, offset, height=-0.5) => {
 

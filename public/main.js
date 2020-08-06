@@ -11,7 +11,7 @@ import { drawFloor } from './primitives/floor.js'
 import { playModeTool } from './tools/playMode.js'
 import { tiltShiftEffect } from './shaders/tiltshift.js'
 import { camera, getCameraPos, getCameraTarget, cameraControlTool } from './camera.js'
-import { addTrack, getTracks, getTurnouts, addTrain, getTrains } from './railyard.js'
+import { addTrack, getTracks, getTurnouts, addTrain, getTrains, setTrainColors } from './railyard.js'
 import { placeTrainOnTrack, detectAndFixTurnouts } from './railyardhelpers.js'
 import { networkedTrainTool, connect } from './network.js'
 import { mouseListenerTool, getMouse3d } from './mouse.js'
@@ -19,6 +19,7 @@ import { loadToTrackBush } from './raycast.js'
 import { flags } from './flags.js'
 import { waitingOn } from './reglhelpers.js'
 import { setContext } from './primitives/model.js'
+import { hexToRgb } from './utils.js'
 
 
 let dragItem = null
@@ -251,6 +252,15 @@ const render = () => {
     }
 }
 
+const loadSavedData = () => {
+    const initColor1 = localStorage.getItem('color1') ?? '#ffaaaa'
+    const initColor2 = localStorage.getItem('color2') ?? '#ffaaaa'
+    setTrainColors({
+        color1: hexToRgb(initColor1),
+        color2: hexToRgb(initColor2)
+    })
+}
+
 
 // setup choo routing
 const setupChoo = () => {
@@ -291,6 +301,7 @@ const setupChoo = () => {
 // start
 
 // TODO: do some heuristics to figure out whether to turn on high graphics mode
+
 
 setupChoo()
 requestAnimationFrame(render)
@@ -334,3 +345,5 @@ addTrain(makeTrain())
 addTrain(makeTrain())
 addTrain(makeTrain())
 getTrains().forEach((train, i) => placeTrainOnTrack(train, getTracks()[i]))
+
+loadSavedData()

@@ -1,5 +1,6 @@
 import { generateDebugArrowsForTurnout } from './primitives/debug.js'
 import { addToTurnoutBush } from './raycast.js'
+import { rgbToHex } from '../utils.js'
 
 const state = {
     tracks: [],
@@ -38,3 +39,18 @@ export const addTrain = (train) => {
 
 export const getTrains = () => state.trains
 export const setTrains = (trains) => state.trains = trains
+
+export const setTrainColors = ({color1, color2}) => {
+    getTrains().forEach(train => {
+        train.color1 = color1 ?? train.color1
+        train.color2 = color2 ?? train.color2
+    })
+    if(color1) {
+        localStorage.setItem('color1', rgbToHex(color1))
+    }
+    
+    if(color2) {
+        localStorage.setItem('color2', rgbToHex(color2))
+    }
+    // todo save local storage
+}

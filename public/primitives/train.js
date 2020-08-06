@@ -19,22 +19,14 @@ const ENGINE_ACCELERATION = 1
 const AIR_FRICTION = 1
 const POINT_BREAK = 1
 
-const getTrainColor = (train) => {
-    if(train.remote) {
-        return [0.81, 0.94, 0.8]
-    }
-    if(train.visible) {
-        return [.9, .7, .9]
-    }
-    return [1.0, 1.0, 1.0]
-}
 
 const setupTrain = regl({
     context: {
         position: regl.prop('position'),
         rotation: regl.prop('rotation'),
         scale: [1, 1, 1],
-        color: (context, props) => getTrainColor(props)
+        color1: (context, props) => props.color1.map(x => x * (!props.remote && props.visible ? 1.5 : 1)),
+        color2: (context, props) => props.color2.map(x => x * (!props.remote && props.visible ? 1.5 : 1))
     }
 })
 
@@ -55,6 +47,9 @@ export const makeTrain = (config) => ({
     velocity: [0, 0],
     force: [0, 0],
     angularVelocity: 0,
+
+    color1: [0, 0, 0],
+    color2: [1, 0, 0],
 
     ...config
 })
