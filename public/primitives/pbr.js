@@ -12,7 +12,8 @@ const textureNames = [
     {name: 'gravel'},
     {name: 'rail'},
     {name: 'rockcliff'},
-    {name: 'baltimore', painter: true}
+    {name: 'baltimore', painter: true},
+    {name: 'caboose', painter: true}
 ]
 textureNames.forEach(({name, painter}) => loadTexture(name, painter))
 
@@ -253,12 +254,12 @@ export const drawPbr = regl({
     metallicMap: (context, props) => textures[props.texture].metallicMap,
     roughnessMap: (context, props) => textures[props.texture].roughnessMap,
     aoMap: (context, props) => textures[props.texture].aoMap,
-    heightMap: (context, props) => textures[props.texture].heightMap || zeroTexture,
+    heightMap: (context, props) => textures[props.texture].heightMap ?? zeroTexture,
     irradianceMap: () => textures['artist'].irradianceMap,
     prefilterMap: () => textures['artist'].prefilterMap,
     brdfLUT: () => textures['artist'].brdfLUT,
     camPos: (context) => context.eye,
-    colorSwap: 1.0,
+    colorSwap: 0.0,
     'lightPositions[0]': (context) => context.lightPos,
     'lightColors[0]': [40, 30, 10],
     'lightPositions[1]': (context) => [Math.sin(context.time*0)*10, 5, Math.cos(context.time)*10],

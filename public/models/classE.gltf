@@ -8,49 +8,24 @@
         {
             "name" : "Scene",
             "nodes" : [
-                0,
-                1,
-                2
+                0
             ]
         }
     ],
     "nodes" : [
         {
-            "name" : "Light",
-            "rotation" : [
-                0.16907575726509094,
-                0.7558803558349609,
-                -0.27217137813568115,
-                0.570947527885437
-            ],
-            "translation" : [
-                4.076245307922363,
-                5.903861999511719,
-                -1.0054539442062378
-            ]
-        },
-        {
-            "name" : "Camera",
-            "rotation" : [
-                0.483536034822464,
-                0.33687159419059753,
-                -0.20870360732078552,
-                0.7804827094078064
-            ],
-            "translation" : [
-                7.358891487121582,
-                4.958309173583984,
-                6.925790786743164
-            ]
-        },
-        {
             "mesh" : 0,
-            "name" : "Cube"
+            "name" : "Cylinder.020",
+            "scale" : [
+                1.334709644317627,
+                1.334709644317627,
+                1.334709644317627
+            ]
         }
     ],
     "meshes" : [
         {
-            "name" : "Cube.001",
+            "name" : "Cylinder.047",
             "primitives" : [
                 {
                     "attributes" : {
@@ -67,64 +42,64 @@
         {
             "bufferView" : 0,
             "componentType" : 5126,
-            "count" : 369,
+            "count" : 3352,
             "max" : [
-                5,
-                -0.006825923919677734,
-                5
+                1.4514586925506592,
+                1.0926650762557983,
+                0.25779664516448975
             ],
             "min" : [
-                -5,
-                -0.5068259239196777,
-                -5
+                -1.233873724937439,
+                -0.005389735102653503,
+                -0.2686708867549896
             ],
             "type" : "VEC3"
         },
         {
             "bufferView" : 1,
             "componentType" : 5126,
-            "count" : 369,
+            "count" : 3352,
             "type" : "VEC3"
         },
         {
             "bufferView" : 2,
             "componentType" : 5126,
-            "count" : 369,
+            "count" : 3352,
             "type" : "VEC2"
         },
         {
             "bufferView" : 3,
             "componentType" : 5123,
-            "count" : 1746,
+            "count" : 6054,
             "type" : "SCALAR"
         }
     ],
     "bufferViews" : [
         {
             "buffer" : 0,
-            "byteLength" : 4428,
+            "byteLength" : 40224,
             "byteOffset" : 0
         },
         {
             "buffer" : 0,
-            "byteLength" : 4428,
-            "byteOffset" : 4428
+            "byteLength" : 40224,
+            "byteOffset" : 40224
         },
         {
             "buffer" : 0,
-            "byteLength" : 2952,
-            "byteOffset" : 8856
+            "byteLength" : 26816,
+            "byteOffset" : 80448
         },
         {
             "buffer" : 0,
-            "byteLength" : 3492,
-            "byteOffset" : 11808
+            "byteLength" : 12108,
+            "byteOffset" : 107264
         }
     ],
     "buffers" : [
         {
-            "byteLength" : 15300,
-            "uri" : "tile.bin"
+            "byteLength" : 119372,
+            "uri" : "classE.bin"
         }
     ]
 }

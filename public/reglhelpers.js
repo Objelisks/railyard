@@ -28,7 +28,7 @@ const texName = (name, type, painter=false) => {
 }
 
 export const loadTexture = (name, painter=false) => {
-    const init = { wrapS: 'repeat', wrapT: 'repeat' }
+    const init = { wrapS: 'repeat', wrapT: 'repeat', mag: 'linear', min: 'mipmap', mipmap: true }
     textures[name] = {
         albedoMap: regl.texture(),
         normalMap: regl.texture(),

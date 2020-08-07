@@ -1,0 +1,160 @@
+{
+    "asset" : {
+        "generator" : "Khronos glTF Blender I/O v1.2.75",
+        "version" : "2.0"
+    },
+    "scene" : 0,
+    "scenes" : [
+        {
+            "name" : "Scene",
+            "nodes" : [
+                0,
+                1,
+                2,
+                3
+            ]
+        }
+    ],
+    "nodes" : [
+        {
+            "mesh" : 0,
+            "name" : "Cube"
+        },
+        {
+            "name" : "Empty",
+            "rotation" : [
+                0.7071068286895752,
+                0,
+                0,
+                0.7071067094802856
+            ],
+            "scale" : [
+                3,
+                3,
+                3
+            ],
+            "translation" : [
+                0,
+                0,
+                -7.695505142211914
+            ]
+        },
+        {
+            "name" : "Empty.001",
+            "rotation" : [
+                0.5,
+                0.5,
+                -0.5,
+                0.4999999701976776
+            ],
+            "scale" : [
+                3,
+                3,
+                3
+            ],
+            "translation" : [
+                0,
+                0,
+                5.632401943206787
+            ]
+        },
+        {
+            "name" : "Empty.002",
+            "rotation" : [
+                0.5,
+                -0.5,
+                0.5,
+                0.4999999701976776
+            ],
+            "scale" : [
+                3,
+                3,
+                3
+            ],
+            "translation" : [
+                0,
+                0,
+                5.455137729644775
+            ]
+        }
+    ],
+    "meshes" : [
+        {
+            "name" : "Cube",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "POSITION" : 0,
+                        "NORMAL" : 1,
+                        "TEXCOORD_0" : 2
+                    },
+                    "indices" : 3
+                }
+            ]
+        }
+    ],
+    "accessors" : [
+        {
+            "bufferView" : 0,
+            "componentType" : 5126,
+            "count" : 1606,
+            "max" : [
+                2.5307533740997314,
+                1.8215458393096924,
+                0.6531673669815063
+            ],
+            "min" : [
+                -2.474787950515747,
+                -0.016145825386047363,
+                -0.6531673669815063
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 1,
+            "componentType" : 5126,
+            "count" : 1606,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 2,
+            "componentType" : 5126,
+            "count" : 1606,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 3,
+            "componentType" : 5123,
+            "count" : 2982,
+            "type" : "SCALAR"
+        }
+    ],
+    "bufferViews" : [
+        {
+            "buffer" : 0,
+            "byteLength" : 19272,
+            "byteOffset" : 0
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 19272,
+            "byteOffset" : 19272
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 12848,
+            "byteOffset" : 38544
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 5964,
+            "byteOffset" : 51392
+        }
+    ],
+    "buffers" : [
+        {
+            "byteLength" : 57356,
+            "uri" : "sw1.bin"
+        }
+    ]
+}

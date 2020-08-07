@@ -5,7 +5,7 @@ import { DERAILMENT_FACTOR, BOGIE_SIZE, TURNOUT_DETECTOR_SIZE, CONNECTOR_OFFSET 
 import { intersectTracks, intersectTurnouts } from '../raycast.js'
 import { getTrains } from '../railyard.js'
 import { to_vec2, project2, clamp, sign } from '../math.js'
-import { box2Around } from '../utils.js'
+import { box2Around, log1s } from '../utils.js'
 import { drawCube } from './cube.js'
 import { setUniforms, setContext } from './model.js'
 import createRay from '../libs/ray-aabb.mjs'
@@ -26,16 +26,17 @@ const setupTrain = regl({
         rotation: regl.prop('rotation'),
         scale: [1, 1, 1],
         color1: (context, props) => props.color1.map(x => x * (!props.remote && props.visible ? 1.5 : 1)),
-        color2: (context, props) => props.color2.map(x => x * (!props.remote && props.visible ? 1.5 : 1))
+        color2: (context, props) => props.color2.map(x => x * (!props.remote && props.visible ? 1.5 : 1)),
+        type: regl.prop('type')
     }
 })
 
 const draw = (props) => 
     flags.graphics ? 
-        setUniforms(props, () => meshes['train2']()) :
+        setUniforms(props, (context) => meshes[context.type]()) :
         setContext({ scale: [2, 1, 1] }, () => setUniforms(props, () => drawCube()))
         
-export const drawTrain = (props) => setupTrain(props, draw)
+export const drawTrain = (props) => setupTrain(props, () => draw(props))
 
 export const makeTrain = (config) => ({
     id: uuid(),
@@ -47,6 +48,8 @@ export const makeTrain = (config) => ({
     velocity: [0, 0],
     force: [0, 0],
     angularVelocity: 0,
+
+    type: 'caboose',
 
     color1: [0, 0, 0],
     color2: [1, 0, 0],
