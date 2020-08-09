@@ -1,13 +1,15 @@
 import { parse } from '../libs/loaders.gl-core.mjs'
-import { GLTFLoader, postProcessGLTF } from '../libs/loaders.gl-gltf.mjs'
+import { GLTFLoader } from '../libs/loaders.gl-gltf.mjs'
 import { drawMesh, buildMesh } from './mesh.js'
-import { log1s } from '../utils.js'
 
 const meshNames = [
     { name: 'smallrock', material: 'rockcliff' },
     { name: 'classE', material: 'rail' },
     { name: 'sw1', material: 'baltimore' },
     { name: 'caboose', material: 'caboose' },
+    { name: 'p70', material: 'p70' },
+    { name: 'g43', material: 'g43' },
+    { name: 'tm8', material: 'tm8' },
     { name: 'tile', material: 'grass' },
 ]
 

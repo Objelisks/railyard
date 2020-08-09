@@ -340,10 +340,11 @@ addTrack(make3dTrack([2.183996395900957,0.7014740697043749],[0.8051060805168604,
 
 detectAndFixTurnouts()
 loadToTrackBush(getTracks())
-addTrain(makeTrain({ powered: false }))
-addTrain(makeTrain())
-addTrain(makeTrain())
-addTrain(makeTrain())
+addTrain(makeTrain({ powered: false, type:'sw1' }))
+addTrain(makeTrain({ type: 'caboose'}))
+addTrain(makeTrain({ type: 'p70'}))
+addTrain(makeTrain({ type: 'tm8'}))
+addTrain(makeTrain({ type: 'g43'}))
 getTrains().forEach((train, i) => placeTrainOnTrack(train, getTracks()[i]))
 
 loadSavedData()

@@ -1,0 +1,105 @@
+{
+    "asset" : {
+        "generator" : "Khronos glTF Blender I/O v1.2.75",
+        "version" : "2.0"
+    },
+    "scene" : 0,
+    "scenes" : [
+        {
+            "name" : "Scene",
+            "nodes" : [
+                0
+            ]
+        }
+    ],
+    "nodes" : [
+        {
+            "mesh" : 0,
+            "name" : "Cube",
+            "scale" : [
+                3.0227551460266113,
+                3.0227551460266113,
+                3.0227551460266113
+            ]
+        }
+    ],
+    "meshes" : [
+        {
+            "name" : "Cube",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "POSITION" : 0,
+                        "NORMAL" : 1,
+                        "TEXCOORD_0" : 2
+                    },
+                    "indices" : 3
+                }
+            ]
+        }
+    ],
+    "accessors" : [
+        {
+            "bufferView" : 0,
+            "componentType" : 5126,
+            "count" : 5082,
+            "max" : [
+                1.8204972743988037,
+                0.48302727937698364,
+                0.3832060396671295
+            ],
+            "min" : [
+                -1.8402814865112305,
+                -0.00525704026222229,
+                -0.3837483823299408
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 1,
+            "componentType" : 5126,
+            "count" : 5082,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 2,
+            "componentType" : 5126,
+            "count" : 5082,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 3,
+            "componentType" : 5123,
+            "count" : 11028,
+            "type" : "SCALAR"
+        }
+    ],
+    "bufferViews" : [
+        {
+            "buffer" : 0,
+            "byteLength" : 60984,
+            "byteOffset" : 0
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 60984,
+            "byteOffset" : 60984
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 40656,
+            "byteOffset" : 121968
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 22056,
+            "byteOffset" : 162624
+        }
+    ],
+    "buffers" : [
+        {
+            "byteLength" : 184680,
+            "uri" : "g43.bin"
+        }
+    ]
+}

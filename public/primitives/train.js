@@ -5,7 +5,7 @@ import { DERAILMENT_FACTOR, BOGIE_SIZE, TURNOUT_DETECTOR_SIZE, CONNECTOR_OFFSET 
 import { intersectTracks, intersectTurnouts } from '../raycast.js'
 import { getTrains } from '../railyard.js'
 import { to_vec2, project2, clamp, sign } from '../math.js'
-import { box2Around, log1s } from '../utils.js'
+import { box2Around, pickRandom } from '../utils.js'
 import { drawCube } from './cube.js'
 import { setUniforms, setContext } from './model.js'
 import createRay from '../libs/ray-aabb.mjs'
@@ -38,6 +38,14 @@ const draw = (props) =>
         
 export const drawTrain = (props) => setupTrain(props, () => draw(props))
 
+const trainTypes = [
+    'sw1',
+    'caboose',
+    'p70',
+    'g43',
+    'tm8'
+]
+
 export const makeTrain = (config) => ({
     id: uuid(),
     position: [0, 0, 0],
@@ -49,7 +57,7 @@ export const makeTrain = (config) => ({
     force: [0, 0],
     angularVelocity: 0,
 
-    type: 'caboose',
+    type: pickRandom(trainTypes),
 
     color1: [0, 0, 0],
     color2: [1, 0, 0],

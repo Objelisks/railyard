@@ -13,7 +13,10 @@ const textureNames = [
     {name: 'rail'},
     {name: 'rockcliff'},
     {name: 'baltimore', painter: true},
-    {name: 'caboose', painter: true}
+    {name: 'caboose', painter: true},
+    {name: 'p70', painter: true},
+    {name: 'g43', painter: true},
+    {name: 'tm8', painter: true}
 ]
 textureNames.forEach(({name, painter}) => loadTexture(name, painter))
 

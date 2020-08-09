@@ -35,6 +35,8 @@ export const throttle = (func, delay) => {
     }
 }
 
+export const pickRandom = (arr) => arr.length ? arr[Math.floor(Math.random()*arr.length)] : null
+
 export const log1s = throttle(log, 1000)
 export const log100ms = throttle(log, 100)
 
