@@ -8,27 +8,24 @@
         {
             "name" : "Scene",
             "nodes" : [
-                0,
-                1,
-                2
+                0
             ]
         }
     ],
     "nodes" : [
         {
-            "name" : "Empty"
-        },
-        {
-            "name" : "Empty.001"
-        },
-        {
             "mesh" : 0,
-            "name" : "Cube"
+            "name" : "Cube.002",
+            "scale" : [
+                2.856480360031128,
+                2.856480360031128,
+                2.856480360031128
+            ]
         }
     ],
     "meshes" : [
         {
-            "name" : "Cube",
+            "name" : "Cube.002",
             "primitives" : [
                 {
                     "attributes" : {
@@ -45,63 +42,63 @@
         {
             "bufferView" : 0,
             "componentType" : 5126,
-            "count" : 1976,
+            "count" : 4092,
             "max" : [
-                1.1867340803146362,
-                0.9547248482704163,
-                0.38617563247680664
+                1.1879758834838867,
+                1.0778393745422363,
+                0.38617584109306335
             ],
             "min" : [
-                -1.1615406274795532,
-                -0.11735961586236954,
-                -0.38617563247680664
+                -1.1575111150741577,
+                0.0056021809577941895,
+                -0.3861755430698395
             ],
             "type" : "VEC3"
         },
         {
             "bufferView" : 1,
             "componentType" : 5126,
-            "count" : 1976,
+            "count" : 4092,
             "type" : "VEC3"
         },
         {
             "bufferView" : 2,
             "componentType" : 5126,
-            "count" : 1976,
+            "count" : 4092,
             "type" : "VEC2"
         },
         {
             "bufferView" : 3,
             "componentType" : 5123,
-            "count" : 3492,
+            "count" : 9000,
             "type" : "SCALAR"
         }
     ],
     "bufferViews" : [
         {
             "buffer" : 0,
-            "byteLength" : 23712,
+            "byteLength" : 49104,
             "byteOffset" : 0
         },
         {
             "buffer" : 0,
-            "byteLength" : 23712,
-            "byteOffset" : 23712
+            "byteLength" : 49104,
+            "byteOffset" : 49104
         },
         {
             "buffer" : 0,
-            "byteLength" : 15808,
-            "byteOffset" : 47424
+            "byteLength" : 32736,
+            "byteOffset" : 98208
         },
         {
             "buffer" : 0,
-            "byteLength" : 6984,
-            "byteOffset" : 63232
+            "byteLength" : 18000,
+            "byteOffset" : 130944
         }
     ],
     "buffers" : [
         {
-            "byteLength" : 70216,
+            "byteLength" : 148944,
             "uri" : "caboose.bin"
         }
     ]

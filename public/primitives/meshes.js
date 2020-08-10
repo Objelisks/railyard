@@ -16,9 +16,6 @@ const meshNames = [
 export const meshes = Object.fromEntries(meshNames.map(name => [name.name, () => {}]))
 meshNames.forEach(name => {
     parse(fetch(`./models/${name.name}.gltf`), GLTFLoader, {baseUri: `${window.location.origin}/models/`}).then(data => {
-        if(name.name === 'caboose') {
-            console.log(data)
-        }
         const meshData = data.meshes[0].primitives[0]
         const mesh = buildMesh({
             position: meshData.attributes.POSITION.value,
