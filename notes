@@ -10,6 +10,7 @@ http://pomax.github.io/bezierjs/
 https://github.com/mourner/rbush
 https://www.npmjs.com/package/ray-aabb
 https://github.com/chimurai/http-proxy-middleware
+https://github.com/shakiba/planck.js/tree/master/docs
 
 
 https://model-railroad-hobbyist.com/node/25866
@@ -123,15 +124,33 @@ City Livin'
 
 
 
-trainsga.me
-default train setup
-graphics settings (minimalist, next next generation)
-better camera controls
-better ui controls
-tiles
+PHYSICS
 
-put room in title
+matter-js
+all i need is distance joints for spring simulation
+turn off gravity
 
+update:
+    apply external forces
+        apply friction
+        apply motor
+        apply rail correction perpendicular to rail times distance
+    step world
+    sync render to physics
+        set bogie rotation - train render defined by bogies
+        set bogie position
+
+on train create:
+    local/network
+        make bogie 1
+        make bogie 2
+        make constraint between bogies
+
+on train remove:
+    find bodies and remove them and all constraints attached to them
+
+on connection
+    make constraint between bogies
 
 
 side tabs switch pages

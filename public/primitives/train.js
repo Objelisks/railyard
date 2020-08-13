@@ -5,19 +5,25 @@ import { DERAILMENT_FACTOR, BOGIE_SIZE, TURNOUT_DETECTOR_SIZE, CONNECTOR_OFFSET 
 import { intersectTracks, intersectTurnouts } from '../raycast.js'
 import { getTrains } from '../railyard.js'
 import { to_vec2, project2, clamp, sign } from '../math.js'
-import { box2Around, pickRandom } from '../utils.js'
+import { box2Around, pickRandom, log1s } from '../utils.js'
 import { drawCube } from './cube.js'
 import { setUniforms, setContext } from './model.js'
 import createRay from '../libs/ray-aabb.mjs'
 import { meshes } from './meshes.js'
 import { flags } from '../flags.js'
+import { debugPoint, debugVector } from './debug.js'
+import { connectBogies, disconnectBogies } from "../boxes.js"
+import planck from '../libs/planck-js.mjs'
 
 const FORWARD = [1, 0, 0]
 const UP = [0, 1, 0]
 const BOGIE_OFFSET = 0.5
-const ENGINE_ACCELERATION = 1
-const AIR_FRICTION = 1
-const POINT_BREAK = 1
+const ENGINE_ACCELERATION = 0.1
+const POINT_BREAK = 2
+const TOP_SPEED = 5
+const DISCONNECT_GRACE = 1
+
+const raycaster = createRay([0, 0, 0], [1, 0, 0])
 
 
 const setupTrain = regl({
@@ -35,8 +41,18 @@ const draw = (props) =>
     flags.graphics ? 
         setUniforms(props, (context) => meshes[context.type]()) :
         setContext({ scale: [2, 1, 1] }, () => setUniforms(props, () => drawCube()))
-        
-export const drawTrain = (props) => setupTrain(props, () => draw(props))
+
+export const drawTrain = (props) => {
+    setupTrain(props, () => draw(props))
+    debugPoint(`bogieFront${props.id}`, [props.bogieFront.getPosition().x/10, 0, props.bogieFront.getPosition().y/10], [1, 0, 0])
+    debugPoint(`bogieBack${props.id}`, [props.bogieBack.getPosition().x/10, 0, props.bogieBack.getPosition().y/10], [0, 1, 0])
+    debugVector(`bogieFrontvel${props.id}`, [props.bogieFront.getPosition().x/10, props.bogieFront.getPosition().y/10], [props.bogieFront.getLinearVelocity().x/10, props.bogieFront.getLinearVelocity().y/10], [1, 0, 0], 10)
+    debugVector(`bogieBackvel${props.id}`, [props.bogieBack.getPosition().x/10, props.bogieBack.getPosition().y/10], [props.bogieBack.getLinearVelocity().x/10, props.bogieBack.getLinearVelocity().y/10], [1, 0, 0], 10)
+    debugVector(`bogieFrontdir${props.id}`, [props.bogieFront.getPosition().x/10, props.bogieFront.getPosition().y/10],
+        vec2.rotate([], [1, 0], [0, 0], props.bogieFront.getAngle()), [0, 1, 0], 1)
+    debugVector(`bogieBackdir${props.id}`, [props.bogieBack.getPosition().x/10, props.bogieBack.getPosition().y/10],
+        vec2.rotate([], [1, 0], [0, 0], props.bogieBack.getAngle()), [0, 1, 0], 1)
+}
 
 const trainTypes = [
     'sw1',
@@ -48,51 +64,93 @@ const trainTypes = [
 
 export const makeTrain = (config) => ({
     id: uuid(),
+
+    type: pickRandom(trainTypes),
+    powered: false,
+    poweredTargetSpeed: 0,
+    currentSpeed: 0,
+    color1: [0, 0, 0],
+    color2: [1, 0, 0],
+
+    // render
     position: [0, 0, 0],
     rotation: [0, 0, 0, 1],
-    powered: false,
 
-    poweredTargetSpeed: 0,
+    // physics
+    bogieFront: null,
+    bogieBack: null,
+
+    // deprecated
     velocity: [0, 0],
     force: [0, 0],
     angularVelocity: 0,
 
-    type: pickRandom(trainTypes),
-
-    color1: [0, 0, 0],
-    color2: [1, 0, 0],
-
     ...config
 })
 
-// have current momentum
-// want to add or remove speed based on poweredTargetSpeed if powered
-// subtract friction, multiplier if braking, based on curvature
-// but also, transfer momentum through collision and linkages
-// each bogie moves in the direction of the momentum of the center of mass of the car
+export const disconnect = (train, connection) => {
+    console.log('disconnect')
+    const trains = getTrains()
+    const other = trains.find(t => t.id === train[connection])
+    const otherConnection = other.connectionFront === train.id ? 'connectionFront' : 'connectionBack'
+    const facing3dOther = vec3.transformQuat([], [1, 0, 0], other.rotation)
+    const myBogie = connection === 'connectionFront' ? train.bogieFront : train.bogieBack
+    const otherBogie = otherConnection === 'connectionFront' ? other.bogieFront : other.bogieBack
+    disconnectBogies(myBogie, otherBogie)
+    other[otherConnection] = null
+    train[connection] = null
+    train.justDisconnected = other.id
+    other.justDisconnected = train.id
+    train.lastDisconnect = regl.now()
+    other.lastDisconnect = regl.now()
+    const DISCONNECT_FORCE = 0.02
+    // vec2.scaleAndAdd(train.velocity, train.velocity, facing3d, connection === 'connectionFront' ? -DISCONNECT_FORCE : DISCONNECT_FORCE)
+    // vec2.scaleAndAdd(other.velocity, other.velocity, facing3dOther, other.connectionFront === train.id ? -DISCONNECT_FORCE : DISCONNECT_FORCE)
+}
 
-// movement model:
-//  currently: speed is static, no friction, no collision, no momentum (move in direction of train)
-//  want: speed is affected by friction and power, collides with other trains, can be pulled by other trains transfering momentum, center of mass
-// dynamic friction based on curvature???? resistance = K / curvature
+export const updateTrain = (train) => {
+    if(train.lastDisconnect !== null && regl.now() - train.lastDisconnect > DISCONNECT_GRACE) {
+        train.lastDisconnect = null
+        train.justDisconnected = null
+    }
+    ;['connectionFront', 'connectionBack'].forEach(myConnector => {
+        // disconnect any cars that are too far
+        const bogie = myConnector === 'connectionFront' ? train.bogieFront : train.bogieBack
+        const connectedCar = getTrains().find(t => t.id === train[myConnector])
+        if(connectedCar) {
+            const connectedConnector = connectedCar.connectionFront === train.id ? 'connectionFront' : 'connectionBack'
+            const otherBogie = connectedConnector === 'connectionFront' ? connectedCar.bogieFront : connectedCar.bogieBack
+            // TODO: tune point break
+            if(train[myConnector] && vec3.distance(train.position, connectedCar.position) > POINT_BREAK) {
+                disconnect(train, myConnector)
+            }
+        }
+    })
+}
 
-const moveBogie = (bogie, velocity) => {
-    const bogie2d = vec2.add([], bogie, velocity)
+export const applyTrainForces = (train, bogie) => {
+    // train facing direction
+    const direction = vec3.transformQuat([], [1, 0, 0], train.rotation)
+    const isFront = train.bogieFront === bogie
+    
+    // rail alignment force (energy into rail)
+    const bogieBackd = vec2.scale([], to_vec2(bogie.getPosition().add(bogie.getLinearVelocity())), 0.1)
+    const movementDirection = to_vec2(bogie.getLinearVelocity())
 
-    const tracks = intersectTracks(box2Around(bogie2d, BOGIE_SIZE)).map(entry => entry.track)
-    const turnouts = intersectTurnouts(box2Around(bogie2d, TURNOUT_DETECTOR_SIZE)).map(entry => entry.turnout)
+    const tracks = intersectTracks(box2Around(bogieBackd, BOGIE_SIZE)).map(entry => entry.track)
+    const turnouts = intersectTurnouts(box2Around(bogieBackd, TURNOUT_DETECTOR_SIZE)).map(entry => entry.turnout)
     const nearbyClosedEndpoints = turnouts.flatMap(turnout => turnout.tracks
         .map((track, i) => ({turnoutTrack: track, end: turnout.endpoints[i]}))
         .filter((_, i) => i !== turnout.open)
     )
 
     const isClosedInThisDirection = (track) => {
-        const closerEndpoint = vec2.distance(bogie2d, to_vec2(track.curve.get(0))) < vec2.distance(bogie2d, to_vec2(track.curve.get(1)))
+        const closerEndpoint = vec2.distance(bogieBackd, to_vec2(track.curve.get(0))) < vec2.distance(bogieBackd, to_vec2(track.curve.get(1)))
             ? 0 : 1
         const closerEndpointClosed = nearbyClosedEndpoints
             .some(({turnoutTrack, end}) => turnoutTrack === track && end === closerEndpoint)
         const entranceDirection = vec2.scale([], vec2.normalize([], to_vec2(track.curve.derivative(closerEndpoint))), closerEndpoint === 0 ? 1 : -1)
-        const isMovementDirection = vec2.dot(entranceDirection, velocity) > 0
+        const isMovementDirection = vec2.dot(entranceDirection, movementDirection) > 0
     
         const shouldFilterOutClosedPath = closerEndpointClosed && isMovementDirection
         return shouldFilterOutClosedPath ? 10000 : 0
@@ -100,200 +158,106 @@ const moveBogie = (bogie, velocity) => {
 
     // sort instead of filter to prefer open paths over closed paths
     // rate the tracks based on which is the best fit to follow
-    const rateTrack = (track) => isClosedInThisDirection(track) + vec2.distance(to_vec2(track.curve.project({x: bogie2d[0], y: bogie2d[1]})), bogie2d)
+    const rateTrack = (track) => {
+        const projectedPoint = track.curve.project({x: bogieBackd[0], y: bogieBackd[1]})
+        const tangent = vec2.normalize([], to_vec2(track.curve.derivative(projectedPoint.t)))
+        return isClosedInThisDirection(track) +
+            vec2.distance([projectedPoint.x, projectedPoint.y], bogieBackd) + 
+            (1-Math.abs(vec2.dot(tangent, movementDirection)))
+    }
     let sortedTracks = tracks
         .sort((trackA, trackB) => rateTrack(trackA) - rateTrack(trackB))
     const projected = sortedTracks
-        .map(track => track.curve.project({x: bogie2d[0], y: bogie2d[1]}))
-        .filter(projectedPoint => vec2.dist(bogie2d, to_vec2(projectedPoint)) <= DERAILMENT_FACTOR)
+        .map(track => track.curve.project({x: bogieBackd[0], y: bogieBackd[1]}))
+        .filter(projectedPoint => vec2.dist(bogieBackd, to_vec2(projectedPoint)) <= DERAILMENT_FACTOR)
 
     const nearestProjectedPoint = projected[0]
     if(nearestProjectedPoint) {
-        return [nearestProjectedPoint.x, 0, nearestProjectedPoint.y]
+        // move train (this is the only place its position is updated, we're ignoring box2d's opinion)
+        bogie.setPosition(planck.Vec2({x: nearestProjectedPoint.x*10, y: nearestProjectedPoint.y*10}))
+        const derivative = sortedTracks[0].curve.derivative(nearestProjectedPoint.t)
+        const oldVelocity = bogie.getLinearVelocity()
+        const newVelocityDirection = project2([oldVelocity.x, oldVelocity.y], [derivative.x, derivative.y])
+        const newVelocity = vec2.scale([], vec2.normalize([], newVelocityDirection), oldVelocity.length())
+        bogie.setLinearVelocity({x: newVelocity[0], y: newVelocity[1]})
+        bogie.setAngle(Math.atan2(derivative.y, derivative.x))
     }
-    return [bogie2d[0], 0, bogie2d[1]]
-}
 
-const raycaster = createRay([0, 0, 0], [1, 0, 0])
+    // external forces:
+    // apply motor force (energy from power)
+    const signedBogieSpeed = bogie.getLinearVelocity().length() * vec2.dot([direction[0], direction[2]], vec2.normalize([], to_vec2(bogie.getLinearVelocity())))
+    const targetSpeed = train.poweredTargetSpeed * TOP_SPEED
+    if(train.powered) {
+        train.currentSpeed += clamp(targetSpeed - signedBogieSpeed, -1, 1) * ENGINE_ACCELERATION
+        const movementForce = vec2.scale([], [direction[0], direction[2]], train.currentSpeed)
+        bogie.setLinearVelocity(planck.Vec2(movementForce[0], movementForce[1]))
+    } else {
+        train.currentSpeed *= 0.99
+    }
 
-export const attemptConnections = (train) => {
-    const facing3d = vec3.transformQuat([], [1, 0, 0], train.rotation)
-    const frontConnectorOffset = vec3.scale([], facing3d, CONNECTOR_OFFSET)
-    const backConnectorOffset = vec3.scale([], facing3d, -CONNECTOR_OFFSET)
+
+
+    // internal forces:
+    // distance constraint between bogies
+    // spring constraint between cars
+    const frontConnectorOffset = vec3.scale([], direction, CONNECTOR_OFFSET)
+    const backConnectorOffset = vec3.scale([], direction, -CONNECTOR_OFFSET)
     const CONNECT_THRESHOLD = 0.1
-    const connectors = [
+    const { myConnector, pos, dir } = isFront ? 
         {
-            side: 'connectionFront',
+            myConnector: 'connectionFront',
             pos: vec3.add([], train.position, frontConnectorOffset),
             dir: vec3.normalize([], frontConnectorOffset),
-        },
+        } :
         {
-            side: 'connectionBack',
+            myConnector: 'connectionBack',
             pos: vec3.add([], train.position, -backConnectorOffset),
             dir: vec3.normalize([], backConnectorOffset)
         }
-    ]
 
-    connectors.forEach(({side, pos, dir}) => {
-        raycaster.update(pos, dir)
-        let nearestCar = null
-        let nearestDistance = Infinity
+    raycaster.update(pos, dir)
+    let nearestCar = null
+    let nearestDistance = Infinity
+    const trains = getTrains()
 
-        // TODO: early exit when found within distance
-        getTrains().forEach(other => {
-            if(other.id === train.id) return
-            if((train.ghost || other.ghost) && other.owner !== train.owner) return
+    // TODO: early exit when found within distance
+    trains.forEach(other => {
+        if(other.id === train.id) return
+        if((train.ghost || other.ghost) && other.owner !== train.owner) return
 
-            const box = [
-                [other.position[0]-1, other.position[1]-0.5, other.position[2]-0.5],
-                [other.position[0]+1, other.position[1]+0.5, other.position[2]+0.5],
-            ]
-            const normal = [0, 0, 0]
-            const hit = raycaster.intersects(box, normal)
-            if(hit !== false) {
-                if(hit < nearestDistance) {
-                    nearestDistance = hit
-                    nearestCar = other
-                }
+        const box = [
+            [other.position[0]-1, other.position[1]-0.5, other.position[2]-0.5],
+            [other.position[0]+1, other.position[1]+0.5, other.position[2]+0.5],
+        ]
+        const normal = [0, 0, 0]
+        const hit = raycaster.intersects(box, normal)
+        if(hit !== false) {
+            if(hit < nearestDistance) {
+                nearestDistance = hit
+                nearestCar = other
             }
-        })
-        if(nearestCar !== null && nearestDistance < CONNECT_THRESHOLD) {
-            // get nearest connector
-            // if free, attach
-            // else bump if within bump distance
-            const facing3dConn = vec3.transformQuat([], FORWARD, nearestCar.rotation)
-            const offsetFront = vec3.scale([], facing3dConn, CONNECTOR_OFFSET)
-            const offsetBack = vec3.scale([], facing3dConn, -CONNECTOR_OFFSET)
-            const nearerConnector = vec3.distance(pos, vec3.add([], nearestCar.position, offsetFront)) < 
-                vec3.distance(pos, vec3.add([], nearestCar.position, offsetBack)) ?
-                'connectionFront' : 'connectionBack'
-            nearestCar[nearerConnector] = train.id
-            train[side] = nearestCar.id
         }
     })
-}
-
-export const gatherForces = (train, delta) => {
-    const facing3d = vec3.transformQuat([], [1, 0, 0], train.rotation)
-    const facing = [facing3d[0], facing3d[2]]
-    const frontConnectorOffset = vec3.scale([], facing3d, CONNECTOR_OFFSET)
-    const backConnectorOffset = vec3.scale([], facing3d, -CONNECTOR_OFFSET)
-
-    if(train.powered) {
-        const direction = vec2.normalize([], train.velocity)
-        const directionalSpeed = vec2.length(train.velocity) * sign(vec2.dot(direction, facing))
-        const powerDirection = train.poweredTargetSpeed > directionalSpeed ? 1 : train.poweredTargetSpeed < directionalSpeed ? -1 : 0
-        const magnitude = clamp(Math.abs(train.poweredTargetSpeed - directionalSpeed), 0, 1)
-        const isBraking = Math.abs(directionalSpeed) > Math.abs(train.poweredTargetSpeed)
-        
-        const powerForce = [0, 0]
-        if(isBraking) {
-            vec2.add(powerForce, powerForce, vec2.scale([], direction, -ENGINE_ACCELERATION * magnitude)) // brakes
-        } else {
-            vec2.add(powerForce, powerForce, vec2.scale([], facing, powerDirection * ENGINE_ACCELERATION)) // engine
+    if(nearestCar !== null && nearestDistance < CONNECT_THRESHOLD) {
+        // get nearest connector
+        // if free, attach
+        // also check to see if the train is already connected on the other side
+        // TODO: what do i do if the train is like, half way on the turnout
+        const isCarValidConnectee = (car) => {
+            return !(train.connectionFront === car.id || train.connectionBack === car.id) && train.justDisconnected !== car.id
         }
-        
-        // apply force
-        vec2.add(train.force, train.force, powerForce)
-    }
-
-    // idk abt this
-    // friction from rail using approx of curvature
-    //vec2.add(force, force, vec2.scale([], direction, Math.max(speed * Math.abs(1-vec2.dot(direction, facing)) * -AIR_FRICTION * 100000.0, -1)))
-
-    const airResistanceForce = vec2.scale([], train.velocity, -AIR_FRICTION)
-    vec2.add(train.force, train.force, airResistanceForce)
-
-    // transfer force through connections (simulated spring and dampening)
-    const applyConnectorForce = (connection, myConnectorOffset) => {
-        const connectedId = train[connection]
-        const connected = getTrains().find(other => other.id === connectedId)
-        const facing3dConn = vec3.transformQuat([], FORWARD, connected.rotation)
-        const theirConnectorOffset = connected.connectionFront === train.id ?
-            vec3.scale([], facing3dConn, CONNECTOR_OFFSET) :
-            vec3.scale([], facing3dConn, -CONNECTOR_OFFSET)
-        const myConnector = vec3.add([], train.position, myConnectorOffset)
-        const theirConnector = vec3.add([], connected.position, theirConnectorOffset)
-        const K = 5 // spring constant
-        const C = 15 // damping constant
-
-        const relativePoint = vec3.sub([], myConnector, theirConnector)
-        if(vec3.length(relativePoint) > POINT_BREAK) {
-            train[connection] = null
-            const theirConnection = connected.connectionFront === train.id ? 'connectionFront' : 'connectionBack'
-            connected[theirConnection] = null
-            return
+        const directionConn = vec3.transformQuat([], FORWARD, nearestCar.rotation)
+        const offsetFront = vec3.scale([], directionConn, CONNECTOR_OFFSET)
+        const offsetBack = vec3.scale([], directionConn, -CONNECTOR_OFFSET)
+        const nearerConnector = vec3.distance(pos, vec3.add([], nearestCar.position, offsetFront)) < 
+            vec3.distance(pos, vec3.add([], nearestCar.position, offsetBack)) ?
+            'connectionFront' : 'connectionBack'
+        if(!nearestCar[nearerConnector] && !train[myConnector] && isCarValidConnectee(nearestCar)) {
+            const bodyA = myConnector === 'connectionFront' ? train.bogieFront : train.bogieBack
+            const bodyB = nearerConnector === 'connectionFront' ? nearestCar.bogieFront : nearestCar.bogieBack
+            connectBogies(bodyA, bodyB)
+            nearestCar[nearerConnector] = train.id
+            train[myConnector] = nearestCar.id
         }
-
-        // TODO: something about springForce is making it hard for the train to stop fully
-        // calculate based on difference of connection points and apply force along train axis
-        const springForce = vec3.scale([], relativePoint, -K)
-
-        const angularVelocity = vec3.scale([], vec3.cross([], myConnectorOffset, UP), train.angularVelocity)
-        const angularVelocityConn = vec3.scale([], vec3.cross([], theirConnectorOffset, UP), connected.angularVelocity)
-
-        const dampingVelocityForce = vec2.scale([], vec2.sub([], train.velocity, connected.velocity), -C)
-        const dampingAngularForce = vec2.scale([], vec2.sub([],
-                [angularVelocity[0], angularVelocity[2]],
-                [angularVelocityConn[0], angularVelocityConn[2]]),
-            -C)
-
-        const dampingForce = vec2.add([], dampingVelocityForce, dampingAngularForce)
-
-        const totalForce = vec2.add([], [springForce[0], springForce[2]], dampingForce)
-        
-        // TODO: maybe i need to build up a force vector and apply it to the velocity instananeously
-        //   this is currently applying half the correct force, and then another half using already affected velocity
-        // apply force to this car (only half, because other half will be applied by other car)
-        vec2.add(train.force, train.force, vec2.scale([], project2(totalForce, facing), 0.5))
-
-        // apply opposite force to connected car
-        vec2.add(connected.force, connected.force, vec2.scale([], project2(totalForce, [facing3dConn[0], facing3dConn[2]]), -0.5))
     }
-
-    // apply forces in both directions
-    if(train.connectionFront) {
-        applyConnectorForce('connectionFront', frontConnectorOffset)
-    }
-    if(train.connectionBack) {
-        applyConnectorForce('connectionBack', backConnectorOffset)
-    }
-}
-
-// apply forces and move train
-export const applyForces = (train, delta) => {
-    // apply forces
-    vec2.add(train.velocity, train.velocity, vec2.scale([], train.force, delta))
-
-    const pos2d = [train.position[0], train.position[2]]
-    const facing3d = vec3.transformQuat([], [1, 0, 0], train.rotation)
-    const facing = [facing3d[0], facing3d[2]]
-
-    const front = vec2.add([], pos2d, vec2.scale([], facing, BOGIE_OFFSET))
-    const back = vec2.add([], pos2d, vec2.scale([], facing, -BOGIE_OFFSET))
-
-    const newFront = moveBogie(front, train.velocity)
-    const newBack = moveBogie(back, train.velocity)
-
-    const midpoint = vec3.scale([], vec3.add([], newFront, newBack), 0.5)
-
-    const newDirection = quat.rotationTo([], FORWARD, vec3.normalize([], vec3.sub([], newFront, newBack)))
-
-    train.angularVelocity = -vec3.cross([], vec3.transformQuat([], FORWARD, train.rotation), vec3.transformQuat([], FORWARD, newDirection))[1]
-    if(isNaN(train.angularVelocity)) {
-        train.angularVelocity = 0
-    }
-
-    // calculate deflection due to rail and rotate velocity
-    // this will be in the same direction as velocity if off track
-    // if we're not moving, just use new velocity
-    let deltaCenterOfMass = vec3.sub([], midpoint, train.position)
-    if(vec3.length(deltaCenterOfMass) !== 0) {
-        // velocity goes this way now
-        train.velocity = vec2.scale([], vec2.normalize([], [deltaCenterOfMass[0], deltaCenterOfMass[2]]), vec2.length(train.velocity))
-    }
-
-    train.position = midpoint
-    train.rotation = newDirection
-    return train
 }

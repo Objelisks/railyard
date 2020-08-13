@@ -5,6 +5,8 @@ import { getRay, justClickedMouse } from '../mouse.js'
 import { getTurnouts, getTrains } from '../railyard.js'
 import { CONNECTOR_OFFSET } from '../constants.js'
 import { debugPoint } from '../primitives/debug.js'
+import { disconnectBogies } from '../boxes.js'
+import { disconnect } from '../primitives/train.js'
 
 export const playModeTool = {
     update: ({detail: context}) => {
@@ -64,27 +66,17 @@ export const playModeTool = {
                         // if it only has one connection, disconnect that one, else:
                         // figure out the point of clicking and disconnect the side nearest to the click
                         const facing3d = vec3.transformQuat([], [1, 0, 0], train.rotation)
-                        const disconnect = (connection) => {
-                            const other = trains.find(t => t.id === train[connection])
-                            const otherConnection = other.connectionFront === train.id ? 'connectionFront' : 'connectionBack'
-                            const facing3dOther = vec3.transformQuat([], [1, 0, 0], other.rotation)
-                            other[otherConnection] = null
-                            train[connection] = null
-                            const DISCONNECT_FORCE = 0.02
-                            vec2.scaleAndAdd(train.velocity, train.velocity, facing3d, connection === 'connectionFront' ? -DISCONNECT_FORCE : DISCONNECT_FORCE)
-                            vec2.scaleAndAdd(other.velocity, other.velocity, facing3dOther, other.connectionFront === train.id ? -DISCONNECT_FORCE : DISCONNECT_FORCE)
-                        }
                         if(train.connectionFront && !train.connectionBack) {
-                            disconnect('connectionFront')
+                            disconnect(train, 'connectionFront')
                         } else if(!train.connectionFront && train.connectionBack) {
-                            disconnect('connectionBack')
+                            disconnect(train, 'connectionBack')
                         } else if(train.connectionFront && train.connectionBack) {
                             const frontConnector = vec3.scaleAndAdd([], train.position, facing3d, CONNECTOR_OFFSET)
                             const backConnector = vec3.scaleAndAdd([], train.position, facing3d, -CONNECTOR_OFFSET)
                             if(vec3.distance(point, frontConnector) < vec3.distance(point, backConnector)) {
-                                disconnect('connectionFront')
+                                disconnect(train, 'connectionFront')
                             } else {
-                                disconnect('connectionBack')
+                                disconnect(train, 'connectionBack')
                             }
                         } else {
                             // make a cute sound effect

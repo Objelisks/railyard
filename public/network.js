@@ -63,6 +63,16 @@ const markAsNetworked = (obj, id) => {
     }
 }
 
+// TODO: use this
+export const sanitizeTrain = (train) => {
+    const newTrain = {
+        ...train
+    }
+    delete newTrain.body1
+    delete newTrain.body2
+    return newTrain
+}
+
 const hydrateTrack = (trackData) => {
     const newTrack = makeTrack(...trackData.points)
     newTrack.id = trackData.id

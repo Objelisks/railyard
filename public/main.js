@@ -3,7 +3,7 @@ import choo from './libs/choo.mjs'
 import { vec3, quat } from './libs/gl-matrix.mjs'
 import controller from './components/controller.js'
 import { drawDebugPoints, drawDebugArrows } from './primitives/debug.js'
-import { drawTrain, attemptConnections, gatherForces, applyForces, makeTrain } from './primitives/train.js'
+import { drawTrain, updateTrain, applyTrainForces, makeTrain } from './primitives/train.js'
 import { drawTurnout } from './primitives/turnout.js'
 import { drawSkybox } from './primitives/skybox.js'
 import { makeTrack, make3dTrack } from './primitives/track.js'
@@ -20,7 +20,7 @@ import { flags } from './flags.js'
 import { waitingOn } from './reglhelpers.js'
 import { setContext } from './primitives/model.js'
 import { hexToRgb } from './utils.js'
-
+import { syncTrainToBox, stepWorld } from './boxes.js'
 
 let dragItem = null
 let addedObjects = []
@@ -115,6 +115,8 @@ setTool(playModeTool, true)
 setTool(cameraControlTool, true)
 setTool(networkedTrainTool, true)
 
+
+
 const delta = 1/60
 
 const render = () => {
@@ -136,14 +138,15 @@ const render = () => {
             window.dispatchEvent(new CustomEvent('update', {detail: context}))
 
             // move all trains
-            // TODO: process collision
+            stepWorld(delta)
             getTrains().forEach(train => {
-                train.force = [0, 0]
-                gatherForces(train, delta)
+                syncTrainToBox(train)
+                applyTrainForces(train, train.bogieFront)
+                applyTrainForces(train, train.bogieBack)
             })
+            // post move
             getTrains().forEach(train => {
-                applyForces(train, delta)
-                attemptConnections(train)
+                updateTrain(train)
             })
 
             window.dispatchEvent(new CustomEvent('postupdate', {detail: context}))
@@ -160,7 +163,9 @@ const render = () => {
             window.dispatchEvent(new CustomEvent('render', {detail: context}))
 
             // render trains
-            drawTrain(getTrains())
+            // drawTrain(getTrains())
+            
+            getTrains().forEach(train => drawTrain(train))
 
             // render tracks
             getTracks().forEach(track => track.draw(track))
@@ -195,16 +200,6 @@ const render = () => {
             drawDebugArrows()
 
             drawFloor()
-
-            // drawTestTrack()
-
-            // drawTile({
-            //     scale: [10, 1, 10]
-            // })
-            // drawTile({
-            //     position: [20, 0, 0],
-            //     scale: [10, 1, 10]
-            // })
 
             drawSkybox()
 
@@ -340,11 +335,27 @@ addTrack(make3dTrack([2.183996395900957,0.7014740697043749],[0.8051060805168604,
 
 detectAndFixTurnouts()
 loadToTrackBush(getTracks())
-addTrain(makeTrain({ powered: false, type:'sw1' }))
-addTrain(makeTrain({ type: 'caboose'}))
-addTrain(makeTrain({ type: 'p70'}))
-addTrain(makeTrain({ type: 'tm8'}))
-addTrain(makeTrain({ type: 'g43'}))
-getTrains().forEach((train, i) => placeTrainOnTrack(train, getTracks()[i]))
+// const newTrain = makeTrain({ powered: false, type:'caboose' })
+// placeTrainOnTrack(newTrain, getTracks()[1])
+let train = makeTrain({ powered: true, type:'caboose' })
+placeTrainOnTrack(train, getTracks()[1])
+addTrain(train)
+train = makeTrain({ type:'caboose' })
+placeTrainOnTrack(train, getTracks()[2])
+addTrain(train)
+train = makeTrain({ type:'caboose' })
+placeTrainOnTrack(train, getTracks()[3])
+addTrain(train)
+train = makeTrain({ type:'caboose' })
+placeTrainOnTrack(train, getTracks()[4])
+addTrain(train)
+train = makeTrain({ type:'caboose' })
+placeTrainOnTrack(train, getTracks()[5])
+addTrain(train)
+// addTrain(makeTrain({ type: 'caboose'}))
+// addTrain(makeTrain({ type: 'p70'}))
+// addTrain(makeTrain({ type: 'tm8'}))
+// addTrain(makeTrain({ type: 'g43'}))
+// getTrains().forEach((train, i) => placeTrainOnTrack(train, getTracks()[i]))
 
 loadSavedData()

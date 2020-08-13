@@ -13,6 +13,9 @@ const trains = (app, id) => {
         }),
         flipper(app, 'flipper2', 'powered', (data) => {
             getTrains()[0].powered = data
+            if(!data) {
+                getTrains()[0].unpoweredTargetSpeed = getTrains()[0].poweredTargetSpeed
+            }
         }),
         booper(app, 'booper1', 'reset train', (data) => {
             placeTrainOnTrack(getTrains()[0], getTracks()[0])

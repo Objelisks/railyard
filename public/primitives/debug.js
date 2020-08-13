@@ -2,6 +2,7 @@ import regl from '../regl.js'
 import { arrow, updateArrow } from './arrow.js'
 import { drawCube } from './cube.js'
 import { setUniforms } from './model.js'
+import Bezier from '../libs/bezier-js.mjs'
 
 const debugPoints = {}
 export const debugPoint = (key, position, color) => {

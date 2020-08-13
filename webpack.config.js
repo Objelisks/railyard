@@ -18,7 +18,8 @@ module.exports = {
         'parse-dds': 'parse-dds',
         'loaders.gl-core': '@loaders.gl/core',
         'loaders.gl-gltf': '@loaders.gl/gltf',
-        'normals': 'normals'
+        'normals': 'normals',
+        'planck-js': 'planck-js'
     },
     output: {
         path: path.resolve(__dirname, "public/libs"),

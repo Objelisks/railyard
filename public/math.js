@@ -1,4 +1,5 @@
 import { vec2, vec3 } from "./libs/gl-matrix.mjs"
+import planck from './libs/planck-js.mjs'
 
 export const rand = (max) => Math.random() * max*2 - max
 

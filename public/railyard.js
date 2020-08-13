@@ -1,13 +1,15 @@
 import { generateDebugArrowsForTurnout } from './primitives/debug.js'
 import { addToTurnoutBush } from './raycast.js'
 import { rgbToHex } from '../utils.js'
+import { vec2, vec3 } from './libs/gl-matrix.mjs'
+import { BOGIE_OFFSET } from './constants.js'
+import { boxTrain } from './boxes.js'
 
 const state = {
     tracks: [],
     turnouts: [],
     trains: []
 }
-
 
 export const addTurnout = (turnout) => {
     const index = state.turnouts.push(turnout) - 1
@@ -22,6 +24,7 @@ export const setTurnouts = (turnouts) => state.turnouts = turnouts
 
 
 export const addTrack = (track) => {
+    // TODO: don't use this index ???
     const index = state.tracks.push(track) - 1
     track.index = index
     return index
@@ -32,9 +35,11 @@ export const setTracks = (tracks) => state.tracks = tracks
 
 
 export const addTrain = (train) => {
-    const index = state.trains.push(train) - 1
-    train.index = index
-    return index
+    state.trains.push(train)
+    
+    boxTrain(train, train.powered)
+
+    return train
 }
 
 export const getTrains = () => state.trains
