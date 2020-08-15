@@ -5,7 +5,7 @@ import edit from './edit.js'
 import multiplayer from './multiplayer.js'
 import trainline from './trainline.js'
 import options from './options.js'
-import { CAMERA_MODE, setCameraMode } from '../camera.js'
+import { CAMERA_MODE, setCameraMode, getCameraMode } from '../camera.js'
 
 const controller = (app, id) => {
     const dialog1 = dialog(app, id)
@@ -29,7 +29,7 @@ const controller = (app, id) => {
         {label: 'tower', camera: CAMERA_MODE.TOWER },
         {label: 'bird', camera: CAMERA_MODE.BIRD },
     ]
-    let activeCamera = cameraTabs[2]
+    let activeCamera = cameraTabs.find(x => x.camera === getCameraMode())
 
     //let contentQueue = [pageTabs[activePage]]
     
