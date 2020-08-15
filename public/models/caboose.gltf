@@ -15,17 +15,12 @@
     "nodes" : [
         {
             "mesh" : 0,
-            "name" : "Cube.002",
-            "scale" : [
-                2.856480360031128,
-                2.856480360031128,
-                2.856480360031128
-            ]
+            "name" : "Cube"
         }
     ],
     "meshes" : [
         {
-            "name" : "Cube.002",
+            "name" : "Cube",
             "primitives" : [
                 {
                     "attributes" : {
@@ -42,63 +37,63 @@
         {
             "bufferView" : 0,
             "componentType" : 5126,
-            "count" : 4092,
+            "count" : 816,
             "max" : [
-                1.1879758834838867,
-                1.0778393745422363,
-                0.38617584109306335
+                1.537906527519226,
+                1.3953282833099365,
+                0.49992793798446655
             ],
             "min" : [
-                -1.1575111150741577,
-                0.0056021809577941895,
-                -0.3861755430698395
+                -1.498468041419983,
+                0.07311979681253433,
+                -0.4999275505542755
             ],
             "type" : "VEC3"
         },
         {
             "bufferView" : 1,
             "componentType" : 5126,
-            "count" : 4092,
+            "count" : 816,
             "type" : "VEC3"
         },
         {
             "bufferView" : 2,
             "componentType" : 5126,
-            "count" : 4092,
+            "count" : 816,
             "type" : "VEC2"
         },
         {
             "bufferView" : 3,
             "componentType" : 5123,
-            "count" : 9000,
+            "count" : 1248,
             "type" : "SCALAR"
         }
     ],
     "bufferViews" : [
         {
             "buffer" : 0,
-            "byteLength" : 49104,
+            "byteLength" : 9792,
             "byteOffset" : 0
         },
         {
             "buffer" : 0,
-            "byteLength" : 49104,
-            "byteOffset" : 49104
+            "byteLength" : 9792,
+            "byteOffset" : 9792
         },
         {
             "buffer" : 0,
-            "byteLength" : 32736,
-            "byteOffset" : 98208
+            "byteLength" : 6528,
+            "byteOffset" : 19584
         },
         {
             "buffer" : 0,
-            "byteLength" : 18000,
-            "byteOffset" : 130944
+            "byteLength" : 2496,
+            "byteOffset" : 26112
         }
     ],
     "buffers" : [
         {
-            "byteLength" : 148944,
+            "byteLength" : 28608,
             "uri" : "caboose.bin"
         }
     ]

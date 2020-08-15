@@ -17,13 +17,21 @@ import planck from '../libs/planck-js.mjs'
 
 const FORWARD = [1, 0, 0]
 const UP = [0, 1, 0]
-const BOGIE_OFFSET = 0.5
 const ENGINE_ACCELERATION = 0.1
-const POINT_BREAK = 2
+const POINT_BREAK = 20
 const TOP_SPEED = 5
 const DISCONNECT_GRACE = 1
+const CONNECT_THRESHOLD = 1.5
 
 const raycaster = createRay([0, 0, 0], [1, 0, 0])
+
+const trainTypes = {
+    'sw1': { length: 4, bogieOffset: 1 },
+    'caboose': { length: 3, bogieOffset: 0.8 },
+    'p70': {},
+    'g43': { length: 4.7, bogieOffset: 1.6 },
+    'tm8': { length: 3.5, bogieOffset: 1 }
+}
 
 
 const setupTrain = regl({
@@ -37,40 +45,40 @@ const setupTrain = regl({
     }
 })
 
+const drawhd = (props) => {
+    setUniforms(props, (context) => meshes[context.type]())
+    const bogieFrontPos = to_vec2(props.bogieFront.getPosition())
+    setContext({
+        position: [bogieFrontPos[0]/10, 0, bogieFrontPos[1]/10],
+        rotation: quat.fromEuler([], 0, -props.bogieFront.getAngle()*180/Math.PI, 0)
+    }, () => setUniforms(props, () => meshes['bogie']()))
+    const bogieBackPos = to_vec2(props.bogieBack.getPosition())
+    setContext({
+        position: [bogieBackPos[0]/10, 0, bogieBackPos[1]/10],
+        rotation: quat.fromEuler([], 0, -props.bogieBack.getAngle()*180/Math.PI, 0)
+    }, () => setUniforms(props, () => meshes['bogie']()))
+}
+
 const draw = (props) => 
     flags.graphics ? 
-        setUniforms(props, (context) => meshes[context.type]()) :
+        drawhd(props) :
         setContext({ scale: [2, 1, 1] }, () => setUniforms(props, () => drawCube()))
 
 export const drawTrain = (props) => {
     setupTrain(props, () => draw(props))
-    debugPoint(`bogieFront${props.id}`, [props.bogieFront.getPosition().x/10, 0, props.bogieFront.getPosition().y/10], [1, 0, 0])
-    debugPoint(`bogieBack${props.id}`, [props.bogieBack.getPosition().x/10, 0, props.bogieBack.getPosition().y/10], [0, 1, 0])
-    debugVector(`bogieFrontvel${props.id}`, [props.bogieFront.getPosition().x/10, props.bogieFront.getPosition().y/10], [props.bogieFront.getLinearVelocity().x/10, props.bogieFront.getLinearVelocity().y/10], [1, 0, 0], 10)
-    debugVector(`bogieBackvel${props.id}`, [props.bogieBack.getPosition().x/10, props.bogieBack.getPosition().y/10], [props.bogieBack.getLinearVelocity().x/10, props.bogieBack.getLinearVelocity().y/10], [1, 0, 0], 10)
-    debugVector(`bogieFrontdir${props.id}`, [props.bogieFront.getPosition().x/10, props.bogieFront.getPosition().y/10],
-        vec2.rotate([], [1, 0], [0, 0], props.bogieFront.getAngle()), [0, 1, 0], 1)
-    debugVector(`bogieBackdir${props.id}`, [props.bogieBack.getPosition().x/10, props.bogieBack.getPosition().y/10],
-        vec2.rotate([], [1, 0], [0, 0], props.bogieBack.getAngle()), [0, 1, 0], 1)
 }
-
-const trainTypes = [
-    'sw1',
-    'caboose',
-    'p70',
-    'g43',
-    'tm8'
-]
 
 export const makeTrain = (config) => ({
     id: uuid(),
 
-    type: pickRandom(trainTypes),
+    type: config.type,
     powered: false,
     poweredTargetSpeed: 0,
     currentSpeed: 0,
     color1: [0, 0, 0],
     color2: [1, 0, 0],
+    length: trainTypes[config.type].length,
+    bogieOffset: trainTypes[config.type].bogieOffset,
 
     // render
     position: [0, 0, 0],
@@ -200,9 +208,8 @@ export const applyTrainForces = (train, bogie) => {
     // internal forces:
     // distance constraint between bogies
     // spring constraint between cars
-    const frontConnectorOffset = vec3.scale([], direction, CONNECTOR_OFFSET)
-    const backConnectorOffset = vec3.scale([], direction, -CONNECTOR_OFFSET)
-    const CONNECT_THRESHOLD = 0.1
+    const frontConnectorOffset = vec3.scale([], direction, train.length/2)
+    const backConnectorOffset = vec3.scale([], direction, -train.length/2)
     const { myConnector, pos, dir } = isFront ? 
         {
             myConnector: 'connectionFront',
@@ -226,8 +233,8 @@ export const applyTrainForces = (train, bogie) => {
         if((train.ghost || other.ghost) && other.owner !== train.owner) return
 
         const box = [
-            [other.position[0]-1, other.position[1]-0.5, other.position[2]-0.5],
-            [other.position[0]+1, other.position[1]+0.5, other.position[2]+0.5],
+            [other.position[0]-train.length, other.position[1]-1, other.position[2]-1],
+            [other.position[0]+train.length, other.position[1]+1, other.position[2]+1],
         ]
         const normal = [0, 0, 0]
         const hit = raycaster.intersects(box, normal)

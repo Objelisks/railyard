@@ -23,7 +23,7 @@ export const CAMERA_MODE = {
     BIRD: 'bird'
 }
 
-let cameraMode = CAMERA_MODE.TOWER
+let cameraMode = CAMERA_MODE.BIRD
 export const setCameraMode = (mode) => {
     cameraMode = mode
     if(cameraMode === CAMERA_MODE.CONDUCTOR) {

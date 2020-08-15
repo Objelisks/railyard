@@ -2,7 +2,6 @@ export const EPSILON = 0.001
 export const SNAP_THRESHOLD = 1
 export const DERAILMENT_FACTOR = 2
 export const BOGIE_SIZE = 1
-export const BOGIE_OFFSET = 0.5
 export const TURNOUT_DETECTOR_SIZE = 20
 export const FROG_SIZE = 1
 export const LINE_POINTS = 16

@@ -1,6 +1,5 @@
 import planck from './libs/planck-js.mjs'
 import { vec2, vec3, quat } from './libs/gl-matrix.mjs'
-import { BOGIE_OFFSET } from './constants.js'
 import { to_vec2 } from './math.js'
 
 
@@ -19,8 +18,8 @@ export const boxTrain = (train, powered) => {
     const facing3d = vec3.transformQuat([], FORWARD, train.rotation)
     const facing = [facing3d[0], facing3d[2]]
 
-    const bogieFrontPos = vec2.add([], pos2d, vec2.scale([], facing, BOGIE_OFFSET*10))
-    const bogieBackPos = vec2.add([], pos2d, vec2.scale([], facing, -BOGIE_OFFSET*10))
+    const bogieFrontPos = vec2.add([], pos2d, vec2.scale([], facing, train.bogieOffset*10))
+    const bogieBackPos = vec2.add([], pos2d, vec2.scale([], facing, -train.bogieOffset*10))
 
     const bogieFront = boxBogie(train, bogieFrontPos)
     const bogieBack = boxBogie(train, bogieBackPos)
@@ -37,10 +36,11 @@ export const boxBogie = (train, position) => {
     const bogie = world.createDynamicBody({
         position: pos,
         userData: {
-            id: i++
+            id: i++,
+            train: train
         }
     })
-    bogie.createFixture(planck.Circle(1))
+    bogie.createFixture(planck.Box(train.length*2.2, 10))
     world.createJoint(planck.FrictionJoint({
         bodyA: bogie,
         bodyB: frictionBody,
@@ -51,15 +51,19 @@ export const boxBogie = (train, position) => {
 
 export const connectBogies = (bodyA, bodyB) => {
     // TODO: tune joint length
+    const trainA = bodyA.getUserData().train
+    const trainB = bodyB.getUserData().train
+    const idealBogieDistance = (trainA.length/2-trainA.bogieOffset + trainB.length/2-trainB.bogieOffset)*10
+    console.log(idealBogieDistance, trainA.type, trainB.type)
     world.createJoint(planck.RopeJoint({
         bodyA,
         bodyB,
-        maxLength: 6
+        maxLength: idealBogieDistance+1
     }))
     world.createJoint(planck.DistanceJoint({
         bodyA,
         bodyB,
-        length: 5
+        length: idealBogieDistance
     }))
 }
 

@@ -12,36 +12,7 @@ import { drawMesh } from './mesh.js'
 import { setColor } from '../reglhelpers.js'
 import { flags } from '../flags.js'
 
-export const trackRail = (curve, offset, height=-0.5) => {
-
-    /// AS A RECORD OF HUBRIS
-    // console.log('track rail')
-    // // guarantee we always generate the same number of points, no matter how many 'simple' segments are created from offset
-    // const totalLength = curve.length()
-    // let lengthSoFar = 0
-    // let pointsUsed = 0
-    // const offsets = offset === 0 ? [curve] : curve.offset(offset)
-    // const rail = offsets
-    //     .flatMap((innerCurve, i) => {
-    //         const innerLength = innerCurve.length()
-    //         let pointsUsedThisSegment = 
-    //             i === offsets.length-1 ?
-    //                 LINE_POINTS - pointsUsed : // last segment, use all remaining points
-    //                 Math.floor(LINE_POINTS * (innerLength)/totalLength) // earlier segment, estimate points used by length
-    //         const points = innerCurve.getLUT(pointsUsedThisSegment+1)
-    //         const sliced = points.slice(0, -1)
-    //         pointsUsed += sliced.length
-    //         lengthSoFar += innerLength
-    //         console.log(pointsUsedThisSegment, points.length, sliced.length)
-    //         return sliced
-    //     })
-    //     .map(p => [p.x, height, p.y])
-    // console.log('final', lengthSoFar, totalLength, pointsUsed, rail.length)
-    // console.log(curve.getLUT(LINE_POINTS))
-    // console.log(curve.offset(offset).map(c => c.getLUT(2)))
-    // return rail
-    /// END RECORD OF HUBRIS
-
+export const trackRail = (curve, offset, height=0) => {
     const curvePoints = []
     for(let i=0; i<LINE_POINTS-1; i++) {
         curvePoints.push(curve.offset(i/(LINE_POINTS-1), offset))
@@ -169,7 +140,7 @@ export const make3dTrack = ([x0, y0], [x1, y1], [x2, y2], [x3, y3]) => {
     const railMesh = drawMesh(buildMesh(railData), 'rail')
     return {
         id: uuid(),
-        position: [0, 0, 0],
+        position: [0, 0.1, 0],
         rotation: [0, 0, 0, 1],
         curve: curve,
         draw: (props) => {

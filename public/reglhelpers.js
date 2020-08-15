@@ -27,7 +27,7 @@ const texName = (name, type, painter=false) => {
     return `/materials/${name}/${name}_${suffixes[type][painter? 1 : 0]}.png`
 }
 
-export const loadTexture = (name, painter=false) => {
+export const loadTexture = (name, painter=false, colorSwap=0) => {
     const init = { wrapS: 'repeat', wrapT: 'repeat', mag: 'linear', min: 'mipmap', mipmap: true }
     textures[name] = {
         albedoMap: regl.texture(),
@@ -35,7 +35,8 @@ export const loadTexture = (name, painter=false) => {
         metallicMap: regl.texture(),
         roughnessMap: regl.texture(),
         aoMap: regl.texture(),
-        heightMap: regl.texture()
+        heightMap: regl.texture(),
+        colorSwap
     }
     waitingOn.count += 1
     resl({

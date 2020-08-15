@@ -12,13 +12,14 @@ const textureNames = [
     {name: 'gravel'},
     {name: 'rail'},
     {name: 'rockcliff'},
-    {name: 'baltimore', painter: true},
     {name: 'caboose', painter: true},
-    {name: 'p70', painter: true},
+    {name: 'p70', painter: true, colorSwap: 1.0},
     {name: 'g43', painter: true},
-    {name: 'tm8', painter: true}
+    {name: 'tm8', painter: true},
+    {name: 'sw1', painter: true, colorSwap: 1.0},
+    {name: 'bogie', painter: true}
 ]
-textureNames.forEach(({name, painter}) => loadTexture(name, painter))
+textureNames.forEach(({name, painter, colorSwap}) => loadTexture(name, painter, colorSwap))
 
 const zeroTexture = regl.texture([[0]])
 const oneTexture = regl.texture([[255]])
@@ -138,16 +139,17 @@ export const drawPbr = regl({
   void main()
   {		
       // material properties
-      vec3 baseColor = texture2D(albedoMap, TexCoords).rgb;
+      vec3 textureColor = texture2D(albedoMap, TexCoords).rgb;
+      float metallic = texture2D(metallicMap, TexCoords).r;
+      float roughness = texture2D(roughnessMap, TexCoords).r;
+      float ao = texture2D(aoMap, TexCoords).r;
+    
+      vec3 baseColor = textureColor;
       if(colorSwap > 0.0) {
-        baseColor = replaceColor(baseColor, vec3(0.062, 0.090, 0.168), color1, 0.2, 0.5);
-        baseColor = replaceColor(baseColor, vec3(0.784, 0.584, 0.204), color2, 0.2, 0.5);
+        baseColor = mix(mix(color2, color1, textureColor.r), textureColor.rgb, metallic);
       }
       vec3 albedo = pow(baseColor, vec3(2.2));
-      float metallic = texture2D(metallicMap, TexCoords).r - 0.1;
-      float roughness = texture2D(roughnessMap, TexCoords).r + 0.1;
-      float ao = texture2D(aoMap, TexCoords).r;
-         
+
       // input lighting data
       vec3 N = getNormalFromMap();
       vec3 V = normalize(camPos - WorldPos);
@@ -262,7 +264,7 @@ export const drawPbr = regl({
     prefilterMap: () => textures['artist'].prefilterMap,
     brdfLUT: () => textures['artist'].brdfLUT,
     camPos: (context) => context.eye,
-    colorSwap: 0.0,
+    colorSwap: (context, props) => textures[props.texture].colorSwap,
     'lightPositions[0]': (context) => context.lightPos,
     'lightColors[0]': [40, 30, 10],
     'lightPositions[1]': (context) => [Math.sin(context.time*0)*10, 5, Math.cos(context.time)*10],

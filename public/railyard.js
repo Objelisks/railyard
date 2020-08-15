@@ -1,8 +1,6 @@
 import { generateDebugArrowsForTurnout } from './primitives/debug.js'
 import { addToTurnoutBush } from './raycast.js'
 import { rgbToHex } from '../utils.js'
-import { vec2, vec3 } from './libs/gl-matrix.mjs'
-import { BOGIE_OFFSET } from './constants.js'
 import { boxTrain } from './boxes.js'
 
 const state = {
