@@ -1,11 +1,10 @@
-import { vec2, vec3 } from '../libs/gl-matrix.mjs'
+import { vec3 } from '../libs/gl-matrix.mjs'
 import createRay from '../libs/ray-aabb.mjs'
 import { toggleTurnout } from '../primitives/turnout.js'
 import { getRay, justClickedMouse } from '../mouse.js'
 import { getTurnouts, getTrains } from '../railyard.js'
 import { CONNECTOR_OFFSET } from '../constants.js'
 import { debugPoint } from '../primitives/debug.js'
-import { disconnectBogies } from '../boxes.js'
 import { disconnect } from '../primitives/train.js'
 
 export const playModeTool = {
@@ -34,8 +33,8 @@ export const playModeTool = {
         const trains = getTrains()
         trains.forEach(train => {
             const box = [
-                [train.position[0]-1, train.position[1]-0.5, train.position[2]-0.5],
-                [train.position[0]+1, train.position[1]+0.5, train.position[2]+0.5],
+                [train.position[0]-train.length/2, train.position[1]-0.5, train.position[2]-0.5],
+                [train.position[0]+train.length/2, train.position[1]+0.5, train.position[2]+0.5],
             ]
             const normal = [0, 0, 0]
             const hit = ray.intersects(box, normal)

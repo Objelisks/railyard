@@ -78,8 +78,8 @@ export const box2Around = (pt, size=1) => ({
 
 export const getMouseRay = (mousePosition, context) => {
     const clipCoordinates = [
-        (2 * (mousePosition[0]-10+0.5)) / context.viewportWidth - 1,
-        1 - (2 * (mousePosition[1]-10+0.5)) / context.viewportHeight,
+        (2 * (mousePosition[0])) / context.viewportWidth - 1,
+        1 - (2 * (mousePosition[1])) / context.viewportHeight,
         -1,
         1]
     const inverseView = mat4.invert([], context.view)

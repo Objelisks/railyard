@@ -4,19 +4,17 @@ import { v4 as uuid } from '../libs/uuid.mjs'
 import { DERAILMENT_FACTOR, BOGIE_SIZE, TURNOUT_DETECTOR_SIZE, CONNECTOR_OFFSET } from '../constants.js'
 import { intersectTracks, intersectTurnouts } from '../raycast.js'
 import { getTrains } from '../railyard.js'
-import { to_vec2, project2, clamp, sign } from '../math.js'
-import { box2Around, pickRandom, log1s } from '../utils.js'
+import { to_vec2, project2, clamp } from '../math.js'
+import { box2Around } from '../utils.js'
 import { drawCube } from './cube.js'
 import { setUniforms, setContext } from './model.js'
 import createRay from '../libs/ray-aabb.mjs'
 import { meshes } from './meshes.js'
 import { flags } from '../flags.js'
-import { debugPoint, debugVector } from './debug.js'
 import { connectBogies, disconnectBogies } from "../boxes.js"
 import planck from '../libs/planck-js.mjs'
 
 const FORWARD = [1, 0, 0]
-const UP = [0, 1, 0]
 const ENGINE_ACCELERATION = 0.1
 const POINT_BREAK = 20
 const TOP_SPEED = 5
@@ -62,7 +60,7 @@ const drawhd = (props) => {
 const draw = (props) => 
     flags.graphics ? 
         drawhd(props) :
-        setContext({ scale: [2, 1, 1] }, () => setUniforms(props, () => drawCube()))
+        setContext({ scale: [props.length, 1, 1] }, () => setUniforms(props, () => drawCube()))
 
 export const drawTrain = (props) => {
     setupTrain(props, () => draw(props))
