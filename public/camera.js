@@ -43,7 +43,7 @@ export const getCameraPos = () => {
         case CAMERA_MODE.KITE:
             return kitePosition
         case CAMERA_MODE.CONDUCTOR:
-            return vec3.add(v1, vec3.add(v1, train.position, [0, 1, 0]), vec3.transformQuat(v2, [-1, 0, 0], train.rotation))
+            return vec3.add(v1, vec3.add(v1, train.position, [-0.25, 1.6, 0]), vec3.transformQuat(v2, [-1, 0, 0], train.rotation))
         case CAMERA_MODE.TOWER:
             return [10, 10, 10]
         case CAMERA_MODE.BIRD:
