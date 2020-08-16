@@ -17,7 +17,8 @@ const textureNames = [
     {name: 'g43', painter: true},
     {name: 'tm8', painter: true},
     {name: 'sw1', painter: true, colorSwap: 1.0},
-    {name: 'bogie', painter: true}
+    {name: 'bogie', painter: true},
+    {name: 'x36', painter: true, colorSwap: 1.0}
 ]
 textureNames.forEach(({name, painter, colorSwap}) => loadTexture(name, painter, colorSwap))
 
@@ -146,7 +147,7 @@ export const drawPbr = regl({
     
       vec3 baseColor = textureColor;
       if(colorSwap > 0.0) {
-        baseColor = mix(mix(color2, color1, textureColor.r), textureColor.rgb, metallic);
+        baseColor = mix(mix(color2, color1, textureColor.r), textureColor.rgb, max(0.0, metallic-(1.0-distance(textureColor, vec3(1.0, 0.0, 0.0)))));
       }
       vec3 albedo = pow(baseColor, vec3(2.2));
 

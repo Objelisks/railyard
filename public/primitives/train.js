@@ -28,7 +28,8 @@ const trainTypes = {
     'caboose': { length: 3, bogieOffset: 0.8 },
     'p70': {},
     'g43': { length: 4.7, bogieOffset: 1.6 },
-    'tm8': { length: 3.5, bogieOffset: 1 }
+    'tm8': { length: 3.5, bogieOffset: 1 },
+    'x36': { length: 4.1, bogieOffset: 1.3 }
 }
 
 

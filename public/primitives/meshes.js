@@ -11,6 +11,7 @@ const meshNames = [
     { name: 'tm8', material: 'tm8' },
     { name: 'sw1', material: 'sw1' },
     { name: 'bogie', material: 'bogie' },
+    { name: 'x36', material: 'x36' },
     { name: 'tile', material: 'grass' },
 ]
 

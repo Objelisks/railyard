@@ -24,23 +24,16 @@ const controller = (app, id) => {
     ]
     let activePage = pageTabs[0]
     const cameraTabs = [
-        {label: 'kite', camera: CAMERA_MODE.KITE },
-        {label: 'conductor', camera: CAMERA_MODE.CONDUCTOR },
-        {label: 'tower', camera: CAMERA_MODE.TOWER },
-        {label: 'bird', camera: CAMERA_MODE.BIRD },
+        { label: 'kite', camera: CAMERA_MODE.KITE },
+        { label: 'conductor', camera: CAMERA_MODE.CONDUCTOR },
+        { label: 'tower', camera: CAMERA_MODE.TOWER },
+        { label: 'bird', camera: CAMERA_MODE.BIRD },
     ]
     let activeCamera = cameraTabs.find(x => x.camera === getCameraMode())
-
-    //let contentQueue = [pageTabs[activePage]]
-    
-    app.use((state, emitter) => {
-
-    })
 
 
     return (state, emit) => {
         const setPage = (tab) => (e) => {
-            //contentQueue = [tab, ...contentQueue]
             activePage = tab
             e.stopPropagation()
             emit('render')
@@ -72,13 +65,3 @@ const controller = (app, id) => {
 }
 
 export default controller
-
-/*
-
-${contentQueue.map((tab, i) => html`
-                    <div class="slider ${i === 0 ? 'in' : 'out'}">
-                        ${tab.page(state, emit)}
-                    </div>
-                `)}
-
-*/
