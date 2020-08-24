@@ -25,11 +25,12 @@ const raycaster = createRay([0, 0, 0], [1, 0, 0])
 
 const trainTypes = {
     'sw1': { length: 4, bogieOffset: 1 },
+    'berkshire': { length: 5.1, bogieOffset: 1.7, hidden: ['bogieFront'] },
     'caboose': { length: 3, bogieOffset: 0.8 },
-    'p70': {},
     'g43': { length: 4.7, bogieOffset: 1.6 },
     'tm8': { length: 3.5, bogieOffset: 1 },
-    'x36': { length: 4.1, bogieOffset: 1.3 }
+    'x36': { length: 4.1, bogieOffset: 1.3 },
+    'p42': { length: 6.1, bogieOffset: 2 },
 }
 
 
@@ -46,16 +47,20 @@ const setupTrain = regl({
 
 const drawhd = (props) => {
     setUniforms(props, (context) => meshes[context.type]())
-    const bogieFrontPos = to_vec2(props.bogieFront.getPosition())
-    setContext({
-        position: [bogieFrontPos[0]/10, 0, bogieFrontPos[1]/10],
-        rotation: quat.fromEuler([], 0, -props.bogieFront.getAngle()*180/Math.PI, 0)
-    }, () => setUniforms(props, () => meshes['bogie']()))
-    const bogieBackPos = to_vec2(props.bogieBack.getPosition())
-    setContext({
-        position: [bogieBackPos[0]/10, 0, bogieBackPos[1]/10],
-        rotation: quat.fromEuler([], 0, -props.bogieBack.getAngle()*180/Math.PI, 0)
-    }, () => setUniforms(props, () => meshes['bogie']()))
+    if(!props.hidden.includes('bogieFront')) {
+        const bogieFrontPos = to_vec2(props.bogieFront.getPosition())
+        setContext({
+            position: [bogieFrontPos[0]/10, 0, bogieFrontPos[1]/10],
+            rotation: quat.fromEuler([], 0, -props.bogieFront.getAngle()*180/Math.PI, 0)
+        }, () => setUniforms(props, () => meshes['bogie']()))
+    }
+    if(!props.hidden.includes('bogieBack')) {
+        const bogieBackPos = to_vec2(props.bogieBack.getPosition())
+        setContext({
+            position: [bogieBackPos[0]/10, 0, bogieBackPos[1]/10],
+            rotation: quat.fromEuler([], 0, -props.bogieBack.getAngle()*180/Math.PI, 0)
+        }, () => setUniforms(props, () => meshes['bogie']()))
+    }
 }
 
 const draw = (props) => 
@@ -76,8 +81,9 @@ export const makeTrain = (config) => ({
     currentSpeed: 0,
     color1: [0, 0, 0],
     color2: [1, 0, 0],
-    length: trainTypes[config.type].length,
-    bogieOffset: trainTypes[config.type].bogieOffset,
+    length: trainTypes[config.type].length ?? 4,
+    bogieOffset: trainTypes[config.type].bogieOffset ?? 1,
+    hidden: trainTypes[config.type].hidden ?? [],
 
     // render
     position: [0, 0, 0],
@@ -258,7 +264,9 @@ export const applyTrainForces = (train, bogie) => {
         const nearerConnector = vec3.distance(pos, vec3.add([], nearestCar.position, offsetFront)) < 
             vec3.distance(pos, vec3.add([], nearestCar.position, offsetBack)) ?
             'connectionFront' : 'connectionBack'
-        if(!nearestCar[nearerConnector] && !train[myConnector] && isCarValidConnectee(nearestCar)) {
+        if(!nearestCar[nearerConnector] && !train[myConnector] && isCarValidConnectee(nearestCar) &&
+            !train.hidden.includes(myConnector === 'connectionFront' ? 'bogieFront' : 'bogieBack') &&
+            !nearestCar.hidden.includes(nearerConnector === 'connectionFront' ? 'bogieFront' : 'bogieBack')) {
             const bodyA = myConnector === 'connectionFront' ? train.bogieFront : train.bogieBack
             const bodyB = nearerConnector === 'connectionFront' ? nearestCar.bogieFront : nearestCar.bogieBack
             connectBogies(bodyA, bodyB)

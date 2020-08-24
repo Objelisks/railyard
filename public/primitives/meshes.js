@@ -4,15 +4,17 @@ import { drawMesh, buildMesh } from './mesh.js'
 
 const meshNames = [
     { name: 'smallrock', material: 'rockcliff' },
-    { name: 'classE', material: 'rail' },
-    { name: 'caboose', material: 'caboose' },
+    { name: 'berkshire', material: 'berkshire' },
+    { name: 'caboose', material: 'tm8' },
     { name: 'p70', material: 'p70' },
     { name: 'g43', material: 'g43' },
+    { name: 'p42', material: 'p42' },
     { name: 'tm8', material: 'tm8' },
     { name: 'sw1', material: 'sw1' },
     { name: 'bogie', material: 'bogie' },
     { name: 'x36', material: 'x36' },
     { name: 'tile', material: 'grass' },
+    { name: 'tree', material: 'rockcliff' },
 ]
 
 export const meshes = Object.fromEntries(meshNames.map(name => [name.name, () => {}]))

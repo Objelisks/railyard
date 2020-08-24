@@ -204,7 +204,7 @@ const edit = (app, id) => {
                 },
                 {
                     name: 'birch tree',
-                    model: () => meshes['smallrock'](),
+                    model: () => meshes['tree'](),
                     zoom: 1
                 },
                 {

@@ -1,0 +1,100 @@
+{
+    "asset" : {
+        "generator" : "Khronos glTF Blender I/O v1.2.75",
+        "version" : "2.0"
+    },
+    "scene" : 0,
+    "scenes" : [
+        {
+            "name" : "Scene",
+            "nodes" : [
+                0
+            ]
+        }
+    ],
+    "nodes" : [
+        {
+            "mesh" : 0,
+            "name" : "Cylinder"
+        }
+    ],
+    "meshes" : [
+        {
+            "name" : "Cylinder",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "POSITION" : 0,
+                        "NORMAL" : 1,
+                        "TEXCOORD_0" : 2
+                    },
+                    "indices" : 3
+                }
+            ]
+        }
+    ],
+    "accessors" : [
+        {
+            "bufferView" : 0,
+            "componentType" : 5126,
+            "count" : 5449,
+            "max" : [
+                2.390002965927124,
+                1.3836302757263184,
+                0.5015630722045898
+            ],
+            "min" : [
+                -2.4561007022857666,
+                0.0008789740386418998,
+                -0.5015630722045898
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 1,
+            "componentType" : 5126,
+            "count" : 5449,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 2,
+            "componentType" : 5126,
+            "count" : 5449,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 3,
+            "componentType" : 5123,
+            "count" : 11148,
+            "type" : "SCALAR"
+        }
+    ],
+    "bufferViews" : [
+        {
+            "buffer" : 0,
+            "byteLength" : 65388,
+            "byteOffset" : 0
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 65388,
+            "byteOffset" : 65388
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 43592,
+            "byteOffset" : 130776
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 22296,
+            "byteOffset" : 174368
+        }
+    ],
+    "buffers" : [
+        {
+            "byteLength" : 196664,
+            "uri" : "berkshire.bin"
+        }
+    ]
+}

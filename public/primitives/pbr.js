@@ -18,7 +18,9 @@ const textureNames = [
     {name: 'tm8', painter: true},
     {name: 'sw1', painter: true, colorSwap: 1.0},
     {name: 'bogie', painter: true},
-    {name: 'x36', painter: true, colorSwap: 1.0}
+    {name: 'x36', painter: true, colorSwap: 1.0},
+    {name: 'p42', painter: true, colorSwap: 1.0},
+    {name: 'berkshire', painter: true, colorSwap: 1.0}
 ]
 textureNames.forEach(({name, painter, colorSwap}) => loadTexture(name, painter, colorSwap))
 
@@ -128,14 +130,6 @@ export const drawPbr = regl({
       return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
   }   
   // ----------------------------------------------------------------------------
-
-  // from unity's replace color shader node
-  vec3 replaceColor(vec3 col, vec3 from, vec3 to, float range, float fuzziness)
-  {
-      float d = distance(from, col);
-      return mix(to, col, clamp((d - range) / max(fuzziness, 0.0001), 0.0, 1.0));
-  }
-
 
   void main()
   {		
