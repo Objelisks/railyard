@@ -5,7 +5,8 @@ const trackNames = [
 const context = new AudioContext()
 
 const fadeTime = 8
-let currentVolume = 0.1
+const initialVolume = localStorage.getItem('volume') ?? 0.1
+let currentVolume = initialVolume
 
 let rotatorInterval = null
 const rotateInterval = 60
@@ -36,7 +37,7 @@ export const setVolume = (value, track=currentTrack) => {
     if(track.gain.gain.value <= 0) {
         track.gain.gain.setValueAtTime(0.001, context.currentTime)
     }
-    track.gain.gain.exponentialRampToValueAtTime(value, context.currentTime + fadeTime)
+    track.gain.gain.exponentialRampToValueAtTime(value, context.currentTime + 0.5)
 }
 
 const fadeTo = (track) => {
@@ -88,7 +89,8 @@ window.addEventListener('click', function audioListener () {
     context.resume().then(() => {
         console.log('Playback resumed successfully')
         tracks.forEach(track => track.source.mediaElement.play())
-        setVolume(0.1)
+        currentTrack.gain.gain.setValueAtTime(0.001, context.currentTime)
+        currentTrack.gain.gain.exponentialRampToValueAtTime(currentVolume, context.currentTime + fadeTime)
         setPlaylist('rotate')
     })
     window.removeEventListener('click', audioListener)

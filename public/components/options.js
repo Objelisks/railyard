@@ -1,5 +1,6 @@
 import html from '../libs/nanohtml.mjs'
 import { flags } from '../flags.js'
+import { setPlaylist, setVolume } from '../audio.js'
 
 const options = (app, id) => {
     app.use((state, emitter) => {
@@ -8,7 +9,25 @@ const options = (app, id) => {
 
     const graphicsChange = (e) => {
         flags.graphics = e.target.value === "true"
+        e.stopPropagation()
     }
+
+    const musicChange = (e) => {
+        setPlaylist(e.target.value)
+        e.stopPropagation()
+    }
+
+    const volumeChange = (e) => {
+        setVolume(parseFloat(e.target.value))
+        localStorage.setItem('volume', e.target.value)
+        e.stopPropagation()
+    }
+
+    const preventDefault = (e) => {
+        e.stopPropagation()
+    }
+
+    const initialVolume = localStorage.getItem('volume') ?? 0.1
 
     // TODO persist option selection to localstorage
     return (state, emit) => {
@@ -23,12 +42,14 @@ const options = (app, id) => {
                 </div>
                 <div>
                     <label for="music">bg music: </label>
-                    <select id="music">
-                        <option>rotate</option>
-                        <option>bg music 1</option>
-                        <option>bg music 2</option>
-                        <option>bg music 3</option>
+                    <select id="music" onchange=${musicChange}>
+                        <option value="rotate">rotate</option>
+                        <option value="track 1">bg music 1</option>
+                        <option value="track 2">bg music 2</option>
+                        <option value="track 3">bg music 3</option>
                     </select>
+                    <input type="range" min="0" max="0.2" step="0.01" value="${initialVolume}"
+                        onmousedown=${preventDefault} oninput=${volumeChange}>
                 </div>
                 <div>
                     <label for="clearsave">clear save data: </label>
