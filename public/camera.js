@@ -81,7 +81,7 @@ export const camera = regl({
             return mat4.lookAt([],
                 props.eye,
                 props.target,
-                [0, 1, 0])
+                [0, props.flip ? -1 : 1, 0])
         },
 
         eye: regl.prop('eye'),

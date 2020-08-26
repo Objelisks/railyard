@@ -1,4 +1,5 @@
 import html from '../libs/nanohtml.mjs'
+console.log(html)
 
 const moveListener = (state, emit, id) => (e) => {
     state.components[id].offset.x = e.pageX - state.components[id].mouseDown.x
@@ -41,20 +42,28 @@ const grabDialog = (state, emit, id) => (e) => {
     document.body.classList.add('grabbing')
 }
 
+const preventScroll = (e) => {
+    console.log('wheel', e)
+    e.stopPropagation()
+}
+
 export default (app, id) => {
     app.use((state, emitter) => {
         state.components[id] = {
             offset: { x: 8, y: 8 }
         }
     })
+    // hack because nanomorph doesn't support onwheel
+    setTimeout(() => document.querySelector(`#${id}`).onwheel = preventScroll, 25)
     return (state, emit, content) => {
         const x = state.components[id].offset.x
         const y = state.components[id].offset.y
-        return html`<div id="${id}" class="dialog"
+        const el = html`<div id="${id}" class="dialog"
             onmousedown=${grabDialog(state, emit, id)}
             style="transform: translate(${x}px, ${y}px)">
                 ${content}
             </div>
         `
+        return el
     }
 }

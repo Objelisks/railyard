@@ -15,6 +15,9 @@ const meshNames = [
     { name: 'x36', material: 'x36' },
     { name: 'tile', material: 'grass' },
     { name: 'tree', material: 'rockcliff' },
+    { name: 'trainhouse', material: 'trainhouse' },
+    { name: 'platform', material: 'platform' },
+    { name: 'rocktunnel', material: 'rocktunnel' },
 ]
 
 export const meshes = Object.fromEntries(meshNames.map(name => [name.name, () => {}]))

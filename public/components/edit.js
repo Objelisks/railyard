@@ -84,7 +84,7 @@ const grabButton = (state, emit, id, item) => (e) => {
 }
 
 const thumbnailButton = (id, item) => {
-    const { name, model } = item
+    const { name, model, zoom=1 } = item
     let hoverRequest = null
 
     const buttonCanvas = document.createElement('canvas')
@@ -104,8 +104,9 @@ const thumbnailButton = (id, item) => {
                     y: 0,
                 }, () => 
                 camera({
-                    eye: [3, 3, 3],
-                    target: [0, 0, 0]
+                    eye: [3*zoom, 3*zoom, 3*zoom],
+                    target: [0, zoom, 0],
+                    flip: true
                 }, () => setContext({
                     position: [0, Math.sin(regl.now()*10.0)/5.0, 0],
                     rotation: quat.setAxisAngle([], [0, 1, 0], regl.now())
@@ -177,7 +178,8 @@ const edit = (app, id) => {
                     placer: (position) => [
                         Math.round(position[0]/TILE_SCALE)*TILE_SCALE,
                         position[1],
-                        Math.round(position[2]/TILE_SCALE)*TILE_SCALE]
+                        Math.round(position[2]/TILE_SCALE)*TILE_SCALE],
+                    zoom: 2
                 },
                 {
                     name: 'dirt',
@@ -195,27 +197,27 @@ const edit = (app, id) => {
                 {
                     name: 'small rock',
                     model: () => meshes['smallrock'](),
-                    zoom: 1
+                    zoom: 1.5
                 },
                 {
-                    name: 'large rock',
-                    model: () => meshes['smallrock'](),
-                    zoom: 1
+                    name: 'tunnel',
+                    model: () => meshes['rocktunnel'](),
+                    zoom: 3
                 },
                 {
                     name: 'birch tree',
                     model: () => meshes['tree'](),
-                    zoom: 1
+                    zoom: 4
                 },
                 {
-                    name: 'pine tree',
-                    model: () => meshes['smallrock'](),
-                    zoom: 1
+                    name: 'train house',
+                    model: () => meshes['trainhouse'](),
+                    zoom: 4
                 },
                 {
-                    name: 'oak tree',
-                    model: () => meshes['smallrock'](),
-                    zoom: 1
+                    name: 'station platform',
+                    model: () => meshes['platform'](),
+                    zoom: 4
                 },
             ]
         }
