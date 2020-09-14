@@ -48,6 +48,7 @@ const options = (app, id) => {
                         <option value="track 1">bg music 1</option>
                         <option value="track 2">bg music 2</option>
                         <option value="track 3">bg music 3</option>
+                        <option value="track 4">bg music 4</option>
                     </select>
                     <input type="range" min="0" max="0.2" step="0.01" value="${initialVolume}"
                         onmousedown=${preventDefault} oninput=${volumeChange}>
