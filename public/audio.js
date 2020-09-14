@@ -1,15 +1,18 @@
 
 const trackNames = [
     './music/honey-lavender-line.mp3',
+    './music/number2.mp3',
+    './music/number3.mp3',
+    './music/number4.mp3',
 ]
 const context = new AudioContext()
 
-const fadeTime = 8
+const fadeTime = 3
 const initialVolume = localStorage.getItem('volume') ?? 0.1
 let currentVolume = initialVolume
 
 let rotatorInterval = null
-const rotateInterval = 60
+const rotateInterval = 60 * 1000
 
 const tracks = trackNames.map(trackName => {
         const audioElement = document.createElement('audio')
@@ -23,6 +26,7 @@ const tracks = trackNames.map(trackName => {
         source.connect(gain)
         gain.connect(context.destination)
         return {
+            name: audioElement.src,
             source,
             gain
         }
@@ -42,8 +46,12 @@ export const setVolume = (value, track=currentTrack) => {
 
 const fadeTo = (track) => {
     if(currentTrack !== track) {
+        currentTrack.gain.gain.cancelScheduledValues(context.currentTime)
+        currentTrack.gain.gain.linearRampToValueAtTime(currentVolume, context.currentTime)
         currentTrack.gain.gain.linearRampToValueAtTime(0, context.currentTime + fadeTime)
-        track.gain.gain.linearRampToValueAtTime(currentVolume, context.currentTime + fadeTime)
+        track.gain.gain.cancelScheduledValues(context.currentTime)
+        track.gain.gain.linearRampToValueAtTime(0, context.currentTime + fadeTime-1)
+        track.gain.gain.linearRampToValueAtTime(currentVolume, context.currentTime + fadeTime-1 + fadeTime)
         currentTrack = track
     }
 }
@@ -53,33 +61,46 @@ export const playlistNames = [
     'track 1',
     'track 2',
     'track 3',
+    'track 4'
 ]
+
+const scheduleTrackSwitch = () => {
+    clearTimeout(rotatorInterval)
+    rotatorInterval = setTimeout(() => {
+        const newTrack = Math.floor(Math.random()*tracks.length)
+        fadeTo(tracks[newTrack])
+        scheduleTrackSwitch()
+    }, rotateInterval)
+}
 
 export const setPlaylist = (playlistName) => {
     switch(playlistName) {
         case 'rotate': {
-            clearInterval(rotatorInterval)
-            rotatorInterval = setInterval(() => {
-                const newTrack = Math.floor(Math.random()*tracks.length)
-                fadeTo(newTrack)
-            }, rotateInterval)
+            scheduleTrackSwitch()
+            break
         }
         case 'track 1': {
-            clearInterval(rotatorInterval)
+            clearTimeout(rotatorInterval)
             rotatorInterval = null
             fadeTo(tracks[0])
             break
         }
         case 'track 2': {
-            clearInterval(rotatorInterval)
+            clearTimeout(rotatorInterval)
             rotatorInterval = null
             fadeTo(tracks[1])
             break
         }
         case 'track 3': {
-            clearInterval(rotatorInterval)
+            clearTimeout(rotatorInterval)
             rotatorInterval = null
             fadeTo(tracks[2])
+            break
+        }
+        case 'track 4': {
+            clearTimeout(rotatorInterval)
+            rotatorInterval = null
+            fadeTo(tracks[3])
             break
         }
     }
@@ -87,7 +108,6 @@ export const setPlaylist = (playlistName) => {
 
 window.addEventListener('click', function audioListener () {
     context.resume().then(() => {
-        console.log('Playback resumed successfully')
         tracks.forEach(track => track.source.mediaElement.play())
         currentTrack.gain.gain.setValueAtTime(0.001, context.currentTime)
         currentTrack.gain.gain.exponentialRampToValueAtTime(currentVolume, context.currentTime + fadeTime)
@@ -95,3 +115,18 @@ window.addEventListener('click', function audioListener () {
     })
     window.removeEventListener('click', audioListener)
 })
+
+/*
+snd fx
+
+train whistle - choo/ choo/
+steam engine goin' - chugga chugga chugga chugga
+wheels sets over bumps - d'dch' d'dch'
+steam release - p'tsssssh psssss shhhhhhhh
+connecting cars - tink tink
+ui sounds:
+    side button press: *softly* boop
+    dial tick: t'ck
+    on/off button: bomp/ bomp\
+    drag from edit page: fffwp
+*/

@@ -13,6 +13,7 @@ const options = (app, id) => {
     }
 
     const musicChange = (e) => {
+        console.log('music change')
         setPlaylist(e.target.value)
         e.stopPropagation()
     }

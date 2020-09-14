@@ -21,7 +21,6 @@ import { waitingOn } from './reglhelpers.js'
 import { setContext } from './primitives/model.js'
 import { hexToRgb } from './utils.js'
 import { syncTrainToBox, stepWorld } from './boxes.js'
-import { setPlaylist } from './audio.js'
 
 let dragItem = null
 let addedObjects = []
@@ -334,8 +333,7 @@ addTrack(make3dTrack([2.183996395900957,0.7014740697043749],[0.8051060805168604,
 
 detectAndFixTurnouts()
 loadToTrackBush(getTracks())
-// const newTrain = makeTrain({ powered: false, type:'caboose' })
-// placeTrainOnTrack(newTrain, getTracks()[1])
+
 let train = makeTrain({ powered: true, type:'berkshire' })
 placeTrainOnTrack(train, getTracks()[1])
 addTrain(train)
@@ -351,11 +349,5 @@ addTrain(train)
 train = makeTrain({ type:'x36' })
 placeTrainOnTrack(train, getTracks()[5])
 addTrain(train)
-// addTrain(makeTrain({ type: 'caboose'}))
-// addTrain(makeTrain({ type: 'p70'}))
-// addTrain(makeTrain({ type: 'tm8'}))
-// addTrain(makeTrain({ type: 'g43'}))
-// getTrains().forEach((train, i) => placeTrainOnTrack(train, getTracks()[i]))
 
 loadSavedData()
-setPlaylist('rotate')

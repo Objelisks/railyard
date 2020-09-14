@@ -3,7 +3,7 @@ import { GLTFLoader } from '../libs/loaders.gl-gltf.mjs'
 import { drawMesh, buildMesh } from './mesh.js'
 
 const meshNames = [
-    { name: 'smallrock', material: 'rockcliff' },
+    { name: 'smallrock', material: 'smallrock' },
     { name: 'berkshire', material: 'berkshire' },
     { name: 'caboose', material: 'tm8' },
     { name: 'p70', material: 'p70' },

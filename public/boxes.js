@@ -54,7 +54,6 @@ export const connectBogies = (bodyA, bodyB) => {
     const trainA = bodyA.getUserData().train
     const trainB = bodyB.getUserData().train
     const idealBogieDistance = (trainA.length/2-trainA.bogieOffset + trainB.length/2-trainB.bogieOffset)*10
-    console.log(idealBogieDistance, trainA.type, trainB.type)
     world.createJoint(planck.RopeJoint({
         bodyA,
         bodyB,

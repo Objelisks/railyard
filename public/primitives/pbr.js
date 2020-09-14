@@ -23,7 +23,8 @@ const textureNames = [
     {name: 'berkshire', painter: true, colorSwap: 1.0},
     {name: 'trainhouse', painter: true},
     {name: 'platform', painter: true},
-    {name: 'rocktunnel', painter: true}
+    {name: 'rocktunnel', painter: true},
+    {name: 'smallrock', painter: true}
 ]
 textureNames.forEach(({name, painter, colorSwap}) => loadTexture(name, painter, colorSwap))
 

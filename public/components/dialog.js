@@ -1,5 +1,4 @@
 import html from '../libs/nanohtml.mjs'
-console.log(html)
 
 const moveListener = (state, emit, id) => (e) => {
     state.components[id].offset.x = e.pageX - state.components[id].mouseDown.x
@@ -43,7 +42,6 @@ const grabDialog = (state, emit, id) => (e) => {
 }
 
 const preventScroll = (e) => {
-    console.log('wheel', e)
     e.stopPropagation()
 }
 

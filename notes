@@ -18,6 +18,51 @@ http://eu.idec.com/en/g/gLB2L-M1T14A/
 http://webglstats.com/
 
 
+packets of work:
+
+hook up track placement again
+    drag and drop default size track and then edit
+
+networking pass
+    make sure turnouts sync correctly
+    make sure trains still sync correctly
+    make sure train placement still syncs correctly
+    make sure track placement still syncs
+    sync train colors
+    
+integrate audio
+    train collision sound effects
+    music blending, switching
+    train whistle + button
+    train engine sounds
+    ui sounds
+
+finish models
+    tiles???
+        fuse with tracks??
+    trees
+    large rock
+
+model editing
+    delete objects (right click)
+    move objects (drag while edit is open)
+    rotate objects (drag mouse wheel while edit is open)
+    edit mode indicator
+
+trains
+    add remove train cars
+
+misc
+    keyboard controls
+    fix spring forces
+    optimize vectors
+    differentiate train cars in low poly mode
+    switch engine buttons
+
+mobile friendliness????????
+
+
+
 mandatory:
 
 tiles (place/delete/materials)
@@ -122,9 +167,10 @@ Stations and Industries
     bridge
 
 City Livin'
-    building models
+    building models / lights
     simulated traffic + pedestrians
     roads
+    train lights
 
 
 
