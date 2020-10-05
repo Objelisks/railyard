@@ -1,6 +1,7 @@
 import html from '../libs/nanohtml.mjs'
 import { setTrainColors } from '../railyard.js'
 import { hexToRgb } from '../utils.js'
+import { playEffect } from '../audio.js'
 
 const edit = (app, id) => {
     const editColor1 = (e) => {
@@ -8,6 +9,10 @@ const edit = (app, id) => {
     }
     const editColor2 = (e) => {
         setTrainColors({color2: hexToRgb(e.target.value)})
+    }
+    const keypress = (e) => {
+        playEffect('textEntry')
+        e.stopPropagation()
     }
 
     return (state, emit) => {
@@ -20,7 +25,10 @@ const edit = (app, id) => {
         return html`
             <div>
                 <div>
-                    <label>train line name: </label><input type="text"></input>
+                    <label>train line name: </label><input type="text" oninput=${keypress} 
+                        onmousedown=${(e) => e.stopPropagation()}
+                        onkeyup=${(e) => e.stopPropagation()}
+                        onkeydown=${(e) => e.stopPropagation()}></input>
                 </div>
                 <div>
                     <label>primary color: </label><input type="color"

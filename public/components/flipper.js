@@ -1,10 +1,11 @@
 import html from '../libs/nanohtml.mjs'
+import { playEffect } from '../audio.js'
 
-const flipper = (app, id, label, callback) => {
-    // setup listener for knob adjustments
+const flipper = (app, id, label, callback, initialState=false) => {
+    // setup listener for flipper adjustments
     app.use((state, emitter) => {
         state.events.FLIPPER = 'flipper'
-        state.components[id] = false
+        state.components[id] = initialState
         emitter.on(state.events.FLIPPER, ({ id: eventId, data }) => {
             state.components[eventId] = data
             if(id === eventId && callback) {
@@ -15,7 +16,9 @@ const flipper = (app, id, label, callback) => {
     })
 
     const click = (state, emit) => (e) => {
-        emit(state.events.FLIPPER, { id, data: !e.target.closest('.flipper').classList.contains('flipped')})
+        const newValue = !e.target.closest('.flipper').classList.contains('flipped')
+        emit(state.events.FLIPPER, { id, data: newValue})
+        playEffect(newValue ? 'pushButtonDown' : 'pushButtonUp')
         e.stopPropagation()
     }
 

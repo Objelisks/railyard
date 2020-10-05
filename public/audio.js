@@ -5,6 +5,22 @@ const trackNames = [
     './music/number3.mp3',
     './music/number4.mp3',
 ]
+const soundEffects = {
+    'holding': './music/sfx/Floating Object.mp3',//
+    'genericButton': './music/sfx/Focus Button.mp3',
+    'textEntry': './music/sfx/Focus Text.mp3',
+    'leftColumnButton': './music/sfx/MenuButtA_ON.mp3',
+    'rightColumnButton': './music/sfx/MenubuttLeft_ON.mp3',
+    'columnButtonRelease': './music/sfx/MenubuttRight_OFF.mp3',
+    'pushButtonDown': './music/sfx/PowerButton_ON.mp3',
+    'pushButtonUp': './music/sfx/PowerButton_OFF.mp3',
+    'editHover': './music/sfx/Slide Out.mp3',
+    'editLeave': './music/sfx/Slide Back.mp3',
+    'trackChange': './music/sfx/Track Change.mp3',//
+    'trainAttachA': './music/sfx/Train Attach A.mp3',//
+    'trainAttachB': './music/sfx/Train Attach B.mp3',//
+    'trainMoving': './music/sfx/Train Moving.mp3'//
+}
 const context = new AudioContext()
 
 const fadeTime = 3
@@ -18,8 +34,6 @@ const tracks = trackNames.map(trackName => {
         const audioElement = document.createElement('audio')
         audioElement.src = trackName
         audioElement.loop = true
-        return audioElement
-    }).map(audioElement => {
         const source = context.createMediaElementSource(audioElement)
         const gain = context.createGain()
         gain.gain.setValueAtTime(0, context.currentTime)
@@ -32,6 +46,20 @@ const tracks = trackNames.map(trackName => {
         }
     })
 let currentTrack = tracks[0]
+
+
+const effectsGain = context.createGain()
+effectsGain.gain.setValueAtTime(0.5, context.currentTime)
+effectsGain.connect(context.destination)
+
+const effects = {}
+Object.entries(soundEffects).forEach(([key, value]) => {
+    fetch(value).then((response) => response.arrayBuffer()).then((arrayBuffer) => {
+        context.decodeAudioData(arrayBuffer, (buffer) => {
+            effects[key] = buffer
+        })
+    })
+})
 
 export const setVolume = (value, track=currentTrack) => {
     currentVolume = value
@@ -106,11 +134,21 @@ export const setPlaylist = (playlistName) => {
     }
 }
 
+export const playEffect = (effectName, delay=0) => {
+    const effect = effects[effectName]
+    if(effect) {
+        const source = context.createBufferSource()
+        source.buffer = effects[effectName]
+        source.connect(effectsGain)
+        source.start(context.currentTime + delay / 1000)
+    }
+}
+
 window.addEventListener('click', function audioListener () {
     context.resume().then(() => {
         tracks.forEach(track => track.source.mediaElement.play())
         currentTrack.gain.gain.setValueAtTime(0.001, context.currentTime)
-        currentTrack.gain.gain.exponentialRampToValueAtTime(currentVolume, context.currentTime + fadeTime)
+        currentTrack.gain.gain.linearRampToValueAtTime(currentVolume, context.currentTime + fadeTime)
         setPlaylist('rotate')
     })
     window.removeEventListener('click', audioListener)

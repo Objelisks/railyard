@@ -13,6 +13,7 @@ import { meshes } from './meshes.js'
 import { flags } from '../flags.js'
 import { connectBogies, disconnectBogies } from "../boxes.js"
 import planck from '../libs/planck-js.mjs'
+import { playEffect } from '../audio.js'
 
 const FORWARD = [1, 0, 0]
 const ENGINE_ACCELERATION = 0.1
@@ -270,6 +271,7 @@ export const applyTrainForces = (train, bogie) => {
             const bodyA = myConnector === 'connectionFront' ? train.bogieFront : train.bogieBack
             const bodyB = nearerConnector === 'connectionFront' ? nearestCar.bogieFront : nearestCar.bogieBack
             connectBogies(bodyA, bodyB)
+            playEffect(Math.random() > 0.5 ? 'trainAttachA' : 'trainAttachB')
             nearestCar[nearerConnector] = train.id
             train[myConnector] = nearestCar.id
         }

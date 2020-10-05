@@ -1,5 +1,6 @@
 import html from '../libs/nanohtml.mjs'
 import { connect, disconnect, getPlayers } from '../network.js'
+import { playEffect } from '../audio.js'
 
 const multiplayer = (app, id) => {
     return (state, emit) => {
@@ -15,12 +16,20 @@ const multiplayer = (app, id) => {
             disconnect()
         }
 
+        const keypress = (e) => {
+            playEffect('textEntry')
+            e.stopPropagation()
+        }
+
         return html`
             <div>
                 <span class="title">🚂 multiplayer 🚂</span>
             </div>
             <div>
-                <input id="input" type="text"/>
+                <input id="input" type="text" oninput=${keypress} 
+                    onmousedown=${(e) => e.stopPropagation()}
+                    onkeyup=${(e) => e.stopPropagation()}
+                    onkeydown=${(e) => e.stopPropagation()} />
                 <button onclick=${connectClick}>connect!</button>
                 <button onclick=${disconnectClick}>disconnect!</button>
             </div>

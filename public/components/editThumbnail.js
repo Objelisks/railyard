@@ -4,6 +4,7 @@ import { setContext } from '../primitives/model.js'
 import { camera } from '../camera.js'
 import { getMouse3d, scrollStack } from '../mouse.js'
 import { vec3, quat } from '../libs/gl-matrix.mjs'
+import { playEffect } from '../audio.js'
 
 const BUTTON_SIZE = 64
 
@@ -32,6 +33,7 @@ const releaseDialog = (id, state, emit) => (e) => {
     const isOverDialog = e.target && e.target.closest && e.target.closest('.dialog')
     if(!isOverDialog) {
         emit('dropDragged')
+        playEffect('editLeave')
     } else {
         emit('setDragItem', null)
     }
@@ -64,7 +66,9 @@ const grabButton = (state, emit, id, item) => (e) => {
         window.removeEventListener('mousemove', onmove)
         window.removeEventListener('mouseup', onrelease)
         scrollStack.pop()
+        state.components[id].dragging = false
     }
+    state.components[id].dragging = true
     
     window.addEventListener('mousemove', onmove)
     window.addEventListener('mouseup', onrelease)
@@ -116,19 +120,6 @@ export const thumbnailButton = (id, item) => {
         context.putImageData(pixelData, 0, 0)
     }
 
-    const onHover = (e) => {
-        const hoverUpdate = () => {
-            updateThumbnail()
-            hoverRequest = requestAnimationFrame(hoverUpdate)
-        }
-        hoverRequest = requestAnimationFrame(hoverUpdate)
-    }
-
-    const onLeave = (e) => {
-        cancelAnimationFrame(hoverRequest)
-        hoverRequest = null
-    }
-
     return (state, emit) => {
         cancelAnimationFrame(hoverRequest)
         hoverRequest = null
@@ -137,6 +128,22 @@ export const thumbnailButton = (id, item) => {
 
         state.components[id] = {}
 
+        const onHover = (e) => {
+            const hoverUpdate = () => {
+                updateThumbnail()
+                hoverRequest = requestAnimationFrame(hoverUpdate)
+            }
+            hoverRequest = requestAnimationFrame(hoverUpdate)
+        }
+    
+        const onLeave = (e) => {
+            cancelAnimationFrame(hoverRequest)
+            hoverRequest = null
+            if(state.components[id].dragging) {
+                playEffect('editHover')
+            }
+        }
+    
         return html`
             <div id=${id} class="thumbnail" data-tooltip="${name}"
                 onmousedown=${grabButton(state, emit, id, item)} onmouseenter=${onHover} onmouseleave=${onLeave}>

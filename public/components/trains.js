@@ -16,7 +16,7 @@ const trains = (app, id) => {
             if(!data) {
                 getTrains()[0].unpoweredTargetSpeed = getTrains()[0].poweredTargetSpeed
             }
-        }),
+        }, true),
         booper(app, 'booper1', 'reset train', (data) => {
             placeTrainOnTrack(getTrains()[0], getTracks()[0])
         })

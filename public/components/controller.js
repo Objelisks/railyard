@@ -6,6 +6,7 @@ import multiplayer from './multiplayer.js'
 import trainline from './trainline.js'
 import options from './options.js'
 import { CAMERA_MODE, setCameraMode, getCameraMode } from '../camera.js'
+import { playEffect } from '../audio.js'
 
 const controller = (app, id) => {
     const dialog1 = dialog(app, id)
@@ -33,23 +34,30 @@ const controller = (app, id) => {
 
 
     return (state, emit) => {
-        const setPage = (tab) => (e) => {
+
+        const leftColumnButtonDown = (tab) => (e) => {
+            playEffect('leftColumnButton')
             activePage = tab
-            e.stopPropagation()
             emit('render')
+            e.stopPropagation()
         }
 
-        const setCamera = (tab) => (e) => {
+        const rightColumnButtonDown = (tab) => (e) => {
+            playEffect('rightColumnButton')
             activeCamera = tab
             setCameraMode(tab.camera)
-            e.stopPropagation()
             emit('render')
+            e.stopPropagation()
+        }
+
+        const columnButtonUp = (e) => {
+            playEffect('columnButtonRelease', 100)
         }
 
         return dialog1(state, emit, html`
             <div class="button-column left">
                 ${pageTabs.map((tab, i) => html`<div class="side-button${tab === activePage ? ' active' : ''}" 
-                    data-tooltip="${tab.label}" onmousedown=${setPage(tab)}></div>`)}
+                    data-tooltip="${tab.label}" onmousedown=${leftColumnButtonDown(tab)} onmouseup=${columnButtonUp}></div>`)}
             </div>
             <div class="content">
                 <div class="scrollable">
@@ -58,7 +66,7 @@ const controller = (app, id) => {
             </div>
             <div class="button-column right">
                 ${cameraTabs.map((tab, i) => html`<div class="side-button${tab === activeCamera ? ' active' : ''}" 
-                    data-tooltip="${tab.label}" onmousedown=${setCamera(tab)}></div>`)}
+                    data-tooltip="${tab.label}" onmousedown=${rightColumnButtonDown(tab)} onmouseup=${columnButtonUp}></div>`)}
             </div>
         `)
     }

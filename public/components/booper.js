@@ -1,4 +1,5 @@
 import html from '../libs/nanohtml.mjs'
+import { playEffect } from '../audio.js'
 
 const booper = (app, id, label, callback) => {
     // setup listener for knob adjustments
@@ -14,6 +15,7 @@ const booper = (app, id, label, callback) => {
     const click = (state, emit) => (e) => {
         emit(state.events.BOOPER, { id })
         e.stopPropagation()
+        playEffect('genericButton')
     }
 
     // render booper
