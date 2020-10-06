@@ -1,17 +1,25 @@
-import { vec2 } from './libs/gl-matrix.mjs'
+import { vec2, vec3 } from './libs/gl-matrix.mjs'
 import { intersectGround, getMouseRay } from './utils.js'
 import { to_vec2, inBox2 } from './math.js'
 import { SNAP_THRESHOLD } from './constants.js'
 import { intersectTracks } from './raycast.js'
 
-const mousePosition = [0, 0]
-let justLeftClicked = false
+export const mousePosition = [0, 0]
+export const lastMousePosition = [0, 0]
+export let justLeftClicked = false
+export let justRightClicked = false
 let justMoved = false
 let mouse3d = [0, 0, 0]
+let lastMouse3d = [0, 0, 0]
 let mouseRay = [0, 0, 0]
+let lastMouseRay = [0, 0, 0]
 let snappedPoint = null
 let snappedAxis = null
 let dragItem = null
+export const mousePressed = {
+    left: false,
+    right: false,
+}
 
 export const scrollStack = []
 
@@ -24,8 +32,26 @@ window.addEventListener('mousedown', (e) => {
     if (e.target.closest('canvas')) {
         if (e.button === 0) {
             justLeftClicked = true
+            mousePressed['left'] = true
+        }
+        if (e.button === 2) {
+            justRightClicked = true
+            mousePressed['right'] = true
         }
     }
+    e.preventDefault()
+})
+window.addEventListener('mouseup', (e) => {
+    if (e.button === 0) {
+        mousePressed['left'] = false
+    }
+    if (e.button === 2) {
+        mousePressed['right'] = false
+    }
+    e.preventDefault()
+})
+window.addEventListener('contextmenu', (e) => {
+    e.preventDefault()
 })
 window.addEventListener('wheel', (e) => {
     if (scrollStack.length > 0) {
@@ -34,10 +60,11 @@ window.addEventListener('wheel', (e) => {
 })
 
 export const getMouse3d = () => mouse3d
+export const getLastMouse3d = () => lastMouse3d
 export const getRay = () => mouseRay
+export const getLastRay = () => lastMouseRay
 export const getSnappedPoint = () => snappedPoint
 export const getSnappedAxis = () => snappedAxis
-export const justLeftClicked = () => justLeftClicked
 export const justMovedMouse = () => justMoved
 
 export const getDragItem = () => dragItem
@@ -95,6 +122,9 @@ export const mouseListenerTool = {
     postrender: () => {
         // reset per-frame input tracking
         justLeftClicked = false
+        justRightClicked = false
         justMoved = false
+        vec3.copy(lastMouse3d, mouse3d)
+        vec2.copy(lastMousePosition, mousePosition)
     },
 }

@@ -35,7 +35,7 @@ export const createTrackTool = {
             debugPoint('createTrack', mouse3d, [1, 0.7, 0.28])
         }
 
-        if (justLeftClicked()) {
+        if (justLeftClicked) {
             switch (trackCreateState) {
                 default: {
                     // first click: create track and make it tiny

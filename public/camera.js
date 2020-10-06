@@ -4,29 +4,29 @@ import { keysPressed } from './keyboard.js'
 import { getTrains } from './railyard.js'
 import { clamp } from './math.js'
 import { flags } from './flags.js'
-import { scrollStack } from './mouse.js'
-
+import { lastMousePosition, mousePosition, mousePressed, scrollStack } from './mouse.js'
+import { getMouseRay, intersectGround } from './utils.js'
 
 const editCameraTarget = [10, 0, 10]
 const editCameraLookDirection = vec3.normalize([], [-1, -1, -1])
 const baseCameraMoveSpeed = 0.2
 let editCameraDistance = 50
-const getCameraMoveSpeed = () => baseCameraMoveSpeed * editCameraDistance/20
+const getCameraMoveSpeed = () => (baseCameraMoveSpeed * editCameraDistance) / 20
 
 let scrollVelocity = 0
-scrollStack.push((e) => scrollVelocity += e.deltaY * 0.2)
+scrollStack.push((e) => (scrollVelocity += e.deltaY * 0.2))
 
 export const CAMERA_MODE = {
     KITE: 'kite',
     CONDUCTOR: 'conductor',
     TOWER: 'tower',
-    BIRD: 'bird'
+    BIRD: 'bird',
 }
 
 let cameraMode = CAMERA_MODE.BIRD
 export const setCameraMode = (mode) => {
     cameraMode = mode
-    if(cameraMode === CAMERA_MODE.CONDUCTOR) {
+    if (cameraMode === CAMERA_MODE.CONDUCTOR) {
         flags.tiltShiftEnabled = false
     } else {
         flags.tiltShiftEnabled = true
@@ -36,28 +36,43 @@ export const getCameraMode = () => cameraMode
 
 const kitePosition = [0, 10, 0]
 
-const v1 = [], v2 = [], v3 = []
+const v1 = [],
+    v2 = [],
+    v3 = []
 export const getCameraPos = () => {
     const train = getTrains()[0]
-    switch(cameraMode) {
+    switch (cameraMode) {
         case CAMERA_MODE.KITE:
             return kitePosition
         case CAMERA_MODE.CONDUCTOR:
-            return vec3.add(v1, vec3.add(v1, train.position, [-0.25, 1.6, 0]), vec3.transformQuat(v2, [-1, 0, 0], train.rotation))
+            return vec3.add(
+                v1,
+                vec3.add(v1, train.position, [-0.25, 1.6, 0]),
+                vec3.transformQuat(v2, [-1, 0, 0], train.rotation)
+            )
         case CAMERA_MODE.TOWER:
             return [10, 10, 10]
         case CAMERA_MODE.BIRD:
-            return vec3.scaleAndAdd(v3, editCameraTarget, editCameraLookDirection, -editCameraDistance)
+            return vec3.scaleAndAdd(
+                v3,
+                editCameraTarget,
+                editCameraLookDirection,
+                -editCameraDistance
+            )
     }
 }
 
 export const getCameraTarget = () => {
     const train = getTrains()[0]
-    switch(cameraMode) {
+    switch (cameraMode) {
         case CAMERA_MODE.KITE:
             return train.position
         case CAMERA_MODE.CONDUCTOR:
-            return vec3.add([], vec3.add([], train.position, [0, 1, 0]), vec3.transformQuat([], [1, 0, 0], train.rotation))
+            return vec3.add(
+                [],
+                vec3.add([], train.position, [0, 1, 0]),
+                vec3.transformQuat([], [1, 0, 0], train.rotation)
+            )
         case CAMERA_MODE.TOWER:
             return train.position
         case CAMERA_MODE.BIRD:
@@ -65,63 +80,71 @@ export const getCameraTarget = () => {
     }
 }
 
-
 // This scoped command sets up the camera parameters
 export const camera = regl({
     context: {
         projection: (context) => {
-            return mat4.perspective([],
+            return mat4.perspective(
+                [],
                 Math.PI / 4,
                 context.viewportWidth / context.viewportHeight,
                 0.1,
-                200.0)
+                200.0
+            )
         },
 
         view: (context, props) => {
-            return mat4.lookAt([],
-                props.eye,
-                props.target,
-                [0, props.flip ? -1 : 1, 0])
+            return mat4.lookAt([], props.eye, props.target, [0, props.flip ? -1 : 1, 0])
         },
 
         eye: regl.prop('eye'),
         target: regl.prop('target'),
         lightPos: (context) => {
             const train = getTrains()[0]
-            if(!train) return [0, 0, 0]
+            if (!train) return [0, 0, 0]
             const pos = [...train.position]
             const facing3d = vec3.transformQuat([], [1, 0, 0], train.rotation)
             return vec3.add(pos, pos, vec3.scale([], facing3d, 2.5))
-        }
+        },
     },
 
     uniforms: {
         view: regl.context('view'),
-        model:  () => mat4.create(),
+        model: () => mat4.create(),
         invView: (context) => mat4.invert([], context.view),
-        projection: regl.context('projection')
-    }
+        projection: regl.context('projection'),
+    },
 })
 
 export const cameraControlTool = {
     activate: () => {
         scrollVelocity = 0
     },
-    preupdate: () => {
+    prerender: ({ detail: context }) => {
         const cameraRight = vec3.cross([], editCameraLookDirection, [0, 1, 0])
         const cameraForward = vec3.cross([], [0, 1, 0], cameraRight)
         const moveSpeed = getCameraMoveSpeed()
-        if(keysPressed()['a']) {
+        if (keysPressed()['a']) {
             vec3.add(editCameraTarget, editCameraTarget, vec3.scale([], cameraRight, -moveSpeed))
         }
-        if(keysPressed()['d']) {
+        if (keysPressed()['d']) {
             vec3.add(editCameraTarget, editCameraTarget, vec3.scale([], cameraRight, moveSpeed))
         }
-        if(keysPressed()['w']) {
+        if (keysPressed()['w']) {
             vec3.add(editCameraTarget, editCameraTarget, vec3.scale([], cameraForward, moveSpeed))
         }
-        if(keysPressed()['s']) {
+        if (keysPressed()['s']) {
             vec3.add(editCameraTarget, editCameraTarget, vec3.scale([], cameraForward, -moveSpeed))
+        }
+
+        if (mousePressed['right'] && cameraMode === CAMERA_MODE.BIRD) {
+            const oldRay = getMouseRay(lastMousePosition, context)
+            const newRay = getMouseRay(mousePosition, context)
+            const oldHit = intersectGround(context.eye, oldRay)?.point
+            const newHit = intersectGround(context.eye, newRay)?.point
+
+            const delta = vec3.sub([], oldHit, newHit)
+            vec3.add(editCameraTarget, editCameraTarget, delta)
         }
 
         editCameraDistance += scrollVelocity
@@ -130,6 +153,11 @@ export const cameraControlTool = {
 
         const train = getTrains()[0]
         const distance = vec3.distance(train.position, kitePosition)
-        vec3.lerp(kitePosition, kitePosition, vec3.add([], train.position, [0, 10, 0]), 0.001 * distance)
-    }
+        vec3.lerp(
+            kitePosition,
+            kitePosition,
+            vec3.add([], train.position, [0, 10, 0]),
+            0.001 * distance
+        )
+    },
 }

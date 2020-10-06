@@ -64,7 +64,7 @@ export const playModeTool = {
             switch (nearestType) {
                 case 'turnout':
                     nearestHit.visible = true
-                    if (justLeftClicked()) {
+                    if (justLeftClicked) {
                         toggleTurnout(nearestHit)
                     }
                     break
@@ -72,7 +72,7 @@ export const playModeTool = {
                     const train = nearestHit
                     train.visible = true
 
-                    if (justLeftClicked()) {
+                    if (justLeftClicked) {
                         // disconnect cars artificial intelligence algorithm
                         // if it only has one connection, disconnect that one, else:
                         // figure out the point of clicking and disconnect the side nearest to the click
