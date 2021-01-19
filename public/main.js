@@ -50,7 +50,7 @@ window.addEventListener('keypress', (e) => {
     }
 })
 
-// set up frame buffers
+// set up frame buffers (double buffered, switch rendering between the two)
 const makeFrameBuffer = (width, height) => {
     const color = regl.texture({
         width: width,
@@ -74,14 +74,13 @@ const makeFrameBuffer = (width, height) => {
         depth,
     }
 }
-
 let frame1 = makeFrameBuffer(window.innerWidth, window.innerHeight)
 let frame2 = makeFrameBuffer(window.innerWidth, window.innerHeight)
-
 let flip = false
 const getFbo = () => (flip ? frame2 : frame1)
 const getOtherFbo = () => (flip ? frame1 : frame2)
 
+// resizes the frame buffers
 const resizer = () => {
     frame1 = makeFrameBuffer(window.innerWidth, window.innerHeight)
     frame2 = makeFrameBuffer(window.innerWidth, window.innerHeight)
@@ -92,6 +91,8 @@ window.addEventListener('resize', resizer)
 // setup tools
 let toolset = new Set()
 
+// tools are things that hook into specific events (update, prerender, postrender, etc)
+// often have window listeners on io stuff like the mouse or network
 const setTool = (tool, active) => {
     if (active) {
         toolset.add(tool)
@@ -110,10 +111,10 @@ const setTool = (tool, active) => {
 
 // TODO: deterministic ordering of tools
 const toggleTool = (tool) => setTool(tool, !toolset.has(tool))
-setTool(mouseListenerTool, true)
-setTool(playModeTool, true)
-setTool(cameraControlTool, true)
-setTool(networkedTrainTool, true)
+setTool(mouseListenerTool, true) // handles mouse position and snapping targets
+setTool(playModeTool, true) // handles game / mouse interaction like clicking on turnouts or trains
+setTool(cameraControlTool, true) // handles camera movement
+setTool(networkedTrainTool, true) // handles network updates / sends
 
 const delta = 1 / 60
 
@@ -134,14 +135,14 @@ const render = () => {
             (context) => {
                 window.dispatchEvent(new CustomEvent('update', { detail: context }))
 
-                // move all trains
+                // move all trains using physics
                 stepWorld(delta)
                 getTrains().forEach((train) => {
                     syncTrainToBox(train)
                     applyTrainForces(train, train.bogieFront)
                     applyTrainForces(train, train.bogieBack)
                 })
-                // post move
+                // post move, set the models to the right position
                 getTrains().forEach((train) => {
                     updateTrain(train)
                 })
@@ -152,9 +153,10 @@ const render = () => {
 
                 window.dispatchEvent(new CustomEvent('prerender', { detail: context }))
 
+                // clear the frame
                 regl.clear({
+                    color: [0, 0, 0, 1],
                     depth: 1,
-                    stencil: 1,
                 })
 
                 window.dispatchEvent(new CustomEvent('render', { detail: context }))
@@ -178,10 +180,13 @@ const render = () => {
                     })
                 )
 
+                // if we're dragging an object from the edit box, preview the position and render it
                 if (dragItem) {
                     const mouse3d = getMouse3d()
+                    // modify the position (i.e. grid snapping for tiles)
                     let positionMod = dragItem.placer ? dragItem.placer : (pos) => pos
 
+                    // setup model, and render
                     setContext(
                         {
                             position: positionMod(vec3.add([], [0, -0.5, 0], mouse3d)),
@@ -191,8 +196,12 @@ const render = () => {
                     )
                 }
 
+                // draw all the placed objects
                 addedObjects.forEach((obj) => {
+                    // modify the position (i.e. grid snapping for tiles)
                     let positionMod = obj.placer ? obj.placer : (pos) => pos
+
+                    // setup model, and render
                     setContext(
                         {
                             position: positionMod(vec3.add([], [0, -0.5, 0], obj.position)),
@@ -206,8 +215,10 @@ const render = () => {
                 drawDebugPoints()
                 drawDebugArrows()
 
+                // table
                 drawFloor()
 
+                // hdri background scene
                 drawSkybox()
 
                 window.dispatchEvent(new CustomEvent('postrender', { detail: context }))
@@ -217,12 +228,12 @@ const render = () => {
 
     // wait for all resources to load
     // TODO: loading screen
-
     if (waitingOn.count === 0) {
         const passes = [
             // render the scene normally offscreen on the first buffer
             () => draw(),
         ]
+        // add tilt shift (two screen space passes)
         if (flags.tiltShiftEnabled) {
             passes.push(
                 // post process effects
@@ -253,11 +264,14 @@ const render = () => {
         })
     }
 
+    // render the next frame (stepmode forces just one update per keypress)
     if (!flags.stepMode) {
         requestAnimationFrame(render)
     }
 }
 
+// this could probably be moved to the dialog initializer
+// load the initial saved values from local storage
 const loadSavedData = () => {
     const initColor1 = localStorage.getItem('color1') ?? '#ffaaaa'
     const initColor2 = localStorage.getItem('color2') ?? '#ffaaaa'
@@ -269,19 +283,17 @@ const loadSavedData = () => {
 
 // setup choo routing
 const setupChoo = () => {
+    // config choo
     const app = choo({
         href: false,
     })
-
-    // initialize
-    app.route('*', controller(app, 'controller'))
-
     const chooMount = document.createElement('div')
     chooMount.id = 'choo'
     document.body.appendChild(chooMount)
     app.mount('#choo')
 
     // setup event handlers for controls
+    // this all runs once on initialization
     app.use((state, emitter) => {
         // initialize state here?
 
@@ -300,6 +312,10 @@ const setupChoo = () => {
             emitter.emit('setDragItem', null)
         })
     })
+
+    // initialize
+    app.route('*', controller(app, 'controller'))
+
 }
 
 // start
@@ -309,8 +325,8 @@ const setupChoo = () => {
 setupChoo()
 requestAnimationFrame(render)
 
-console.log('hello world')
-
 initializeTestData()
 
 loadSavedData()
+
+console.log('hello world')

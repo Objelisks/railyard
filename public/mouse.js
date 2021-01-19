@@ -6,6 +6,11 @@ import { intersectTracks } from './raycast.js'
 
 export const mousePosition = [0, 0]
 export const lastMousePosition = [0, 0]
+export const mousePressed = {
+    left: false,
+    right: false,
+}
+export const scrollStack = []
 export let justLeftClicked = false
 export let justRightClicked = false
 let justMoved = false
@@ -16,12 +21,6 @@ let lastMouseRay = [0, 0, 0]
 let snappedPoint = null
 let snappedAxis = null
 let dragItem = null
-export const mousePressed = {
-    left: false,
-    right: false,
-}
-
-export const scrollStack = []
 
 window.addEventListener('mousemove', (e) => {
     mousePosition[0] = e.clientX
