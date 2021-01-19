@@ -43,7 +43,7 @@ const releaseDialog = (id, state, emit) => (e) => {
 }
 
 const rotateObject = (id, state, emit, item) => (e) => {
-    item.rotation += e.deltaY / 10.0
+    item.rotation += e.deltaY * Math.PI / 18.0 // 18 is the correct number
 }
 
 const grabButton = (state, emit, id, item) => (e) => {

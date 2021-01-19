@@ -51,12 +51,13 @@ export default [
                 zoom: 4
             },
             {
-                name: 'dirt',
-                model: () => setUniforms(() => setColor({ color: [0, 1, 0] }, () => drawCube())),
-            },
-            {
-                name: 'rock',
-                model: () => setUniforms(() => setColor({ color: [0, 1, 0] }, () => drawCube())),
+                name: 'gravel',
+                model: (() => {const gravel = drawTile('gravel'); return () => gravel()})(),
+                placer: (position) => [
+                    Math.round(position[0]/TILE_SCALE)*TILE_SCALE,
+                    position[1],
+                    Math.round(position[2]/TILE_SCALE)*TILE_SCALE],
+                zoom: 4
             },
         ]
     },
@@ -72,11 +73,6 @@ export default [
                 name: 'tunnel',
                 model: () => meshes['rocktunnel'](),
                 zoom: 3
-            },
-            {
-                name: 'birch tree',
-                model: () => meshes['tree'](),
-                zoom: 4
             },
             {
                 name: 'train house',
