@@ -24,7 +24,7 @@ const trains = (app, id) => {
 
     return (state, emit) => {
         return html`
-            <div class="control-layout">
+            <div class="section control-layout">
                 ${ux.map(ui => ui(state, emit))}
             </div>
         `

@@ -238,6 +238,14 @@ body:not(.grabbing) .knob {
     grid-gap: 16px;
 }
 
+.section {
+    margin: 8px;
+}
+
+.section label {
+    margin-right: 6px;
+}
+
 
 .thumbnail {
     width: 64px;

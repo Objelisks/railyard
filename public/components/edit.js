@@ -10,7 +10,7 @@ const edit = (app, id) => {
         
     return (state, emit) => {
         return html`
-            <div class="buttonCorral">
+            <div class="section buttonCorral">
                 ${sections.map(section => html`
                 <span class="sectionTitle">${section.name}</span>
                 <div class="buttonSection">

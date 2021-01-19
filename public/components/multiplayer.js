@@ -25,7 +25,7 @@ const multiplayer = (app, id) => {
             <div>
                 <span class="title">🚂 multiplayer 🚂</span>
             </div>
-            <div>
+            <div class="section">
                 <input id="input" type="text" oninput=${keypress} 
                     onmousedown=${(e) => e.stopPropagation()}
                     onkeyup=${(e) => e.stopPropagation()}
@@ -33,7 +33,7 @@ const multiplayer = (app, id) => {
                 <button onclick=${connectClick}>connect!</button>
                 <button onclick=${disconnectClick}>disconnect!</button>
             </div>
-            <div>
+            <div class="section">
                 <span>players:</span>
                 <ul>
                     ${getPlayers().map(player => html`<li>${player.name}</li>`)}
