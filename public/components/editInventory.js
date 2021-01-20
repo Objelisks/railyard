@@ -16,6 +16,21 @@ const setColor = regl({
     }
 })
 
+
+// each entry corresponds to one box in the edit menu
+// categories:
+// { 
+//   name: category name,
+//   items: [items] 
+// }
+// items:
+// {
+//     name: item name
+//     model: draw function
+//     placer: modifier for the positioning (i.e. snap to grid or point)
+//     post: function to call after placement
+//     zoom: thumbnail zoom factor
+// }
 export default [
     {
         name: 'track',
