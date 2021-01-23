@@ -19,6 +19,7 @@ import { setContext } from './primitives/model.js'
 import { hexToRgb } from './utils.js'
 import { syncTrainToBox, stepWorld } from './boxes.js'
 import { initializeTestData } from './testdata.js'
+import { createTrackTool } from './tools/createTrack.js'
 
 let dragItem = null
 let addedObjects = []
@@ -115,6 +116,13 @@ setTool(mouseListenerTool, true) // handles mouse position and snapping targets
 setTool(playModeTool, true) // handles game / mouse interaction like clicking on turnouts or trains
 setTool(cameraControlTool, true) // handles camera movement
 setTool(networkedTrainTool, true) // handles network updates / sends
+
+window.addEventListener('starttrackcreate', () => {
+    setTool(createTrackTool, true)
+})
+window.addEventListener('trackcreate', () => {
+    setTool(createTrackTool, false)
+})
 
 const delta = 1 / 60
 
@@ -308,7 +316,11 @@ const setupChoo = () => {
         emitter.on('dropDragged', () => {
             const mouse3d = getMouse3d()
 
-            addedObjects.push({ ...dragItem, position: mouse3d })
+            if(dragItem.post) {
+                dragItem.post()
+            } else {
+                addedObjects.push({ ...dragItem, position: mouse3d })
+            }
             emitter.emit('setDragItem', null)
         })
     })

@@ -49,7 +49,7 @@ export default [
                 create: (item) => {
                     item.track = make3dTrack([0, 0], [0, 0.25], [0, 3.75], [0, 4])
                 },
-                post: () => createTrackTool
+                post: () => window.dispatchEvent(new CustomEvent('starttrackcreate', { }))
             },
         ]
     },

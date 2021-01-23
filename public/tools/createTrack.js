@@ -1,5 +1,5 @@
 import Bezier from '../libs/bezier-js.mjs'
-import { makeTrack, updateTrack } from '../primitives/track.js'
+import { makeTrack, make3dTrack, updateTrack } from '../primitives/track.js'
 import { debugCurve, debugPoint } from '../primitives/debug.js'
 import {
     justLeftClicked,
@@ -8,7 +8,8 @@ import {
     getSnappedPoint,
     getSnappedAxis,
 } from '../mouse.js'
-import { addTrack, getTracks } from '../railyard.js'
+import { addTrack, getTracks, removeTrack } from '../railyard.js'
+import { detectAndFixTurnouts } from '../railyardhelpers.js'
 import { addToTrackBush } from '../raycast.js'
 import { projectOnLine } from '../math.js'
 
@@ -22,7 +23,26 @@ let trackCreateTrack = null
 let trackCreateStartAxis = null
 let trackCreateEndAxis = null
 
+// this holds state for the three step process of placing a track down
 export const createTrackTool = {
+    activate: () => {
+        const mouse3d = getMouse3d()
+        const point2d = [mouse3d[0], mouse3d[2]]
+        const snappedPoint = getSnappedPoint()
+        const snappedAxis = getSnappedAxis()
+
+        // first click: create track and make it tiny
+        const usePoint = snappedPoint ? snappedPoint : point2d
+        const newTrack = makeTrack(usePoint, usePoint, usePoint, usePoint)
+        trackCreateTrack = addTrack(newTrack) // id
+        trackCreateState = trackCreateSteps.FIRST_PLACED
+        if (snappedPoint) {
+            trackCreateStartAxis = {
+                point: snappedPoint,
+                tangent: snappedAxis,
+            }
+        }
+    },
     update: () => {
         const mouse3d = getMouse3d()
         const point2d = [mouse3d[0], mouse3d[2]]
@@ -37,20 +57,6 @@ export const createTrackTool = {
 
         if (justLeftClicked) {
             switch (trackCreateState) {
-                default: {
-                    // first click: create track and make it tiny
-                    const usePoint = snappedPoint ? snappedPoint : point2d
-                    const newTrack = makeTrack(usePoint, usePoint, usePoint, usePoint)
-                    trackCreateTrack = addTrack(newTrack) // id
-                    trackCreateState = trackCreateSteps.FIRST_PLACED
-                    if (snappedPoint) {
-                        trackCreateStartAxis = {
-                            point: snappedPoint,
-                            tangent: snappedAxis,
-                        }
-                    }
-                    break
-                }
                 case trackCreateSteps.FIRST_PLACED: {
                     // second point clicked, set the end
                     const usePoint = snappedPoint ? snappedPoint : point2d
@@ -79,6 +85,11 @@ export const createTrackTool = {
                         : point2d
                     const newTrack = getTracks()[trackCreateTrack]
                     updateTrack(newTrack, { control2: axisProjected })
+                    
+                    removeTrack(newTrack)
+                    debugPoint('createTrack', [0, 5000, 0], [1, 0.7, 0.28])
+                    addTrack(make3dTrack(...newTrack.points))
+                    detectAndFixTurnouts()
                     addToTrackBush(newTrack) // finalized, so it shouldn't change anymore
 
                     window.dispatchEvent(new CustomEvent('trackcreate', { detail: newTrack }))

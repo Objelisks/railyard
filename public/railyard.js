@@ -28,6 +28,10 @@ export const addTrack = (track) => {
     return index
 }
 
+export const removeTrack = (track) => {
+    state.tracks.splice(track.index, 1)
+}
+
 export const getTracks = () => state.tracks
 export const setTracks = (tracks) => state.tracks = tracks
 
