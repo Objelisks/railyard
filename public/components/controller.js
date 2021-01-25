@@ -17,7 +17,7 @@ const controller = (app, id) => {
     const pageTabs = [
         { label: 'operate', page: trainPage },
         { label: 'edit', page: editPage },
-        { label: 'multiplayer', page: multiplayerPage },
+        // { label: 'multiplayer', page: multiplayerPage },
         { label: 'options', page: optionsPage },
     ]
     let activePage = pageTabs[0]

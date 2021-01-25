@@ -18,10 +18,19 @@ http://eu.idec.com/en/g/gLB2L-M1T14A/
 http://webglstats.com/
 
 
+for polish:
+    all sound effects
+    place train cars?
+        fix reset train button
+    remove objects
+    disclaimers on networking
+    fix springs/collision
+    change inital layout
+
 packets of work:
 
-hook up track placement again
-    drag and drop default size track and then edit
+Xhook up track placement again
+X    drag and drop default size track and then edit
 
 networking pass
     make sure turnouts sync correctly
@@ -64,7 +73,7 @@ mobile friendliness????????
 
 
 
-mandatory:
+etc:
 
 tiles (place/delete/materials)
 trains (place/delete/models/materials)
@@ -143,7 +152,7 @@ train models
         factory https://modeltrainstuff.com/walthers-n-933-3211-allied-rail-rebuilders-kit/
         X platform https://www.walthers.com/platform-121-5-x-5-5-x-6cm-9c2293
     scenery
-        small rock
+        X small rock
         large rock
         cliff
         X tunnel straight
