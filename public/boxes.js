@@ -5,6 +5,7 @@ import { to_vec2 } from './math.js'
 
 const AIR_FRICTION = 1
 const FORWARD = [1, 0, 0]
+const UP = [0, 1, 0]
 
 const world = planck.World()
 const frictionBody = world.createBody({
@@ -81,11 +82,18 @@ export const disconnectBogies = (bodyA, bodyB) => {
 }
 
 export const syncTrainToBox = (train) => {
+    // flatten positions (just in case)
     const pos1 = to_vec2(train.bogieFront.getPosition())
     const pos2 = to_vec2(train.bogieBack.getPosition())
+
+    // move the train to halfway between the bogies
     const avgPos = vec2.scale([], vec2.add([], pos1, pos2), 0.5)
     train.position = [avgPos[0]/10, 0, avgPos[1]/10]
-    train.rotation = quat.rotationTo([], FORWARD, vec3.normalize([], vec3.sub([], [pos1[0], 0, pos1[1]], [pos2[0], 0, pos2[1]])))
+    
+    // get the angle between the bogies and build a quaternion from that
+    const facingVec = vec2.normalize([], vec2.sub([], pos1, pos2))
+    const angleBetweenBogies = Math.atan2(facingVec[1], facingVec[0])
+    train.rotation = quat.setAxisAngle([], UP, -angleBetweenBogies)
 }
 
 export const stepWorld = (delta) => {

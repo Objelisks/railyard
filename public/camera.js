@@ -152,12 +152,14 @@ export const cameraControlTool = {
         scrollVelocity *= 0.8
 
         const train = getTrains()[0]
-        const distance = vec3.distance(train.position, kitePosition)
-        vec3.lerp(
-            kitePosition,
-            kitePosition,
-            vec3.add([], train.position, [0, 10, 0]),
-            0.001 * distance
-        )
+        if(train) {
+            const distance = vec3.distance(train.position, kitePosition)
+            vec3.lerp(
+                kitePosition,
+                kitePosition,
+                vec3.add([], train.position, [0, 10, 0]),
+                0.001 * distance
+            )
+        }
     },
 }

@@ -10,7 +10,7 @@ import { drawFloor } from './primitives/floor.js'
 import { playModeTool } from './tools/playMode.js'
 import { tiltShiftEffect } from './shaders/tiltshift.js'
 import { camera, getCameraPos, getCameraTarget, cameraControlTool } from './camera.js'
-import { getTracks, getTurnouts, getTrains, setTrainColors } from './railyard.js'
+import { getTracks, getTurnouts, getTrains, setTrainColors, addObject, getObjects } from './railyard.js'
 import { networkedTrainTool, connect } from './network.js'
 import { mouseListenerTool, getMouse3d } from './mouse.js'
 import { flags } from './flags.js'
@@ -21,8 +21,15 @@ import { syncTrainToBox, stepWorld } from './boxes.js'
 import { initializeTestData } from './testdata.js'
 import { createTrackTool } from './tools/createTrack.js'
 
+// import * as tests from './tests.js'
+
+// Object.entries(tests).forEach(([testName, test]) => {
+//     console.log('===', testName, '===')
+//     test()
+//     console.log('--- done ---')
+// })
+
 let dragItem = null
-let addedObjects = []
 
 // debug keyboard listener
 window.addEventListener('keypress', (e) => {
@@ -32,16 +39,19 @@ window.addEventListener('keypress', (e) => {
         getTracks().forEach((track, i) => {
             console.log(`track ${i}`, JSON.stringify(track.points))
         })
-        getTurnouts().forEach((turnout, i) => {
-            console.log(
-                `turnout ${i}`,
-                JSON.stringify(
-                    turnout.tracks.map((track) =>
-                        getTracks().findIndex((search) => search.id === track.id)
-                    )
-                )
-            )
+        getObjects().forEach((object, i) => {
+            console.log(`object ${i}`, JSON.stringify(object))
         })
+        // getTurnouts().forEach((turnout, i) => {
+        //     console.log(
+        //         `turnout ${i}`,
+        //         JSON.stringify(
+        //             turnout.tracks.map((track) =>
+        //                 getTracks().findIndex((search) => search.id === track.id)
+        //             )
+        //         )
+        //     )
+        // })
     }
     if (e.key === '3') {
         flags.stepMode = !flags.stepMode
@@ -205,7 +215,7 @@ const render = () => {
                 }
 
                 // draw all the placed objects
-                addedObjects.forEach((obj) => {
+                getObjects().forEach((obj) => {
                     // modify the position (i.e. grid snapping for tiles)
                     let positionMod = obj.placer ? obj.placer : (pos) => pos
 
@@ -319,7 +329,7 @@ const setupChoo = () => {
             if(dragItem.post) {
                 dragItem.post()
             } else {
-                addedObjects.push({ ...dragItem, position: mouse3d })
+                addObject({ ...dragItem, position: mouse3d })
             }
             emitter.emit('setDragItem', null)
         })

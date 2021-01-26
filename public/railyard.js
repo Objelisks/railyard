@@ -2,11 +2,13 @@ import { generateDebugArrowsForTurnout } from './primitives/debug.js'
 import { addToTurnoutBush } from './raycast.js'
 import { rgbToHex } from '../utils.js'
 import { boxTrain } from './boxes.js'
+import { objects as prototypes } from './components/editInventory.js'
 
 const state = {
     tracks: [],
     turnouts: [],
-    trains: []
+    trains: [],
+    objects: []
 }
 
 export const addTurnout = (turnout) => {
@@ -60,4 +62,11 @@ export const setTrainColors = ({color1, color2}) => {
         localStorage.setItem('color2', rgbToHex(color2))
     }
     // todo save local storage
+}
+
+export const getObjects = () => state.objects
+export const setObjects = (objects) => state.objects = objects
+export const addObject = (obj) => {
+    const prototypeObject = prototypes[obj.name]
+    state.objects.push({...prototypeObject, ...obj})
 }

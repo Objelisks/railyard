@@ -127,7 +127,8 @@ export const updateTrain = (train) => {
         train.lastDisconnect = null
         train.justDisconnected = null
     }
-    ;['connectionFront', 'connectionBack'].forEach(myConnector => {
+    const connectors = ['connectionFront', 'connectionBack']
+    connectors.forEach(myConnector => {
         // disconnect any cars that are too far
         const bogie = myConnector === 'connectionFront' ? train.bogieFront : train.bogieBack
         const connectedCar = getTrains().find(t => t.id === train[myConnector])

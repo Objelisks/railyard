@@ -1,5 +1,5 @@
 import html from '../libs/nanohtml.mjs'
-import editInventory from './editInventory.js'
+import { inventory as editInventory } from './editInventory.js'
 import { thumbnailButton } from './editThumbnail.js'
 
 const edit = (app, id) => {

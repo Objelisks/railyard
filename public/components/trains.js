@@ -9,16 +9,22 @@ const trains = (app, id) => {
     const ux = [
         knob(app, 'knob1', (data) => {
             let newSpeed = data * 0.3
-            getTrains()[0].poweredTargetSpeed = newSpeed
+            if(getTrains()[0]) {
+                getTrains()[0].poweredTargetSpeed = newSpeed
+            }
         }),
         flipper(app, 'flipper2', 'powered', (data) => {
-            getTrains()[0].powered = data
-            if(!data) {
-                getTrains()[0].unpoweredTargetSpeed = getTrains()[0].poweredTargetSpeed
+            if(getTrains()[0]) {
+                getTrains()[0].powered = data
+                if(!data) {
+                    getTrains()[0].unpoweredTargetSpeed = getTrains()[0].poweredTargetSpeed
+                }
             }
         }, true),
         booper(app, 'booper1', 'reset train', (data) => {
-            placeTrainOnTrack(getTrains()[0], getTracks()[0])
+            if(getTrains()[0]) {
+                placeTrainOnTrack(getTrains()[0], getTracks()[0])
+            }
         })
     ]
 
