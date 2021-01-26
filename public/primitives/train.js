@@ -20,7 +20,7 @@ const ENGINE_ACCELERATION = 0.1
 const POINT_BREAK = 20
 const TOP_SPEED = 5
 const DISCONNECT_GRACE = 1
-const CONNECT_THRESHOLD = 1.5
+const CONNECT_THRESHOLD = 0.5
 
 const raycaster = createRay([0, 0, 0], [1, 0, 0])
 
@@ -224,47 +224,75 @@ export const applyTrainForces = (train, bogie) => {
         } :
         {
             myConnector: 'connectionBack',
-            pos: vec3.add([], train.position, -backConnectorOffset),
+            pos: vec3.add([], train.position, backConnectorOffset),
             dir: vec3.normalize([], backConnectorOffset)
         }
 
     raycaster.update(pos, dir)
     let nearestCar = null
+    let nearestBogie = null
     let nearestDistance = Infinity
     const trains = getTrains()
+    const bogies = []
 
     // TODO: early exit when found within distance
     trains.forEach(other => {
         if(other.id === train.id) return
         if((train.ghost || other.ghost) && other.owner !== train.owner) return
 
+        const otherDirection = vec3.transformQuat([], FORWARD, other.rotation)
+        const frontConnectorOffset = vec3.scale([], otherDirection, other.length/2)
+        const backConnectorOffset = vec3.scale([], otherDirection, -other.length/2)
+        bogies.push(
+            {
+                position: vec3.add([], other.position, frontConnectorOffset),
+                connector: 'connectionFront',
+                train: other
+            },
+            {
+                position: vec3.add([], other.position, -backConnectorOffset),
+                connector: 'connectionBack',
+                train: other
+            }
+        )
+    })
+
+    bogies.forEach(bogie => {
         const box = [
-            [other.position[0]-train.length, other.position[1]-1, other.position[2]-1],
-            [other.position[0]+train.length, other.position[1]+1, other.position[2]+1],
+            [bogie.position[0]-BOGIE_SIZE, bogie.position[1]-BOGIE_SIZE, bogie.position[2]-BOGIE_SIZE],
+            [bogie.position[0]+BOGIE_SIZE, bogie.position[1]+BOGIE_SIZE, bogie.position[2]+BOGIE_SIZE],
         ]
         const normal = [0, 0, 0]
         const hit = raycaster.intersects(box, normal)
         if(hit !== false) {
             if(hit < nearestDistance) {
                 nearestDistance = hit
-                nearestCar = other
+                nearestCar = bogie.train
+                nearestBogie = bogie
             }
         }
     })
+
+    // if there is another car and the distance to that car is within the threshold
     if(nearestCar !== null && nearestDistance < CONNECT_THRESHOLD) {
-        // get nearest connector
-        // if free, attach
-        // also check to see if the train is already connected on the other side
         // TODO: what do i do if the train is like, half way on the turnout
+
         const isCarValidConnectee = (car) => {
-            return !(train.connectionFront === car.id || train.connectionBack === car.id) && train.justDisconnected !== car.id
+            // if the other car is not my own car and we didn't just disconnect from the other car
+            return !(train.connectionFront === car.id || train.connectionBack === car.id)
+                && train.justDisconnected !== car.id
         }
-        const directionConn = vec3.transformQuat([], FORWARD, nearestCar.rotation)
-        const offsetFront = vec3.scale([], directionConn, CONNECTOR_OFFSET)
-        const offsetBack = vec3.scale([], directionConn, -CONNECTOR_OFFSET)
+
+        // find closest connector on closest train
+        const nearestFacing = vec3.transformQuat([], FORWARD, nearestCar.rotation)
+        const offsetFront = vec3.scale([], nearestFacing, CONNECTOR_OFFSET)
+        const offsetBack = vec3.scale([], nearestFacing, -CONNECTOR_OFFSET)
         const nearerConnector = vec3.distance(pos, vec3.add([], nearestCar.position, offsetFront)) < 
             vec3.distance(pos, vec3.add([], nearestCar.position, offsetBack)) ?
             'connectionFront' : 'connectionBack'
+        
+        // the nearest connector is not already in use, my connector is not already in use, 
+        // the nearest car is a valid choice, the connectors are not hidden (not valid connectors)
         if(!nearestCar[nearerConnector] && !train[myConnector] && isCarValidConnectee(nearestCar) &&
             !train.hidden.includes(myConnector === 'connectionFront' ? 'bogieFront' : 'bogieBack') &&
             !nearestCar.hidden.includes(nearerConnector === 'connectionFront' ? 'bogieFront' : 'bogieBack')) {
