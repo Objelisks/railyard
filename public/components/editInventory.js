@@ -5,6 +5,7 @@ import { meshes } from '../primitives/meshes.js'
 import { setUniforms } from '../primitives/model.js'
 import { getSnappedPoint, getSnappedAxis } from '../mouse.js'
 import { make3dTrack } from '../primitives/track.js'
+import { makeTrain, drawTrain, closestPointOnRail } from '../primitives/train.js'
 
 const TILE_SCALE = 10
 
@@ -33,6 +34,7 @@ const setColor = regl({
 // }
 
 export const objects = {
+    // track
     "track": {
         name: 'track',
         model: () => setUniforms(() => placeholderTrack.draw()),
@@ -49,6 +51,26 @@ export const objects = {
         },
         post: () => window.dispatchEvent(new CustomEvent('starttrackcreate', { }))
     },
+    
+    // trains
+    "berkshire": {
+        name: 'berkshire engine',
+        model: () => { 
+            const train = makeTrain({type: 'berkshire'})
+            drawTrain(train)
+        },
+        placer: (position) => {
+            const snappedPoint = closestPointOnRail(position)
+            if(snappedPoint) {
+                return [snappedPoint[0], 0.5, snappedPoint[1]]
+            } else {
+                return position
+            }
+        }
+    },
+
+
+    // tiles
     "grass": {
         name: 'grass',
         model: (() => {const grass = drawTile('grass'); return () => grass()})(),
@@ -67,6 +89,8 @@ export const objects = {
             Math.round(position[2]/TILE_SCALE)*TILE_SCALE],
         zoom: 4
     },
+
+    // scenery
     'small rock': {
         name: 'small rock',
         model: () => meshes['smallrock'](),
@@ -99,7 +123,7 @@ export const inventory = [
     {
         name: 'trains',
         items: [
-            
+            objects['berkshire']
         ]
     },
     {

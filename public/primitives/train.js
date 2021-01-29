@@ -48,14 +48,14 @@ const setupTrain = regl({
 
 const drawhd = (props) => {
     setUniforms(props, (context) => meshes[context.type]())
-    if(!props.hidden.includes('bogieFront')) {
+    if(props.bogieFront && !props.hidden.includes('bogieFront')) {
         const bogieFrontPos = to_vec2(props.bogieFront.getPosition())
         setContext({
             position: [bogieFrontPos[0]/10, 0, bogieFrontPos[1]/10],
             rotation: quat.fromEuler([], 0, -props.bogieFront.getAngle()*180/Math.PI, 0)
         }, () => setUniforms(props, () => meshes['bogie']()))
     }
-    if(!props.hidden.includes('bogieBack')) {
+    if(props.bogieBack && !props.hidden.includes('bogieBack')) {
         const bogieBackPos = to_vec2(props.bogieBack.getPosition())
         setContext({
             position: [bogieBackPos[0]/10, 0, bogieBackPos[1]/10],
@@ -143,6 +143,46 @@ export const updateTrain = (train) => {
     })
 }
 
+// 2d pos and dir
+export const closestPointOnRail = (position, direction = [0, 0]) => {
+    const tracks = intersectTracks(box2Around(position, BOGIE_SIZE)).map(entry => entry.track)
+    const turnouts = intersectTurnouts(box2Around(position, TURNOUT_DETECTOR_SIZE)).map(entry => entry.turnout)
+    const nearbyClosedEndpoints = turnouts.flatMap(turnout => turnout.tracks
+        .map((track, i) => ({turnoutTrack: track, end: turnout.endpoints[i]}))
+        .filter((_, i) => i !== turnout.open)
+    )
+
+    const isClosedInThisDirection = (track) => {
+        const closerEndpoint = vec2.distance(position, to_vec2(track.curve.get(0))) < vec2.distance(position, to_vec2(track.curve.get(1)))
+            ? 0 : 1
+        const closerEndpointClosed = nearbyClosedEndpoints
+            .some(({turnoutTrack, end}) => turnoutTrack === track && end === closerEndpoint)
+        const entranceDirection = vec2.scale([], vec2.normalize([], to_vec2(track.curve.derivative(closerEndpoint))), closerEndpoint === 0 ? 1 : -1)
+        const isMovementDirection = vec2.dot(entranceDirection, direction) > 0
+    
+        const shouldFilterOutClosedPath = closerEndpointClosed && isMovementDirection
+        return shouldFilterOutClosedPath ? 10000 : 0
+    }
+
+    // sort instead of filter to prefer open paths over closed paths
+    // rate the tracks based on which is the best fit to follow
+    const rateTrack = (track) => {
+        const projectedPoint = track.curve.project({x: position[0], y: position[1]})
+        const tangent = vec2.normalize([], to_vec2(track.curve.derivative(projectedPoint.t)))
+        return isClosedInThisDirection(track) +
+            vec2.distance([projectedPoint.x, projectedPoint.y], position) + 
+            (1-Math.abs(vec2.dot(tangent, direction)))
+    }
+    let sortedTracks = tracks
+        .sort((trackA, trackB) => rateTrack(trackA) - rateTrack(trackB))
+    const projected = sortedTracks
+        .map(track => track.curve.project({x: position[0], y: position[1]}))
+        .filter(projectedPoint => vec2.dist(position, to_vec2(projectedPoint)) <= DERAILMENT_FACTOR)
+
+    const nearestProjectedPoint = projected[0]
+    return { point: nearestProjectedPoint ? [nearestProjectedPoint.x, 0, nearestProjectedPoint.y] : null, track: sortedTracks[0] }
+}
+
 export const applyTrainForces = (train, bogie) => {
     // train facing direction
     const direction = vec3.transformQuat([], [1, 0, 0], train.rotation)
@@ -152,45 +192,12 @@ export const applyTrainForces = (train, bogie) => {
     const bogieBackd = vec2.scale([], to_vec2(bogie.getPosition().add(bogie.getLinearVelocity())), 0.1)
     const movementDirection = to_vec2(bogie.getLinearVelocity())
 
-    const tracks = intersectTracks(box2Around(bogieBackd, BOGIE_SIZE)).map(entry => entry.track)
-    const turnouts = intersectTurnouts(box2Around(bogieBackd, TURNOUT_DETECTOR_SIZE)).map(entry => entry.turnout)
-    const nearbyClosedEndpoints = turnouts.flatMap(turnout => turnout.tracks
-        .map((track, i) => ({turnoutTrack: track, end: turnout.endpoints[i]}))
-        .filter((_, i) => i !== turnout.open)
-    )
+    const { point: nearestProjectedPoint, track } = closestPointOnRail(bogieBackd, movementDirection)
 
-    const isClosedInThisDirection = (track) => {
-        const closerEndpoint = vec2.distance(bogieBackd, to_vec2(track.curve.get(0))) < vec2.distance(bogieBackd, to_vec2(track.curve.get(1)))
-            ? 0 : 1
-        const closerEndpointClosed = nearbyClosedEndpoints
-            .some(({turnoutTrack, end}) => turnoutTrack === track && end === closerEndpoint)
-        const entranceDirection = vec2.scale([], vec2.normalize([], to_vec2(track.curve.derivative(closerEndpoint))), closerEndpoint === 0 ? 1 : -1)
-        const isMovementDirection = vec2.dot(entranceDirection, movementDirection) > 0
-    
-        const shouldFilterOutClosedPath = closerEndpointClosed && isMovementDirection
-        return shouldFilterOutClosedPath ? 10000 : 0
-    }
-
-    // sort instead of filter to prefer open paths over closed paths
-    // rate the tracks based on which is the best fit to follow
-    const rateTrack = (track) => {
-        const projectedPoint = track.curve.project({x: bogieBackd[0], y: bogieBackd[1]})
-        const tangent = vec2.normalize([], to_vec2(track.curve.derivative(projectedPoint.t)))
-        return isClosedInThisDirection(track) +
-            vec2.distance([projectedPoint.x, projectedPoint.y], bogieBackd) + 
-            (1-Math.abs(vec2.dot(tangent, movementDirection)))
-    }
-    let sortedTracks = tracks
-        .sort((trackA, trackB) => rateTrack(trackA) - rateTrack(trackB))
-    const projected = sortedTracks
-        .map(track => track.curve.project({x: bogieBackd[0], y: bogieBackd[1]}))
-        .filter(projectedPoint => vec2.dist(bogieBackd, to_vec2(projectedPoint)) <= DERAILMENT_FACTOR)
-
-    const nearestProjectedPoint = projected[0]
     if(nearestProjectedPoint) {
         // move train (this is the only place its position is updated, we're ignoring box2d's opinion)
         bogie.setPosition(planck.Vec2({x: nearestProjectedPoint.x*10, y: nearestProjectedPoint.y*10}))
-        const derivative = sortedTracks[0].curve.derivative(nearestProjectedPoint.t)
+        const derivative = track.curve.derivative(nearestProjectedPoint.t)
         const oldVelocity = bogie.getLinearVelocity()
         const newVelocityDirection = project2([oldVelocity.x, oldVelocity.y], [derivative.x, derivative.y])
         const newVelocity = vec2.scale([], vec2.normalize([], newVelocityDirection), oldVelocity.length())
@@ -209,8 +216,6 @@ export const applyTrainForces = (train, bogie) => {
     } else {
         train.currentSpeed *= 0.99
     }
-
-
 
     // internal forces:
     // distance constraint between bogies
