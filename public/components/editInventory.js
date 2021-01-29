@@ -33,6 +33,20 @@ const setColor = regl({
 //     zoom: thumbnail zoom factor
 // }
 
+const gridSnapper = (position) => [
+    Math.round(position[0]/TILE_SCALE)*TILE_SCALE,
+    position[1],
+    Math.round(position[2]/TILE_SCALE)*TILE_SCALE]
+
+const trackSnapper = (position) => {
+    const {point, track} = closestPointOnRail([position[0], position[2]])
+    if(point) {
+        return [point.x, 0.5, point.y]
+    } else {
+        return position
+    }
+}
+
 export const objects = {
     // track
     "track": {
@@ -55,38 +69,21 @@ export const objects = {
     // trains
     "berkshire": {
         name: 'berkshire engine',
-        model: () => { 
-            const train = makeTrain({type: 'berkshire'})
-            drawTrain(train)
-        },
-        placer: (position) => {
-            const snappedPoint = closestPointOnRail(position)
-            if(snappedPoint) {
-                return [snappedPoint[0], 0.5, snappedPoint[1]]
-            } else {
-                return position
-            }
-        }
+        model: () => meshes['berkshire'](),
+        placer: trackSnapper
     },
-
 
     // tiles
     "grass": {
         name: 'grass',
         model: (() => {const grass = drawTile('grass'); return () => grass()})(),
-        placer: (position) => [
-            Math.round(position[0]/TILE_SCALE)*TILE_SCALE,
-            position[1],
-            Math.round(position[2]/TILE_SCALE)*TILE_SCALE],
+        placer: gridSnapper,
         zoom: 4
     },
     "gravel": {
         name: 'gravel',
         model: (() => {const gravel = drawTile('gravel'); return () => gravel()})(),
-        placer: (position) => [
-            Math.round(position[0]/TILE_SCALE)*TILE_SCALE,
-            position[1],
-            Math.round(position[2]/TILE_SCALE)*TILE_SCALE],
+        placer: gridSnapper,
         zoom: 4
     },
 

@@ -5,7 +5,7 @@ import { DERAILMENT_FACTOR, BOGIE_SIZE, TURNOUT_DETECTOR_SIZE, CONNECTOR_OFFSET 
 import { intersectTracks, intersectTurnouts } from '../raycast.js'
 import { getTrains } from '../railyard.js'
 import { to_vec2, project2, clamp } from '../math.js'
-import { box2Around } from '../utils.js'
+import { box2Around, reglArg } from '../utils.js'
 import { drawCube } from './cube.js'
 import { setUniforms, setContext } from './model.js'
 import createRay from '../libs/ray-aabb.mjs'
@@ -37,8 +37,8 @@ const trainTypes = {
 
 const setupTrain = regl({
     context: {
-        position: regl.prop('position'),
-        rotation: regl.prop('rotation'),
+        position: (context, props) => reglArg('position', [0, 0, 0], context, props),
+        rotation: (context, props) => reglArg('rotation', [0, 0, 0, 1], context, props),
         scale: [1, 1, 1],
         color1: (context, props) => props.color1.map(x => x * (!props.remote && props.visible ? 1.5 : 1)),
         color2: (context, props) => props.color2.map(x => x * (!props.remote && props.visible ? 1.5 : 1)),
@@ -143,8 +143,24 @@ export const updateTrain = (train) => {
     })
 }
 
+export const closestPointOnRail = (position) => {
+    const tracks = intersectTracks(box2Around(position, BOGIE_SIZE)).map(entry => entry.track)
+    const rateTrack = (track) => {
+        const projectedPoint = track.curve.project({x: position[0], y: position[1]})
+        return vec2.distance([projectedPoint.x, projectedPoint.y], position)
+    }
+    let sortedTracks = tracks
+        .sort((trackA, trackB) => rateTrack(trackA) - rateTrack(trackB))
+    const projected = sortedTracks
+        .map(track => track.curve.project({x: position[0], y: position[1]}))
+        .filter(projectedPoint => vec2.dist(position, to_vec2(projectedPoint)) <= DERAILMENT_FACTOR)
+
+    const nearestProjectedPoint = projected[0]
+    return { point: nearestProjectedPoint, track: sortedTracks[0] }
+}
+
 // 2d pos and dir
-export const closestPointOnRail = (position, direction = [0, 0]) => {
+export const closestPointOnRailRespectClosed = (position, direction = [0, 0]) => {
     const tracks = intersectTracks(box2Around(position, BOGIE_SIZE)).map(entry => entry.track)
     const turnouts = intersectTurnouts(box2Around(position, TURNOUT_DETECTOR_SIZE)).map(entry => entry.turnout)
     const nearbyClosedEndpoints = turnouts.flatMap(turnout => turnout.tracks
@@ -180,7 +196,7 @@ export const closestPointOnRail = (position, direction = [0, 0]) => {
         .filter(projectedPoint => vec2.dist(position, to_vec2(projectedPoint)) <= DERAILMENT_FACTOR)
 
     const nearestProjectedPoint = projected[0]
-    return { point: nearestProjectedPoint ? [nearestProjectedPoint.x, 0, nearestProjectedPoint.y] : null, track: sortedTracks[0] }
+    return { point: nearestProjectedPoint, track: sortedTracks[0] }
 }
 
 export const applyTrainForces = (train, bogie) => {
@@ -189,10 +205,10 @@ export const applyTrainForces = (train, bogie) => {
     const isFront = train.bogieFront === bogie
     
     // rail alignment force (energy into rail)
-    const bogieBackd = vec2.scale([], to_vec2(bogie.getPosition().add(bogie.getLinearVelocity())), 0.1)
+    const bogieBack2d = vec2.scale([], to_vec2(bogie.getPosition().add(bogie.getLinearVelocity())), 0.1)
     const movementDirection = to_vec2(bogie.getLinearVelocity())
 
-    const { point: nearestProjectedPoint, track } = closestPointOnRail(bogieBackd, movementDirection)
+    const { point: nearestProjectedPoint, track } = closestPointOnRailRespectClosed(bogieBack2d, movementDirection)
 
     if(nearestProjectedPoint) {
         // move train (this is the only place its position is updated, we're ignoring box2d's opinion)
