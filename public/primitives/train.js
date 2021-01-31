@@ -5,7 +5,7 @@ import { DERAILMENT_FACTOR, BOGIE_SIZE, TURNOUT_DETECTOR_SIZE, CONNECTOR_OFFSET 
 import { intersectTracks, intersectTurnouts } from '../raycast.js'
 import { getTrains } from '../railyard.js'
 import { to_vec2, project2, clamp } from '../math.js'
-import { box2Around, reglArg } from '../utils.js'
+import { box2Around, reglArg, hexToRgb } from '../utils.js'
 import { drawCube } from './cube.js'
 import { setUniforms, setContext } from './model.js'
 import createRay from '../libs/ray-aabb.mjs'
@@ -80,8 +80,8 @@ export const makeTrain = (config) => ({
     powered: false,
     poweredTargetSpeed: 0,
     currentSpeed: 0,
-    color1: [0, 0, 0],
-    color2: [1, 0, 0],
+    color1: hexToRgb(localStorage.getItem('color1') ?? '#ffaaaa'),
+    color2: hexToRgb(localStorage.getItem('color2') ?? '#ffaaaa'),
     length: trainTypes[config.type].length ?? 4,
     bogieOffset: trainTypes[config.type].bogieOffset ?? 1,
     hidden: trainTypes[config.type].hidden ?? [],

@@ -1,7 +1,7 @@
 import { generateDebugArrowsForTurnout } from './primitives/debug.js'
 import { addToTurnoutBush } from './raycast.js'
 import { rgbToHex } from '../utils.js'
-import { boxTrain } from './boxes.js'
+import { boxTrain, removeTrainBodies } from './boxes.js'
 import { objects as prototypes } from './components/editInventory.js'
 
 const state = {
@@ -44,6 +44,10 @@ export const addTrain = (train) => {
     boxTrain(train, train.powered)
 
     return train
+}
+export const removeTrain = (train) => {
+    removeTrainBodies(train)
+    state.trains.splice(state.trains.findIndex((t) => t === train), 1)
 }
 
 export const getTrains = () => state.trains

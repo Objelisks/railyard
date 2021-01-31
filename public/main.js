@@ -202,14 +202,14 @@ const render = () => {
                 if (dragItem) {
                     const mouse3d = getMouse3d()
                     // modify the position (i.e. grid snapping for tiles)
-                    let positionMod = dragItem.placer ? dragItem.placer : (pos) => pos
+                    const modelMod = dragItem.placer ? dragItem.placer : (model) => model
 
                     // setup model, and render
                     setContext(
-                        {
-                            position: positionMod(vec3.add([], [0, -0.5, 0], mouse3d)),
+                        modelMod({
+                            position: vec3.add([], [0, -0.5, 0], mouse3d),
                             rotation: quat.setAxisAngle([], [0, 1, 0], dragItem.rotation),
-                        },
+                        }),
                         () => dragItem.model()
                     )
                 }
@@ -217,14 +217,14 @@ const render = () => {
                 // draw all the placed objects
                 getObjects().forEach((obj) => {
                     // modify the position (i.e. grid snapping for tiles)
-                    let positionMod = obj.placer ? obj.placer : (pos) => pos
+                    const modelMod = obj.placer ? obj.placer : (model) => model
 
                     // setup model, and render
                     setContext(
-                        {
-                            position: positionMod(vec3.add([], [0, -0.5, 0], obj.position)),
+                        modelMod({
+                            position: vec3.add([], [0, -0.5, 0], obj.position),
                             rotation: quat.setAxisAngle([], [0, 1, 0], obj.rotation),
-                        },
+                        }),
                         () => obj.model()
                     )
                 })
@@ -327,7 +327,7 @@ const setupChoo = () => {
             const mouse3d = getMouse3d()
 
             if(dragItem.post) {
-                dragItem.post()
+                dragItem.post(mouse3d)
             } else {
                 addObject({ ...dragItem, position: mouse3d })
             }

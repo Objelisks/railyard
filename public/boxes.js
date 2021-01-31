@@ -32,6 +32,11 @@ export const boxTrain = (train, powered) => {
     train.bogieBack = bogieBack
 }
 
+export const removeTrainBodies = (train) => {
+    world.destroyBody(train.bogieFront)
+    world.destroyBody(train.bogieBack)
+}
+
 export const boxBogie = (train, position) => {
     const pos = planck.Vec2(position[0], position[1])
     const bogie = world.createDynamicBody({

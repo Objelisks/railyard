@@ -1,8 +1,8 @@
 import { vec3 } from '../libs/gl-matrix.mjs'
 import createRay from '../libs/ray-aabb.mjs'
 import { toggleTurnout } from '../primitives/turnout.js'
-import { getRay, justLeftClicked } from '../mouse.js'
-import { getTurnouts, getTrains } from '../railyard.js'
+import { getRay, justLeftClicked, justRightClicked } from '../mouse.js'
+import { getTurnouts, getTrains, removeTrain } from '../railyard.js'
 import { CONNECTOR_OFFSET } from '../constants.js'
 import { debugPoint } from '../primitives/debug.js'
 import { disconnect } from '../primitives/train.js'
@@ -102,9 +102,16 @@ export const playModeTool = {
                             } else {
                                 disconnect(train, 'connectionBack')
                             }
-                        } else {
-                            // make a cute sound effect
                         }
+                    } else if(justRightClicked) {
+                        // remove the train
+                        if(train.connectionFront) {
+                            disconnect(train, 'connectionFront')
+                        }
+                        if(train.connectionBack) {
+                            disconnect(train, 'connectionBack')
+                        }
+                        removeTrain(train)
                     }
                     break
             }

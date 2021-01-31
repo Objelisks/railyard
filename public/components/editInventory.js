@@ -1,4 +1,5 @@
 import regl from '../regl.js'
+import { quat } from '../libs/gl-matrix.mjs'
 import { drawTile } from '../primitives/tile.js'
 import { drawCube } from '../primitives/cube.js'
 import { meshes } from '../primitives/meshes.js'
@@ -6,6 +7,7 @@ import { setUniforms } from '../primitives/model.js'
 import { getSnappedPoint, getSnappedAxis } from '../mouse.js'
 import { make3dTrack } from '../primitives/track.js'
 import { makeTrain, drawTrain, closestPointOnRail } from '../primitives/train.js'
+import { addTrain } from '../railyard.js'
 
 const TILE_SCALE = 10
 
@@ -33,17 +35,46 @@ const setColor = regl({
 //     zoom: thumbnail zoom factor
 // }
 
-const gridSnapper = (position) => [
-    Math.round(position[0]/TILE_SCALE)*TILE_SCALE,
-    position[1],
-    Math.round(position[2]/TILE_SCALE)*TILE_SCALE]
+const gridSnapper = (model) => ({
+    ...model,
+    position: [
+        Math.round(model.position[0]/TILE_SCALE)*TILE_SCALE,
+        model.position[1],
+        Math.round(model.position[2]/TILE_SCALE)*TILE_SCALE]
+})
 
-const trackSnapper = (position) => {
+const trackSnapper = (model) => {
+    const {point, track} = closestPointOnRail([model.position[0], model.position[2]])
+    if(point) {
+        const derivative = track.curve.derivative(point.t)
+        return {
+            ...model,
+            position: [point.x, 0.5, point.y],
+            rotation: quat.setAxisAngle([], [0, 1, 0], -Math.atan2(derivative.y, derivative.x))
+        }
+    } else {
+        return model
+    }
+}
+
+const railEndSnapper = (model) => {
+    const snappedPoint = getSnappedPoint()
+    if(snappedPoint) {
+        return {...model, position: [snappedPoint[0], 0.5, snappedPoint[1]]}
+    } else {
+        return model
+    }
+}
+
+const trainPlacer = (type) => (position) => {
+    const train = makeTrain({ type })
     const {point, track} = closestPointOnRail([position[0], position[2]])
     if(point) {
-        return [point.x, 0.5, point.y]
-    } else {
-        return position
+        const derivative = track.curve.derivative(point.t)
+        train.position = [point.x, 0.5, point.y]
+        train.rotation = quat.setAxisAngle([], [0, 1, 0], -Math.atan2(derivative.y, derivative.x))
+        train.velocity = [0, 0]
+        addTrain(train)
     }
 }
 
@@ -52,25 +83,55 @@ export const objects = {
     "track": {
         name: 'track',
         model: () => setUniforms(() => placeholderTrack.draw()),
-        placer: (position) => {
-            const snappedPoint = getSnappedPoint()
-            if(snappedPoint) {
-                return [snappedPoint[0], 0.5, snappedPoint[1]]
-            } else {
-                return position
-            }
-        },
+        placer: railEndSnapper,
         create: (item) => {
             item.track = make3dTrack([0, 0], [0, 0.25], [0, 3.75], [0, 4])
         },
-        post: () => window.dispatchEvent(new CustomEvent('starttrackcreate', { }))
+        post: (pos) => window.dispatchEvent(new CustomEvent('starttrackcreate', { }))
     },
     
     // trains
     "berkshire": {
         name: 'berkshire engine',
         model: () => meshes['berkshire'](),
-        placer: trackSnapper
+        placer: trackSnapper,
+        post: trainPlacer('berkshire')
+    },
+    "sw1": {
+        name: 'switcher engine',
+        model: () => meshes['sw1'](),
+        placer: trackSnapper,
+        post: trainPlacer('sw1')
+    },
+    "tm8": {
+        name: 'tanker',
+        model: () => meshes['tm8'](),
+        placer: trackSnapper,
+        post: trainPlacer('tm8')
+    },
+    "g43": {
+        name: 'gondola',
+        model: () => meshes['g43'](),
+        placer: trackSnapper,
+        post: trainPlacer('g43')
+    },
+    "p70": {
+        name: 'passenger car',
+        model: () => meshes['p70'](),
+        placer: trackSnapper,
+        post: trainPlacer('p70')
+    },
+    "x36": {
+        name: 'freight car',
+        model: () => meshes['x36'](),
+        placer: trackSnapper,
+        post: trainPlacer('x36')
+    },
+    "caboose": {
+        name: 'caboose',
+        model: () => meshes['caboose'](),
+        placer: trackSnapper,
+        post: trainPlacer('caboose')
     },
 
     // tiles
@@ -120,7 +181,13 @@ export const inventory = [
     {
         name: 'trains',
         items: [
-            objects['berkshire']
+            objects['berkshire'],
+            objects['sw1'],
+            objects['tm8'],
+            objects['g43'],
+            objects['p70'],
+            objects['x36'],
+            objects['caboose']
         ]
     },
     {
