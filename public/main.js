@@ -20,6 +20,7 @@ import { hexToRgb } from './utils.js'
 import { syncTrainToBox, stepWorld } from './boxes.js'
 import { initializeTestData } from './testdata.js'
 import { createTrackTool } from './tools/createTrack.js'
+import { updateTrainSound } from './audio.js'
 
 // import * as tests from './tests.js'
 
@@ -164,6 +165,15 @@ const render = () => {
                 getTrains().forEach((train) => {
                     updateTrain(train)
                 })
+
+                const activeTrainPosition = getTrains()[0]?.position
+                if(activeTrainPosition) {
+                    const cameraRelativePosition = vec3.transformMat4([], activeTrainPosition, context.view)
+                    const activeTrainSpeed = getTrains()[0]?.bogieBack.getLinearVelocity().length() ?? 0
+                    updateTrainSound(cameraRelativePosition, activeTrainSpeed)
+                } else {
+                    updateTrainSound([10000, 10000, 10000], 0.0001)
+                }
 
                 window.dispatchEvent(new CustomEvent('postupdate', { detail: context }))
 

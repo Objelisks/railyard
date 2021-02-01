@@ -73,7 +73,6 @@ const trainPlacer = (type) => (position) => {
         const derivative = track.curve.derivative(point.t)
         train.position = [point.x, 0.5, point.y]
         train.rotation = quat.setAxisAngle([], [0, 1, 0], -Math.atan2(derivative.y, derivative.x))
-        train.velocity = [0, 0]
         addTrain(train)
     }
 }

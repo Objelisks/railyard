@@ -1,6 +1,6 @@
 import html from '../libs/nanohtml.mjs'
 import { flags } from '../flags.js'
-import { setPlaylist, setVolume } from '../audio.js'
+import { setPlaylist, setVolumeMusic, setVolumeSfx } from '../audio.js'
 import { setTrainColors, deleteAll } from '../railyard.js'
 import { hexToRgb } from '../utils.js'
 
@@ -9,21 +9,23 @@ const options = (app, id) => {
 
     })
 
-    const graphicsChange = (e) => {
-        flags.graphics = e.target.value === "true"
-        e.stopPropagation()
-    }
-
     const musicChange = (e) => {
         console.log('music change')
         setPlaylist(e.target.value)
         e.stopPropagation()
     }
 
-    const volumeChange = (e) => {
+    const volumeChangeMusic = (e) => {
         const newVolume = parseFloat(e.target.value)
-        setVolume(newVolume)
-        localStorage.setItem('volume', newVolume)
+        setVolumeMusic(newVolume)
+        localStorage.setItem('volumemusic', newVolume)
+        e.stopPropagation()
+    }
+
+    const volumeChangeSfx = (e) => {
+        const newVolume = parseFloat(e.target.value)
+        setVolumeSfx(newVolume)
+        localStorage.setItem('volumesfx', newVolume)
         e.stopPropagation()
     }
 
@@ -54,17 +56,11 @@ const options = (app, id) => {
             color1: hexToRgb(initColor1),
             color2: hexToRgb(initColor2)
         })
-        const initialVolume = localStorage.getItem('volume') ?? 0.1
+        const initialVolumeMusic = localStorage.getItem('volumemusic') ?? 0.1
+        const initialVolumeSfx = localStorage.getItem('volumesfx') ?? 0.1
     
         return html`
             <div>
-                <div class="section">
-                    <label for="graphics">graphics: </label>
-                    <select id="graphics" onmousedown=${preventDefault} onchange=${graphicsChange}>
-                        <option value="false">lowkey minimalist aesthetic</option>
-                        <option value="true">i have a nice graphics card</option>
-                    </select>
-                </div>
                 <div class="section">
                     <label for="music">bg music: </label>
                     <select id="music" onmousedown=${preventDefault} onchange=${musicChange}>
@@ -74,8 +70,13 @@ const options = (app, id) => {
                         <option value="track 3">bg music 3</option>
                         <option value="track 4">bg music 4</option>
                     </select>
-                    <input type="range" min="0" max="0.2" step="0.01" value="${initialVolume}"
-                        onmousedown=${preventDefault} oninput=${volumeChange} onmouseup=${volumeChange}>
+                    <input type="range" min="0" max="0.2" step="0.01" value="${initialVolumeMusic}"
+                        onmousedown=${preventDefault} oninput=${volumeChangeMusic} onmouseup=${volumeChangeMusic}>
+                </div>
+                <div class="section">
+                    <label>sfx volume: </label>
+                    <input type="range" min="0" max="0.2" step="0.01" value="${initialVolumeSfx}"
+                        onmousedown=${preventDefault} oninput=${volumeChangeSfx} onmouseup=${volumeChangeSfx}>
                 </div>
                 <div class="section">
                     <label>primary color: </label><input type="color"

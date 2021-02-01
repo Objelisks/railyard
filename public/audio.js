@@ -6,26 +6,28 @@ const trackNames = [
     './music/number4.mp3',
 ]
 const soundEffects = {
-    'holding': './music/sfx/Floating Object.mp3',//
-    'genericButton': './music/sfx/Focus Button.mp3',
-    'textEntry': './music/sfx/Focus Text.mp3',
-    'leftColumnButton': './music/sfx/MenuButtA_ON.mp3',
-    'rightColumnButton': './music/sfx/MenubuttLeft_ON.mp3',
-    'columnButtonRelease': './music/sfx/MenubuttRight_OFF.mp3',
-    'pushButtonDown': './music/sfx/PowerButton_ON.mp3',
-    'pushButtonUp': './music/sfx/PowerButton_OFF.mp3',
-    'editHover': './music/sfx/Slide Out.mp3',
-    'editLeave': './music/sfx/Slide Back.mp3',
-    'trackChange': './music/sfx/Track Change.mp3',//
+    'holding': './music/sfx/Floating Object.mp3',
+    'genericButton': './music/sfx/Focus Button.mp3',//
+    'textEntry': './music/sfx/Focus Text.mp3',//
+    'leftColumnButton': './music/sfx/MenuButtA_ON.mp3',//
+    'rightColumnButton': './music/sfx/MenubuttLeft_ON.mp3',//
+    'columnButtonRelease': './music/sfx/MenubuttRight_OFF.mp3',//
+    'pushButtonDown': './music/sfx/PowerButton_ON.mp3',//
+    'pushButtonUp': './music/sfx/PowerButton_OFF.mp3',//
+    'editHover': './music/sfx/Slide Out.mp3',//
+    'editLeave': './music/sfx/Slide Back.mp3',//
+    'trackChange': './music/sfx/Track Change.mp3',
     'trainAttachA': './music/sfx/Train Attach A.mp3',//
     'trainAttachB': './music/sfx/Train Attach B.mp3',//
-    'trainMoving': './music/sfx/Train Moving.mp3'//
+    'trainMoving': './music/sfx/Train Moving.mp3'
 }
 const context = new AudioContext()
 
 const fadeTime = 3
-const initialVolume = localStorage.getItem('volume') ?? 0.1
-let currentVolume = initialVolume
+let currentVolumeMusic = localStorage.getItem('volumemusic') ?? 0.1
+let currentVolumeSfx = localStorage.getItem('volumesfx') ?? 0.1
+
+const runningEffects = {}
 
 let rotatorInterval = null
 const rotateInterval = 60 * 1000
@@ -61,8 +63,45 @@ Object.entries(soundEffects).forEach(([key, value]) => {
     })
 })
 
-export const setVolume = (value, track=currentTrack) => {
-    currentVolume = value
+// buffer + rate -> panner -> sfx gain -> output
+let trainMovingSound = null
+fetch('./music/sfx/Train Moving.mp3')
+    .then((response) => response.arrayBuffer())
+    .then((arrayBuffer) => {
+        context.decodeAudioData(arrayBuffer, (buffer) => {
+            const trainGain = context.createGain()
+            trainGain.gain.value = 0
+            trainGain.connect(effectsGain)
+            const panner = context.createPanner()
+            panner.positionX.value = 10000
+            panner.positionY.value = 10000
+            panner.positionZ.value = 10000
+            panner.refDistance = 5
+            panner.connect(trainGain)
+            trainMovingSound = context.createBufferSource()
+            trainMovingSound.buffer = buffer
+            trainMovingSound.loop = true
+            trainMovingSound.panner = panner
+            trainMovingSound.gain = trainGain
+            trainMovingSound.playbackRate.value = 0.001
+            trainMovingSound.connect(panner)
+            trainMovingSound.start(context.currentTime)
+        })
+    })
+
+const maxSpeed = 1.5
+export const updateTrainSound = (pos, speed) => {
+    if(trainMovingSound) {
+        trainMovingSound.panner.positionX.value = pos[0]
+        trainMovingSound.panner.positionY.value = pos[1]
+        trainMovingSound.panner.positionZ.value = pos[2]
+        trainMovingSound.gain.gain.value = speed / maxSpeed
+        trainMovingSound.playbackRate.value = Math.max(0.001, speed / maxSpeed)
+    }
+}
+
+export const setVolumeMusic = (value, track=currentTrack) => {
+    currentVolumeMusic = value
     if(value === 0) {
         value = 0.001
     }
@@ -72,14 +111,22 @@ export const setVolume = (value, track=currentTrack) => {
     track.gain.gain.exponentialRampToValueAtTime(value, context.currentTime + 0.5)
 }
 
+export const setVolumeSfx = (value, track=currentTrack) => {
+    currentVolumeSfx = value
+    if(value === 0) {
+        value = 0.001
+    }
+    effectsGain.gain.setValueAtTime(value, context.currentTime)
+}
+
 const fadeTo = (track) => {
     if(currentTrack !== track) {
         currentTrack.gain.gain.cancelScheduledValues(context.currentTime)
-        currentTrack.gain.gain.linearRampToValueAtTime(currentVolume, context.currentTime)
+        currentTrack.gain.gain.linearRampToValueAtTime(currentVolumeMusic, context.currentTime)
         currentTrack.gain.gain.linearRampToValueAtTime(0, context.currentTime + fadeTime)
         track.gain.gain.cancelScheduledValues(context.currentTime)
         track.gain.gain.linearRampToValueAtTime(0, context.currentTime + fadeTime-1)
-        track.gain.gain.linearRampToValueAtTime(currentVolume, context.currentTime + fadeTime-1 + fadeTime)
+        track.gain.gain.linearRampToValueAtTime(currentVolumeMusic, context.currentTime + fadeTime-1 + fadeTime)
         currentTrack = track
     }
 }
@@ -148,7 +195,7 @@ window.addEventListener('click', function audioListener () {
     context.resume().then(() => {
         tracks.forEach(track => track.source.mediaElement.play())
         currentTrack.gain.gain.setValueAtTime(0.001, context.currentTime)
-        currentTrack.gain.gain.linearRampToValueAtTime(currentVolume, context.currentTime + fadeTime)
+        currentTrack.gain.gain.linearRampToValueAtTime(currentVolumeMusic, context.currentTime + fadeTime)
         setPlaylist('rotate')
     })
     window.removeEventListener('click', audioListener)

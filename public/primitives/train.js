@@ -95,7 +95,6 @@ export const makeTrain = (config) => ({
     bogieBack: null,
 
     // deprecated
-    velocity: [0, 0],
     force: [0, 0],
     angularVelocity: 0,
 
@@ -118,8 +117,6 @@ export const disconnect = (train, connection) => {
     train.lastDisconnect = regl.now()
     other.lastDisconnect = regl.now()
     const DISCONNECT_FORCE = 0.02
-    // vec2.scaleAndAdd(train.velocity, train.velocity, facing3d, connection === 'connectionFront' ? -DISCONNECT_FORCE : DISCONNECT_FORCE)
-    // vec2.scaleAndAdd(other.velocity, other.velocity, facing3dOther, other.connectionFront === train.id ? -DISCONNECT_FORCE : DISCONNECT_FORCE)
 }
 
 export const updateTrain = (train) => {
