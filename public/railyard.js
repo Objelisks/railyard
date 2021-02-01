@@ -1,4 +1,4 @@
-import { generateDebugArrowsForTurnout } from './primitives/debug.js'
+import { clearDebug, generateDebugArrowsForTurnout } from './primitives/debug.js'
 import { addToTurnoutBush } from './raycast.js'
 import { rgbToHex } from '../utils.js'
 import { boxTrain, removeTrainBodies } from './boxes.js'
@@ -73,4 +73,15 @@ export const setObjects = (objects) => state.objects = objects
 export const addObject = (obj) => {
     const prototypeObject = prototypes[obj.name]
     state.objects.push({...prototypeObject, ...obj})
+}
+
+export const deleteAll = () => {
+    state.trains.forEach(train => {
+        removeTrain(train)
+    })
+    state.trains = []
+    state.tracks = []
+    state.turnouts = []
+    state.objects = []
+    clearDebug()
 }

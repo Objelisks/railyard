@@ -51,14 +51,14 @@ const drawhd = (props) => {
     if(props.bogieFront && !props.hidden.includes('bogieFront')) {
         const bogieFrontPos = to_vec2(props.bogieFront.getPosition())
         setContext({
-            position: [bogieFrontPos[0]/10, 0, bogieFrontPos[1]/10],
+            position: [bogieFrontPos[0]/10, -0.3, bogieFrontPos[1]/10],
             rotation: quat.fromEuler([], 0, -props.bogieFront.getAngle()*180/Math.PI, 0)
         }, () => setUniforms(props, () => meshes['bogie']()))
     }
     if(props.bogieBack && !props.hidden.includes('bogieBack')) {
         const bogieBackPos = to_vec2(props.bogieBack.getPosition())
         setContext({
-            position: [bogieBackPos[0]/10, 0, bogieBackPos[1]/10],
+            position: [bogieBackPos[0]/10, -0.3, bogieBackPos[1]/10],
             rotation: quat.fromEuler([], 0, -props.bogieBack.getAngle()*180/Math.PI, 0)
         }, () => setUniforms(props, () => meshes['bogie']()))
     }

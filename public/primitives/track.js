@@ -113,7 +113,7 @@ const gravelUvs = (points, curve, offsets) => {
 
 export const track3dRail = (curve, offsets, uvsFunc) => {
     const points = offsets
-        .flatMap(([x, y]) => trackRail(curve, x, y))
+        .flatMap(([x, y]) => trackRail(curve, x, y-0.3))
 
     const elements = []
     for(let i = 0; i < offsets.length-1; i++) {

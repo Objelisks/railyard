@@ -190,7 +190,7 @@ const render = () => {
                     drawTurnout({
                         position: vec3.add(
                             [],
-                            [turnout.point[0], -1, turnout.point[1]],
+                            [turnout.point[0], -0.9, turnout.point[1]],
                             [turnout.facing[0], 0, turnout.facing[1]]
                         ),
                         scale: [2, 1, 2],

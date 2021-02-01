@@ -3,7 +3,6 @@ import knob from './knob.js'
 import flipper from './flipper.js'
 import booper from './booper.js'
 import { getTracks, getTrains } from '../railyard.js'
-import { placeTrainOnTrack } from '../railyardhelpers.js'
 
 const trains = (app, id) => {
     const ux = [
@@ -20,12 +19,7 @@ const trains = (app, id) => {
                     getTrains()[0].unpoweredTargetSpeed = getTrains()[0].poweredTargetSpeed
                 }
             }
-        }, true),
-        booper(app, 'booper1', 'reset train', (data) => {
-            if(getTrains()[0]) {
-                placeTrainOnTrack(getTrains()[0], getTracks()[0])
-            }
-        })
+        }, true)
     ]
 
     return (state, emit) => {

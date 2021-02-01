@@ -32,7 +32,7 @@ const drawPlane = regl({
 
 const setFloorContext = regl({
     context: {
-        position: [0, -1.01, 0],
+        position: [0, -0.5, 0],
         rotation: [0, 0, 0, 1],
         scale: [50, 50, 50],
         color: [.51, .41, .32]

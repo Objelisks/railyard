@@ -4,7 +4,7 @@ import { drawCube } from './cube.js'
 import { setUniforms } from './model.js'
 import Bezier from '../libs/bezier-js.mjs'
 
-const debugPoints = {}
+let debugPoints = {}
 export const debugPoint = (key, position, color) => {
     debugPoints[key] = {position, color}
 }
@@ -19,7 +19,7 @@ const setupPoint = regl({
 export const drawDebugPoints = () => setupPoint(Object.values(debugPoints), drawPoint)
 
 
-const debugArrows = {}
+let debugArrows = {}
 export const debugCurve = (key, curve, towardsEndpoint, color) => {
     if(curve === null) {
         delete debugArrows[key]
@@ -56,3 +56,7 @@ export const generateDebugArrowsForTurnout = (turnout) => {
     debugCurve(`turnout-${turnout.index}`, track.curve.split(t1, t2), direction, [1, .7, .28])
 }
 
+export const clearDebug = () => {
+    debugPoints = {}
+    debugArrows = {}
+}

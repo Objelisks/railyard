@@ -266,7 +266,7 @@ export const drawPbr = regl({
     colorSwap: (context, props) => textures[props.texture].colorSwap,
     'lightPositions[0]': (context) => context.lightPos,
     'lightColors[0]': [40, 30, 10],
-    'lightPositions[1]': (context) => [Math.sin(context.time*0)*10, 5, Math.cos(context.time)*10],
+    'lightPositions[1]': (context) => [0, 5, 0],
     'lightColors[1]': [255, 255, 255],
     'lightPositions[2]': [-10, 10, -0],
     'lightColors[2]': [255, 255, 255],

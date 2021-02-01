@@ -1,7 +1,7 @@
 import html from '../libs/nanohtml.mjs'
 import { flags } from '../flags.js'
 import { setPlaylist, setVolume } from '../audio.js'
-import { setTrainColors } from '../railyard.js'
+import { setTrainColors, deleteAll } from '../railyard.js'
 import { hexToRgb } from '../utils.js'
 
 const options = (app, id) => {
@@ -29,6 +29,10 @@ const options = (app, id) => {
 
     const clearData = (e) => {
         localStorage.clear()
+    }
+
+    const clearWorld = (e) => {
+        deleteAll()
     }
 
     const preventDefault = (e) => {
@@ -80,6 +84,10 @@ const options = (app, id) => {
                 <div class="section">
                     <label>secondary color: </label><input type="color"
                         value="${initColor2}" oninput=${editColor2}></input>
+                </div>
+                <div class="section">
+                    <label>clear world</label>
+                    <button onmousedown=${preventDefault} onclick=${clearWorld}>boop</button>
                 </div>
                 <div class="section">
                     <label for="clearsave">clear save data: </label>

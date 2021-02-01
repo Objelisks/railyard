@@ -115,11 +115,11 @@ export const objects = {
         placer: trackSnapper,
         post: trainPlacer('g43')
     },
-    "p70": {
+    "p42": {
         name: 'passenger car',
-        model: () => meshes['p70'](),
+        model: () => meshes['p42'](),
         placer: trackSnapper,
-        post: trainPlacer('p70')
+        post: trainPlacer('p42')
     },
     "x36": {
         name: 'freight car',
@@ -185,7 +185,7 @@ export const inventory = [
             objects['sw1'],
             objects['tm8'],
             objects['g43'],
-            objects['p70'],
+            objects['p42'],
             objects['x36'],
             objects['caboose']
         ]

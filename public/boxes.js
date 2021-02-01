@@ -93,7 +93,7 @@ export const syncTrainToBox = (train) => {
 
     // move the train to halfway between the bogies
     const avgPos = vec2.scale([], vec2.add([], pos1, pos2), 0.5)
-    train.position = [avgPos[0]/10, 0, avgPos[1]/10]
+    train.position = [avgPos[0]/10, -0.3, avgPos[1]/10]
     
     // get the angle between the bogies and build a quaternion from that
     const facingVec = vec2.normalize([], vec2.sub([], pos1, pos2))
