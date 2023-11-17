@@ -1,22 +1,29 @@
 welcome to trains game!
 
 here is your goal:
-do the best trains
+do your best at trains
 
-controls:
+===controls===
 
-operate:
+====operate====
 bump cars together to connect them
 left click on a turnout to toggle it
 left click on a train car to disconnect it
 right click and drag to move the camera around while in bird camera mode (or use wasd)
+right click on a train to remove it
 
-edit:
+====edit====
+drag and drop stuff from the lil boxes into the world
 mouse wheel to rotate objects while holding them
 
-multiplayer:
-enter a room name and click connect to drive trains with friends
-
-options:
+====options====
 choose how you want your train to be
-settings are saved to your browser (localstorage)
+set the music and sound effects volume
+volume and colors are saved to your browser (localstorage)
+
+
+there are plenty of bugs, but if you're gentle with the trains, they work just fine
+
+===credits===
+Developed by Tim Plummer (objelisks)
+Sound and music by Li Zilles and David Kelly (Studio Meow Meow)

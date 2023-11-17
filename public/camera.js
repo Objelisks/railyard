@@ -147,7 +147,7 @@ export const cameraControlTool = {
             vec3.add(editCameraTarget, editCameraTarget, delta)
         }
 
-        editCameraDistance += scrollVelocity
+        editCameraDistance += scrollVelocity * editCameraDistance/1000.0
         editCameraDistance = clamp(editCameraDistance, 1, 100)
         scrollVelocity *= 0.8
 
